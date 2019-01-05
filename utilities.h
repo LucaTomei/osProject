@@ -7,3 +7,7 @@ void testaCioCheScrivi(char c);
 
 char letturaPerpetua();
 void processaChar();
+
+void svuotaSchermo();
+
+void disegnaRighe();

@@ -17,7 +17,12 @@
 #define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
 #define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
 
-struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
+
+typedef struct config{
+  struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
+}config;
+
+config Editor;
 
 
 static void pulisciTerminale(){
@@ -54,11 +59,10 @@ int main(int argc, char *argv[]){
 	// leggo un byte alla volta dallo standard input
 	// e lo salvo in una variabile 'c'. Ritornerà 0 a EOF
 	
-	/*while(1){
+	while(1){
+		svuotaSchermo();
 		processaChar();
-	}*/
-	char c;
-	testaCioCheScrivi(c);
+	}
 
 
 	// ripristino il terminale dei precedenti attributi
@@ -79,9 +83,9 @@ int main(int argc, char *argv[]){
 //		raw mode
 void abilitaRawMode(){
 
-	if(tcgetattr(STDIN_FILENO, &initialState) == -1) 	handle_error("Errore nell'enableRawMode!");
+	if(tcgetattr(STDIN_FILENO, &Editor.initialState) == -1) 	handle_error("Errore nell'enableRawMode!");
 	atexit(disabilitaRawMode);		// quando termina il programma, ripristino i flag
-	struct termios raw = initialState;	// copia locale
+	struct termios raw = Editor.initialState;	// copia locale
 
 	raw.c_iflag &= ~(IXON);		// disabilito ctrl-s e ctrl-q
 	raw.c_iflag &= ~(ISIG);		// disabilito ctrl-v
@@ -109,7 +113,7 @@ void abilitaRawMode(){
 
 // 2) Ripristino tutti i flag del terminale, all'uscita
 void disabilitaRawMode(){
-	if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &initialState) == -1) handle_error("Errore: non riesco a disabilitare la raw mode!");	
+	if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &Editor.initialState) == -1) handle_error("Errore: non riesco a disabilitare la raw mode!");	
 	char *cmd = "tput";
 	char *args[3];
 	args[0] = "tput";
@@ -139,4 +143,31 @@ char letturaPerpetua(){
 void processaChar(){
 	char c = letturaPerpetua();
 	if(c == CTRL_KEY('q'))	exit(0);
+}
+// 5) 	Occorre svuotare lo schermo del terminale dopo ogni pressione di un tasto e fare in modo 
+// 		che il cursore sia posizionato sempre in alto a sinistra dello schermo
+// 		(Studia bene il link nel file VT100EscapeSequenze.txt)
+void svuotaSchermo() {
+	/* Per fare questo bisogna scrivere sullo standard output 4 byte, di cui
+		* il primo \x1b == 27 in decimale è il carattere di escape
+		* il secondo [ è un carattere di escape
+		* il terzo == 2 -> Indica che voglio cancellare l'intero schermo
+		* il quarto J -> Indica che voglio eliminare <esc>
+		Le sequenze di escape su terminale iniziano sempre con un carattere escape (27), seguito da
+		[. In questo modo istruisco al terminale di spostare il cursore, cambiare il colore del font,
+		cancellare parti dello schermo,...Guarda (https://vt100.net/docs/vt100-ug/chapter3.html#ED)
+	*/
+  	write(STDOUT_FILENO, "\x1b[2J", 4);
+  	write(STDOUT_FILENO, "\x1b[H", 3);	// H == posizionamento del cursore
+  	disegnaRighe();
+  	write(STDOUT_FILENO, "\x1b[H", 3);
+}
+
+// 6) è l'ora di disegnare le righe del terminale
+void disegnaRighe(){
+	int i;
+  	for (i = 0; i < 30; i++) {	// disegno ad ogni inizio riga del terminale le mie iniziali
+  		if(i%2 != 0)	write(STDOUT_FILENO, "Ⓛ\r\n", 5);
+    	else	write(STDOUT_FILENO, "Ⓣ\r\n", 5);
+  	}
 }
