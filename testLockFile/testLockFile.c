@@ -101,11 +101,11 @@ static int lockfile(const char *const filepath, int *const fdptr)
     return 0;
 }
 
-int main(int a./rgc, char const *argv[]){
+int main(int argc, char const *argv[]){
     while(1){
         sleep(1);
         int result;
-        result = lockfile("test.txt", NULL);
+        result = lockfile("lockTest.txt", NULL);
         if (result == 0)    printf("Lock esclusiva\n");
         else{
             if (result == EALREADY) {
