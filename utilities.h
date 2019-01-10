@@ -11,3 +11,9 @@ void processaChar();
 void svuotaSchermo();
 
 void disegnaRighe();
+
+int prendiDimensioni(int *righe, int *colonne);
+
+void inizializzaEditor();
+
+int posizioneCursore(int* righe, int* colonne);

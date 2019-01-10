@@ -7,7 +7,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
-#include <sys/ioctl.h>
+#include <sys/ioctl.h>	/*Per la struct winsize e ottenere le dimensioni dello schermo*/
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -20,6 +20,7 @@
 
 typedef struct config{
   struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
+  int righe, colonne;
 }config;
 
 config Editor;
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]){
 	abilitaRawMode();
 	// leggo un byte alla volta dallo standard input
 	// e lo salvo in una variabile 'c'. Ritornerà 0 a EOF
-	
+	inizializzaEditor();
 	while(1){
 		svuotaSchermo();
 		processaChar();
@@ -166,8 +167,77 @@ void svuotaSchermo() {
 // 6) è l'ora di disegnare le righe del terminale
 void disegnaRighe(){
 	int i;
-  	for (i = 0; i < 30; i++) {	// disegno ad ogni inizio riga del terminale le mie iniziali
+  	for (i = 0; i < Editor.righe; i++) {	// disegno ad ogni inizio riga del terminale le mie iniziali
   		if(i%2 != 0)	write(STDOUT_FILENO, "Ⓛ\r\n", 5);
     	else	write(STDOUT_FILENO, "Ⓣ\r\n", 5);
   	}
+}
+
+// 7) prendo le dimensioni dello schermo per disegnare tante righe quant'è lo schermo
+/*
+
+*/
+/*
+Per sapere le dimensioni dello schermo, la strategia è posizionare il cursore in basso a destra 
+sullo schermo, quindi utilizzare le sequenze di escape che ci permettono di interrogare la posizione 
+del cursore. 
+
+Invio questa sequenza di due escape concatenati "\x1b[999C\x1b[999B", in cui
+-	\x1b[999C 	sposta il cursore a destra di 999
+-	\x1b[999B	sposta il cursore in basso nello schermo di 999
+Uso 999 perché un valore così grande dovrebbe garantirmi di esplorare fino alla fine dei bordi
+del terminale.
+Non uso 999H perché la documentazione non specifica cosa succede quando si prova a spostare il cursore
+fuori dallo schermo.
+Poi effettuo una chiamata alla funzione letturaPerpetua per mostrare i risultati, prima che venga 
+cancellato lo schermo.
+*/
+int prendiDimensioni(int *righe, int *colonne){
+	struct winsize size;
+	// ioctl non funziona su tuttii sistemi!!!
+	/*if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0 || ws.ws_row == 0)return -1;
+	else {
+		// aggiungo tutti i dati alla struct config
+		*colonne = ws.ws_col;	// numero di colonne...
+	    *righe = ws.ws_row;	// e numero di righe
+	    return 0;
+	}*/
+
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == -1 || size.ws_col == 0) {
+	    if (write(STDOUT_FILENO, "\x1b[999C\x1b[999B", 12) != 12) return -1;
+	    return posizioneCursore(righe, colonne);
+  	}else {
+	    *colonne = size.ws_col;
+	    *righe = size.ws_row;
+	    /*printf("%ls\n", righe);*/
+	    return 0;
+  	}
+}
+
+// 8) funzione d'appoggio per inizializzare editor
+void inizializzaEditor(){
+	if(prendiDimensioni(&Editor.righe, &Editor.colonne) == -1)	handle_error("Errore: nella size!");
+}
+
+// 9) 	Ora è il momento di prendere la posizione del cursore, dopo averlo spostato in basso 
+int posizioneCursore(int* righe, int* colonne){
+	char buf[32];
+	/*
+	buf è un' array in cui:
+	- la prima cella contiene i caratteri escape
+	- la seconda cella contiene la seconda sequenza di caratteri escape
+	- dalla terza cella in poi va tutto bene
+	*/
+  	unsigned int i = 0;
+	if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
+  	
+  	while (i < sizeof(buf) - 1) {
+    	if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
+    	if (buf[i] == 'R') break;	// devo arrivare fino ad 'R' (https://vt100.net/docs/vt100-ug/chapter3.html#CPR)
+    	i++;
+  	}
+  	buf[i] = '\0';
+  	if (buf[0] != '\x1b' || buf[1] != '[') return -1;
+  	if (sscanf(&buf[2], "%d;%d", righe, colonne) != 2) return -1;
+  	return -1;
 }
