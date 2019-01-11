@@ -13,7 +13,6 @@
 #include <unistd.h>
 #include <stdarg.h>
 
-
 #define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
 #define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
 
@@ -23,8 +22,13 @@ typedef struct config{
   int righe, colonne;
 }config;
 
-config Editor;
+#define StringBuffer_INIT {NULL, 0}
+struct StringBuffer {
+  char *b;
+  int len;
+};
 
+config Editor;
 
 static void pulisciTerminale(){
 	char *cmd = "tput";
@@ -145,6 +149,8 @@ void processaChar(){
 	char c = letturaPerpetua();
 	if(c == CTRL_KEY('q'))	exit(0);
 }
+
+
 // 5) 	Occorre svuotare lo schermo del terminale dopo ogni pressione di un tasto e fare in modo 
 // 		che il cursore sia posizionato sempre in alto a sinistra dello schermo
 // 		(Studia bene il link nel file VT100EscapeSequenze.txt)
@@ -158,18 +164,38 @@ void svuotaSchermo() {
 		[. In questo modo istruisco al terminale di spostare il cursore, cambiare il colore del font,
 		cancellare parti dello schermo,...Guarda (https://vt100.net/docs/vt100-ug/chapter3.html#ED)
 	*/
-  	write(STDOUT_FILENO, "\x1b[2J", 4);
+	struct StringBuffer sb = StringBuffer_INIT;
+	sbAppend(&sb, "\x1b[2J", 4);
+	
+	sbAppend(&sb, "\x1b[H", 3);
+	disegnaRighe(&sb);
+	sbAppend(&sb, "\x1b[H", 3);
+	write(STDOUT_FILENO, sb.b, sb.len);
+	sbFree(&sb);
+
+  	/*	OBSOLETE, GUARDA SU ^ ^
+   	write(STDOUT_FILENO, "\x1b[2J", 4);
   	write(STDOUT_FILENO, "\x1b[H", 3);	// H == posizionamento del cursore
   	disegnaRighe();
-  	write(STDOUT_FILENO, "\x1b[H", 3);
+  	write(STDOUT_FILENO, "\x1b[H", 3);*/
 }
 
 // 6) è l'ora di disegnare le righe del terminale
-void disegnaRighe(){
+void disegnaRighe(struct StringBuffer *sb){
 	int i;
+	/*char* base = ".";
+	char out[32];*/
   	for (i = 0; i < Editor.righe; i++) {	// disegno ad ogni inizio riga del terminale le mie iniziali
-  		if(i%2 != 0)	write(STDOUT_FILENO, "Ⓛ\r\n", 5);
-    	else	write(STDOUT_FILENO, "Ⓣ\r\n", 5);
+  		/*if(i%2 != 0)	write(STDOUT_FILENO, "Ⓛ\r\n", 5);
+    	else	write(STDOUT_FILENO, "Ⓣ\r\n", 5);*/
+    	/*sprintf(out, "%d%s", i, base);		// prova a mettere i numeri
+    	write(STDOUT_FILENO, out, 4);*/
+    	
+    	/*write(STDOUT_FILENO, "Ⓛ", 3);
+    	if(i <= Editor.righe)	write(STDOUT_FILENO, "\r\n", 2);*/
+
+    	sbAppend(sb, "~", 1);
+    	if(i < Editor.righe -1)	 sbAppend(sb, "\r\n", 2);
   	}
 }
 
@@ -240,4 +266,18 @@ int posizioneCursore(int* righe, int* colonne){
   	if (buf[0] != '\x1b' || buf[1] != '[') return -1;
   	if (sscanf(&buf[2], "%d;%d", righe, colonne) != 2) return -1;
   	return -1;
+}
+
+
+/*10) per creare una write dinamica e fare append*/
+void sbAppend(struct StringBuffer *sb, const char *s, int len) {
+  char *new = realloc(sb->b, sb->len + len);
+  if (new == NULL) return;
+  memcpy(&new[sb->len], s, len);
+  sb->b = new;
+  sb->len += len;
+}
+/*11) Distruttore*/
+void sbFree(struct StringBuffer *sb) {
+  free(sb->b);
 }
