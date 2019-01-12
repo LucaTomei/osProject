@@ -18,33 +18,20 @@
 
 
 typedef struct config{
-  struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
-  int righe, colonne;
+	/*Coordinate orizzantali (colonne) e verticali (righe*/
+	int x, y;
+  	struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
+  	int righe, colonne;
 }config;
 
-#define StringBuffer_INIT {NULL, 0}
+#define StringBuffer_INIT {NULL, 0}	// inizializza la struct 
 struct StringBuffer {
-  char *b;
-  int len;
+  	char *b;
+  	int len;
 };
 
 config Editor;
 
-static void pulisciTerminale(){
-	char *cmd = "tput";
-	char *args[3];
-	args[0] = "tput";
-	args[1] = "reset";
-	args[2] = NULL;
-	pid_t pulitore = vfork();
-	if(pulitore == 0){
-		int res = execvp(cmd, args);
-		if(res == -1)	handle_error("Errore nella Exec");
-	}else if(pulitore > 0){
-		int status;
-		wait(&status);
-	}else 	handle_error("Errore nella vfork");
-}
 
 /*Metodo per testing*/
 void testaCioCheScrivi(char c){
@@ -77,12 +64,25 @@ int main(int argc, char *argv[]){
 
 
 
-
-
 /*
 	CORPO DI FUNZIONI
 */
 
+static void pulisciTerminale(){
+	char *cmd = "tput";
+	char *args[3];
+	args[0] = "tput";
+	args[1] = "reset";
+	args[2] = NULL;
+	pid_t pulitore = vfork();
+	if(pulitore == 0){
+		int res = execvp(cmd, args);
+		if(res == -1)	handle_error("Errore nella Exec");
+	}else if(pulitore > 0){
+		int status;
+		wait(&status);
+	}else 	handle_error("Errore nella vfork");
+}
 
 // 1) 	Esco dalla modalità cooked del terminale, disabilitando la stampa a video per entrare in
 //		raw mode
@@ -165,11 +165,21 @@ void svuotaSchermo() {
 		cancellare parti dello schermo,...Guarda (https://vt100.net/docs/vt100-ug/chapter3.html#ED)
 	*/
 	struct StringBuffer sb = StringBuffer_INIT;
-	sbAppend(&sb, "\x1b[2J", 4);
+
+	sbAppend(&sb, "\x1b[?25l", 6);	// nascondo il cursore prima di aggiornare lo schermo e...
+									// 'l' alla fine significa setMode
 	
 	sbAppend(&sb, "\x1b[H", 3);
+
 	disegnaRighe(&sb);
-	sbAppend(&sb, "\x1b[H", 3);
+
+	/*Posizionamento del cursore*/
+	char buf[32];
+  	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", Editor.y + 1, Editor.x + 1);
+  	sbAppend(&sb, buf, strlen(buf));
+
+	sbAppend(&sb, "\x1b[?25h", 6);	// ... lo mostro subito dopo il completamento dell'aggiornamento
+									// h alla fine significa reset mode
 	write(STDOUT_FILENO, sb.b, sb.len);
 	sbFree(&sb);
 
@@ -193,8 +203,23 @@ void disegnaRighe(struct StringBuffer *sb){
     	
     	/*write(STDOUT_FILENO, "Ⓛ", 3);
     	if(i <= Editor.righe)	write(STDOUT_FILENO, "\r\n", 2);*/
+  		if(i == Editor.righe / 3){
+  			char welcomeMessage[80];
+  			int welcomeLen = snprintf(welcomeMessage, sizeof(welcomeMessage), "Il più bel Text-Editor");
+  			if(welcomeLen > Editor.colonne)		welcomeLen = Editor.colonne;
+  			/*	Per centrare la stringa sullo schermo, divido la larghezza per 2
+				Questo mi dice quanto lontano da destra e da sinistra devo stampare	
+  			*/
+  			int padding = (Editor.colonne - welcomeLen)/2;
+  			if(padding){
+  				sbAppend(sb, "~", 1);
+  				padding--;
+  			}
+  			while(padding--)	sbAppend(sb," ",1);
+  			sbAppend(sb, welcomeMessage, welcomeLen);
+  		}else 	sbAppend(sb,"~",1);
 
-    	sbAppend(sb, "~", 1);
+    	sbAppend(sb, "\x1b[K", 3);	// rimuovo la sequenza di escape ('K'). K canella la lriga corrente
     	if(i < Editor.righe -1)	 sbAppend(sb, "\r\n", 2);
   	}
 }
@@ -242,6 +267,9 @@ int prendiDimensioni(int *righe, int *colonne){
 
 // 8) funzione d'appoggio per inizializzare editor
 void inizializzaEditor(){
+	/*Inizializzo il cursore in alto a sinistra dello schermo*/
+	Editor.x = 0;
+	Editor.y = 0;
 	if(prendiDimensioni(&Editor.righe, &Editor.colonne) == -1)	handle_error("Errore: nella size!");
 }
 
@@ -269,7 +297,7 @@ int posizioneCursore(int* righe, int* colonne){
 }
 
 
-/*10) per creare una write dinamica e fare append*/
+/*10) per creare una write dinamica e fare append al buffer nella struct*/
 void sbAppend(struct StringBuffer *sb, const char *s, int len) {
   char *new = realloc(sb->b, sb->len + len);
   if (new == NULL) return;
@@ -280,4 +308,10 @@ void sbAppend(struct StringBuffer *sb, const char *s, int len) {
 /*11) Distruttore*/
 void sbFree(struct StringBuffer *sb) {
   free(sb->b);
+}
+
+/*12) Funzione Per Muovere il Cursore*/
+void muoviIlCursore(char tasto){
+	if(key == 'a')	Editor.x--;
+	else if(key == 'd')	Editor.x++;
 }
