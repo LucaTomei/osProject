@@ -1,4 +1,6 @@
 #define _DEFAULT_SOURCE		// Evita i warning della vfork()
+#define _BSD_SOURCE
+#define _GNU_SOURCE
 #include "utilities.h"	// contiene le dichiarazioni di funzioni
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,18 +15,27 @@
 #include <unistd.h>
 #include <stdarg.h>
 
-
-
 #define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
 #define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
 
 
+/*Struct per l'editor*/
+typedef struct EditorR{
+	int size;
+	char* chars;
+} EditorR;
+
 typedef struct config{
 	/*Coordinate orizzantali (colonne) e verticali (righe*/
 	int x, y;
-  	struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
   	int righe, colonne;
+  	int numRighe;
+  	EditorR* row;	/*Mi serve un puntatore ai dati di carattere da scrivere*/
+  	struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
 }config;
+
+config Editor;
+
 
 #define StringBuffer_INIT {NULL, 0}	// inizializza la struct 
 struct StringBuffer {
@@ -32,7 +43,7 @@ struct StringBuffer {
   	int len;
 };
 
-config Editor;
+
 
 
 enum editorKey {
@@ -40,6 +51,7 @@ enum editorKey {
 	FRECCIA_DESTRA,
 	FRECCIA_SU,
 	FRECCIA_GIU,
+	CANC,	/*<esc> [3 ~*/
 	HOME,	/*Fn + ←*/
 	END,	/*Fn + →*/
 	PAGINA_SU,
@@ -65,6 +77,9 @@ int main(int argc, char *argv[]){
 	// leggo un byte alla volta dallo standard input
 	// e lo salvo in una variabile 'c'. Ritornerà 0 a EOF
 	inizializzaEditor();
+
+	/*apriFileTest();*/
+	if(argc >= 2)	openFile(argv[1]);
 	while(1){
 		svuotaSchermo();
 		processaChar();
@@ -170,6 +185,7 @@ int letturaPerpetua(){
 	    			switch (seq[1]){
 	    				case '1': return HOME;		/*Il tasto home e il tasto end differiscono*/
             			case '4': return END;		/*a seconda del sistema. Possono valere...*/
+            			case '3': return CANC;		/*<esc> [3 ~*/
 	    				case '5': return PAGINA_SU;
 	    				case '6': return PAGINA_GIU;
 	    				case '7': return HOME;		/*... 1, 4 oppure 7 e 8 */
@@ -270,10 +286,8 @@ void svuotaSchermo() {
 }
 
 // 6) è l'ora di disegnare le righe del terminale
-void disegnaRighe(struct StringBuffer *sb){
-	int i;
-	/*char* base = ".";
-	char out[32];*/
+void disegnaRighe(struct StringBuffer * sb) {
+  	int i;
   	for (i = 0; i < Editor.righe; i++) {	// disegno ad ogni inizio riga del terminale le mie iniziali
   		/*if(i%2 != 0)	write(STDOUT_FILENO, "Ⓛ\r\n", 5);
     	else	write(STDOUT_FILENO, "Ⓣ\r\n", 5);*/
@@ -282,26 +296,36 @@ void disegnaRighe(struct StringBuffer *sb){
     	
     	/*write(STDOUT_FILENO, "Ⓛ", 3);
     	if(i <= Editor.righe)	write(STDOUT_FILENO, "\r\n", 2);*/
-  		if(i == Editor.righe / 3){
-  			char welcomeMessage[80];
-  			int welcomeLen = snprintf(welcomeMessage, sizeof(welcomeMessage), "Il più bel Text-Editor");
-  			if(welcomeLen > Editor.colonne)		welcomeLen = Editor.colonne;
-  			/*	Per centrare la stringa sullo schermo, divido la larghezza per 2
-				Questo mi dice quanto lontano da destra e da sinistra devo stampare	
-  			*/
-  			int padding = (Editor.colonne - welcomeLen)/2;
-  			if(padding){
-  				sbAppend(sb, "~", 1);
-  				padding--;
-  			}
-  			while(padding--)	sbAppend(sb," ",1);
-  			sbAppend(sb, welcomeMessage, welcomeLen);
-  		}else 	sbAppend(sb,"~",1);
 
-    	sbAppend(sb, "\x1b[K", 3);	// rimuovo la sequenza di escape ('K'). K canella la lriga corrente
-    	if(i < Editor.righe -1)	 sbAppend(sb, "\r\n", 2);
+
+  		/*Controllo se sto scrivendo una riga che fa parte del buffer di edito di testo...*/
+    	if (i >= Editor.numRighe) {
+	      	if (i == Editor.righe / 3) {	/*Se non passo alcun file*/
+	        	char welcomeMessage[80];
+	        	int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),"Il più bel text editor %s","[Mio]");
+	        	if (welcomelen > Editor.colonne) welcomelen = Editor.colonne;
+	        	/*	Per centrare la stringa sullo schermo, divido la larghezza per 2
+					Questo mi dice quanto lontano da destra e da sinistra devo stampare	
+		  		*/
+	       	 	int padding = (Editor.colonne - welcomelen) / 2;
+	        	if (padding) {
+	          		sbAppend(sb, "~", 1);
+	          		padding--;
+	        	}
+	        	while (padding--) sbAppend(sb, " ", 1);
+	        	sbAppend(sb, welcomeMessage, welcomelen);
+	      	} else sbAppend(sb, "~", 1);
+    	} else {	/*.... o una riga che sta dopo la fine del file*/
+      		int len = Editor.row[i].size;
+      		if (len > Editor.colonne) len = Editor.colonne;
+     		sbAppend(sb, Editor.row[i].chars, len);
+    	}
+    	sbAppend(sb, "\x1b[K", 3);	// rimuovo la sequenza di escape ('K'). K cacella la riga corrente
+    	if (i < Editor.righe - 1) sbAppend(sb, "\r\n", 2);
   	}
 }
+
+
 
 // 7) prendo le dimensioni dello schermo per disegnare tante righe quant'è lo schermo
 /*
@@ -349,6 +373,9 @@ void inizializzaEditor(){
 	/*Inizializzo il cursore in alto a sinistra dello schermo*/
 	Editor.x = 0;
 	Editor.y = 0;
+	Editor.numRighe = 0;
+	Editor.row = NULL;
+
 	if(prendiDimensioni(&Editor.righe, &Editor.colonne) == -1)	handle_error("Errore: nella size!");
 }
 
@@ -414,4 +441,45 @@ void muoviIlCursore(int tasto){
 	    	if(Editor.y != Editor.righe -1)		Editor.y++;
 	      	break;
 	}
+}
+
+/*test*/
+/*void apriFileTest() {
+  	char *line = "Hello, world!";
+  	ssize_t linelen = 13;
+  	Editor.row.size = linelen;
+  	Editor.row.chars = malloc(linelen + 1);
+  	memcpy(Editor.row.chars, line, linelen);
+  	Editor.row.chars[linelen] = '\0';
+  	Editor.numRighe = 1;
+}*/
+
+void openFile(char* nomeFile){
+	FILE *fp = fopen(nomeFile, "r");
+  	if (!fp) 	handle_error("Errore: open fallita");
+  	char *line = NULL;
+  	size_t linecap = 0; /*capacità di linea, utili per sapere quanta memoria è stata assegnata
+  						vale tanto quanto la riga o -1 a EOF*/
+	ssize_t linelen;
+  	linelen = getline(&line, &linecap, fp);	/*Prendo la prima riga del file. Uso getline
+  											piché la funzione si occupa della gestione della memoria
+  											autonomamente*/
+	while((linelen = getline(&line, &linecap, fp)) != -1){
+    	while(linelen > 0 && (line[linelen - 1] == '\n' || line[linelen - 1] == '\r'))
+      	linelen--;
+    	appendRow(line,linelen);
+  	}
+  	free(line);
+  	fclose(fp);
+}
+
+/**/
+void appendRow(char *s, size_t len) {
+  	Editor.row = realloc(Editor.row, sizeof(EditorR) * (Editor.numRighe + 1));
+  	int at = Editor.numRighe;
+  	Editor.row[at].size = len;
+  	Editor.row[at].chars = malloc(len + 1);
+  	memcpy(Editor.row[at].chars, s, len);
+  	Editor.row[at].chars[len] = '\0';
+  	Editor.numRighe++;
 }

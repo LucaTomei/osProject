@@ -1,6 +1,7 @@
 /*-------------------------------------------------------------------------------------------
 	Dichiarazione di Funzioni
 --------------------------------------------------------------------------------------------*/
+#include <stddef.h>
 void muoviIlCursore(int tasto);
 
 
@@ -20,6 +21,7 @@ void processaChar();
 
 void svuotaSchermo();
 
+
 /*void disegnaRighe();*/
 /*void disegnaRighe(struct StringBuffer *ab);*/
 
@@ -30,5 +32,11 @@ void inizializzaEditor();
 int posizioneCursore(int* righe, int* colonne);
 
 enum editorKey;
+
+void apriFileTest();
+
+void openFile(char* nomeFile);	
+
+void appendRow(char *s, size_t len);
 
 
