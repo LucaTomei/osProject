@@ -4,7 +4,7 @@
 #include "utilities.h"	// contiene le dichiarazioni di funzioni
 #include <stdio.h>
 #include <stdlib.h>
-#include <termios.h>	/* Per abilitare e disabilitare Raw Mode*/
+#include <termios.h>	/* Per sbilitare e dissbilitare Raw Mode*/
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
@@ -28,6 +28,7 @@ typedef struct EditorR{
 typedef struct config{
 	/*Coordinate orizzantali (colonne) e verticali (righe*/
 	int x, y;
+	int offsetRiga; 	/*tiene traccia della riga in cui sono*/
   	int righe, colonne;
   	int numRighe;
   	EditorR* row;	/*Mi serve un puntatore ai dati di carattere da scrivere*/
@@ -75,7 +76,7 @@ int main(int argc, char *argv[]){
 	pulisciTerminale();
 	abilitaRawMode();
 	// leggo un byte alla volta dallo standard input
-	// e lo salvo in una variabile 'c'. Ritornerà 0 a EOF
+	// e lo salvo in una varisbile 'c'. Ritornerà 0 a EOF
 	inizializzaEditor();
 
 	/*apriFileTest();*/
@@ -113,26 +114,26 @@ static void pulisciTerminale(){
 	}else 	handle_error("Errore nella vfork");
 }
 
-// 1) 	Esco dalla modalità cooked del terminale, disabilitando la stampa a video per entrare in
+// 1) 	Esco dalla modalità cooked del terminale, dissbilitando la stampa a video per entrare in
 //		raw mode
 void abilitaRawMode(){
 
-	if(tcgetattr(STDIN_FILENO, &Editor.initialState) == -1) 	handle_error("Errore nell'enableRawMode!");
+	if(tcgetattr(STDIN_FILENO, &Editor.initialState) == -1) 	handle_error("Errore nell'ensbleRawMode!");
 	atexit(disabilitaRawMode);		// quando termina il programma, ripristino i flag
 	struct termios raw = Editor.initialState;	// copia locale
 
-	raw.c_iflag &= ~(IXON);		// disabilito ctrl-s e ctrl-q
-	raw.c_iflag &= ~(ISIG);		// disabilito ctrl-v
-	raw.c_iflag &= ~(IEXTEN);	// disabilito ctr-o
-	raw.c_iflag &= ~(ICRNL);	// disabilito \n
-	raw.c_oflag &= ~(OPOST);	// disabilito funzionalità di elaborazione dell'output
+	raw.c_iflag &= ~(IXON);		// dissbilito ctrl-s e ctrl-q
+	raw.c_iflag &= ~(ISIG);		// dissbilito ctrl-v
+	raw.c_iflag &= ~(IEXTEN);	// dissbilito ctr-o
+	raw.c_iflag &= ~(ICRNL);	// dissbilito \n
+	raw.c_oflag &= ~(OPOST);	// dissbilito funzionalità di elsborazione dell'output
 
-	// disabilito ECHO,
+	// dissbilito ECHO,
 	// la modalità canonica per leggere byte a byte,
-	// e ISIG --> Gestore dei segnali, disabilita ctrl-c e ctrl-z
+	// e ISIG --> Gestore dei segnali, dissbilita ctrl-c e ctrl-z
 	raw.c_lflag &= ~(ECHO | ICANON | ISIG);	
 
-	// disabilito altri flag (prova a vedere se non servono)
+	// dissbilito altri flag (prova a vedere se non servono)
 	raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);	
 	raw.c_cflag |= (CS8);
 	
@@ -147,7 +148,7 @@ void abilitaRawMode(){
 
 // 2) Ripristino tutti i flag del terminale, all'uscita
 void disabilitaRawMode(){
-	if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &Editor.initialState) == -1) handle_error("Errore: non riesco a disabilitare la raw mode!");	
+	if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &Editor.initialState) == -1) handle_error("Errore: non riesco a dissbilitare la raw mode!");	
 	char *cmd = "tput";
 	char *args[3];
 	args[0] = "tput";
@@ -259,6 +260,7 @@ void svuotaSchermo() {
 		[. In questo modo istruisco al terminale di spostare il cursore, cambiare il colore del font,
 		cancellare parti dello schermo,...Guarda (https://vt100.net/docs/vt100-ug/chapter3.html#ED)
 	*/
+	editorScroll();
 	struct StringBuffer sb = StringBuffer_INIT;
 
 	sbAppend(&sb, "\x1b[?25l", 6);	// nascondo il cursore prima di aggiornare lo schermo e...
@@ -270,7 +272,8 @@ void svuotaSchermo() {
 
 	/*Posizionamento del cursore*/
 	char buf[32];
-  	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", Editor.y + 1, Editor.x + 1);
+  	/*snprintf(buf, sizeof(buf), "\x1b[%d;%dH", Editor.y + 1, Editor.x + 1);*/
+  	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (Editor.y - Editor.offsetRiga) + 1, Editor.x + 1);
   	sbAppend(&sb, buf, strlen(buf));
 
 	sbAppend(&sb, "\x1b[?25h", 6);	// ... lo mostro subito dopo il completamento dell'aggiornamento
@@ -289,39 +292,41 @@ void svuotaSchermo() {
 void disegnaRighe(struct StringBuffer * sb) {
   	int i;
   	for (i = 0; i < Editor.righe; i++) {	// disegno ad ogni inizio riga del terminale le mie iniziali
-  		/*if(i%2 != 0)	write(STDOUT_FILENO, "Ⓛ\r\n", 5);
-    	else	write(STDOUT_FILENO, "Ⓣ\r\n", 5);*/
-    	/*sprintf(out, "%d%s", i, base);		// prova a mettere i numeri
-    	write(STDOUT_FILENO, out, 4);*/
-    	
-    	/*write(STDOUT_FILENO, "Ⓛ", 3);
-    	if(i <= Editor.righe)	write(STDOUT_FILENO, "\r\n", 2);*/
 
+  		/*if(i%2 != 0)  write(STDOUT_FILENO, "Ⓛ\r\n", 5);
+      	else  write(STDOUT_FILENO, "Ⓣ\r\n", 5);*/
+      	/*sprintf(out, "%d%s", i, base);    // prova a mettere i numeri
+     	write(STDOUT_FILENO, out, 4);*/
 
-  		/*Controllo se sto scrivendo una riga che fa parte del buffer di edito di testo...*/
-    	if (i >= Editor.numRighe) {
-	      	if (i == Editor.righe / 3) {	/*Se non passo alcun file*/
-	        	char welcomeMessage[80];
-	        	int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),"Il più bel text editor %s","[Mio]");
-	        	if (welcomelen > Editor.colonne) welcomelen = Editor.colonne;
-	        	/*	Per centrare la stringa sullo schermo, divido la larghezza per 2
-					Questo mi dice quanto lontano da destra e da sinistra devo stampare	
-		  		*/
-	       	 	int padding = (Editor.colonne - welcomelen) / 2;
-	        	if (padding) {
-	          		sbAppend(sb, "~", 1);
-	          		padding--;
-	        	}
-	        	while (padding--) sbAppend(sb, " ", 1);
-	        	sbAppend(sb, welcomeMessage, welcomelen);
-	      	} else sbAppend(sb, "~", 1);
-    	} else {	/*.... o una riga che sta dopo la fine del file*/
-      		int len = Editor.row[i].size;
-      		if (len > Editor.colonne) len = Editor.colonne;
-     		sbAppend(sb, Editor.row[i].chars, len);
+     	/*write(STDOUT_FILENO, "Ⓛ", 3);
+      	if(i <= Editor.righe) write(STDOUT_FILENO, "\r\n", 2);*/
+
+    	int filerow = i + Editor.offsetRiga;	/*Indice di riga del file*/
+
+    	/*Controllo se sto scrivendo una riga che fa parte del buffer di edito di testo...*/
+    	if (filerow >= Editor.numRighe) {
+      		if (Editor.numRighe == 0 && i == Editor.righe / 3) {	/*Se non passo alcun file*/
+        		char welcomeMessage[80];
+        		int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),"Il più bel text editor %s","[Mio]");
+        		if (welcomelen > Editor.colonne) welcomelen = Editor.colonne;
+        		/*  Per centrare la stringa sullo schermo, divido la larghezza per 2
+          		Questo mi dice quanto lontano da destra e da sinistra devo stampare 
+          		*/
+        		int padding = (Editor.colonne - welcomelen) / 2;
+        		if (padding) {
+          			sbAppend(sb, "~", 1);
+          			padding--;
+        		}
+       		 	while (padding--) 	sbAppend(sb, " ", 1);
+       			sbAppend(sb, welcomeMessage, welcomelen);
+      		} else 	sbAppend(sb, "~", 1);
+   		} else {
+	      	int len = Editor.row[filerow].size;
+	      	if (len > Editor.colonne) len = Editor.colonne;
+	      	sbAppend(sb, Editor.row[filerow].chars, len);
     	}
-    	sbAppend(sb, "\x1b[K", 3);	// rimuovo la sequenza di escape ('K'). K cacella la riga corrente
-    	if (i < Editor.righe - 1) sbAppend(sb, "\r\n", 2);
+    	sbAppend(sb, "\x1b[K", 3);	 // rimuovo la sequenza di escape ('K'). K cancella la riga corrente
+    	if (i < Editor.righe - 1) 	sbAppend(sb, "\r\n", 2);
   	}
 }
 
@@ -373,8 +378,10 @@ void inizializzaEditor(){
 	/*Inizializzo il cursore in alto a sinistra dello schermo*/
 	Editor.x = 0;
 	Editor.y = 0;
+	Editor.offsetRiga = 0;
 	Editor.numRighe = 0;
 	Editor.row = NULL;
+
 
 	if(prendiDimensioni(&Editor.righe, &Editor.colonne) == -1)	handle_error("Errore: nella size!");
 }
@@ -438,7 +445,8 @@ void muoviIlCursore(int tasto){
 	    	if(Editor.y != 0)	Editor.y--;
 	      	break;
 	    case FRECCIA_GIU:
-	    	if(Editor.y != Editor.righe -1)		Editor.y++;
+	    	/* Gestione mediante offset di riga*/
+	    	if(Editor.y < Editor.numRighe)		Editor.y++;
 	      	break;
 	}
 }
@@ -454,6 +462,7 @@ void muoviIlCursore(int tasto){
   	Editor.numRighe = 1;
 }*/
 
+/*12)*/
 void openFile(char* nomeFile){
 	FILE *fp = fopen(nomeFile, "r");
   	if (!fp) 	handle_error("Errore: open fallita");
@@ -473,7 +482,7 @@ void openFile(char* nomeFile){
   	fclose(fp);
 }
 
-/**/
+/*13)*/
 void appendRow(char *s, size_t len) {
   	Editor.row = realloc(Editor.row, sizeof(EditorR) * (Editor.numRighe + 1));
   	int at = Editor.numRighe;
@@ -482,4 +491,15 @@ void appendRow(char *s, size_t len) {
   	memcpy(Editor.row[at].chars, s, len);
   	Editor.row[at].chars[len] = '\0';
   	Editor.numRighe++;
+}
+
+/*	14)
+Funzione che ha lo scopo di verificare se il cursore si è spostato all'esterno della finestra.
+	Questo mi serve per far si che avvenga correttamente lo scroll verticale in modo tale
+	da poter settare il cursore appena all'interno della finestra visibile*/
+void editorScroll() {
+	/*Se il cursore si trova sopra la finestra visibile, lo faccio scorrere fin dove si trova*/
+	if (Editor.y < Editor.offsetRiga) Editor.offsetRiga = Editor.y;
+	/*Se il cursore è oltre la parte inferiore della finestra visibile, lo ri-regolo*/
+  	if (Editor.y >= Editor.offsetRiga + Editor.righe) Editor.offsetRiga = Editor.y - Editor.righe + 1;
 }

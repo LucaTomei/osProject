@@ -23,10 +23,11 @@ void svuotaSchermo();
 
 
 /*void disegnaRighe();*/
-/*void disegnaRighe(struct StringBuffer *ab);*/
+/*void disegnaRighe(struct StringBuffer *sb);*/
 
 int prendiDimensioni(int *righe, int *colonne);
 
+void editorScroll();
 void inizializzaEditor();
 
 int posizioneCursore(int* righe, int* colonne);
