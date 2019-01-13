@@ -1,6 +1,9 @@
 /*-------------------------------------------------------------------------------------------
 	Dichiarazione di Funzioni
 --------------------------------------------------------------------------------------------*/
+void muoviIlCursore(int tasto);
+
+
 struct StringBuffer;
 void sbAppend(struct StringBuffer *sb, const char *s, int len);
 void sbFree(struct StringBuffer *sb);
@@ -12,7 +15,7 @@ void abilitaRawMode();
 void disabilitaRawMode();
 void testaCioCheScrivi(char c);
 
-char letturaPerpetua();
+int letturaPerpetua();
 void processaChar();
 
 void svuotaSchermo();
@@ -25,4 +28,7 @@ int prendiDimensioni(int *righe, int *colonne);
 void inizializzaEditor();
 
 int posizioneCursore(int* righe, int* colonne);
+
+enum editorKey;
+
 

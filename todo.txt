@@ -1,1 +1,3 @@
 *	Fai una funzione che checka se la grandezza delle righe è cambiata!
+*	Gestisci i case in processaChar
+

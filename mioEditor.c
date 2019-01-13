@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <stdarg.h>
 
+
+
 #define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
 #define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
 
@@ -31,6 +33,18 @@ struct StringBuffer {
 };
 
 config Editor;
+
+
+enum editorKey {
+	FRECCIA_SINISTRA = 1000,	/*Dalla prossima kiave in poi i numeri incrementeranno di uno*/
+	FRECCIA_DESTRA,
+	FRECCIA_SU,
+	FRECCIA_GIU,
+	HOME,	/*Fn + ←*/
+	END,	/*Fn + →*/
+	PAGINA_SU,
+	PAGINA_GIU
+};
 
 
 /*Metodo per testing*/
@@ -135,19 +149,84 @@ void disabilitaRawMode(){
 }
 
 // 3) attende la pressione di un tasto e lo restituisce
-char letturaPerpetua(){
+int letturaPerpetua(){
 	int byteLetti;
 	char c;
 	while((byteLetti = read(STDIN_FILENO, &c, 1)) != 1){
 		if(byteLetti == -1 && errno != EAGAIN) 	handle_error("Errore nella lettura");
 	}
-	return c;
+
+	/*Sostituisco i tasti wasd con i tasti freccia. Muovere i tasti freccia equivale a muovere il cursore
+	di  '\ x1b' concatenato con A, B, C o D*/
+	if (c == '\x1b') {
+	    char seq[3];	// per gestire le sequenze di escape
+	    if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
+	    if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
+
+	    if(seq[0] == '['){
+	    	if(seq[1] >= '0' && seq[1] <= '9'){
+	    		if(read(STDIN_FILENO, &seq[2], 1) != 1)	return '\x1b';
+	    		if(seq[2] == '~'){
+	    			switch (seq[1]){
+	    				case '1': return HOME;		/*Il tasto home e il tasto end differiscono*/
+            			case '4': return END;		/*a seconda del sistema. Possono valere...*/
+	    				case '5': return PAGINA_SU;
+	    				case '6': return PAGINA_GIU;
+	    				case '7': return HOME;		/*... 1, 4 oppure 7 e 8 */
+            			case '8': return END;
+	    			}
+	    		}
+	    	}else {
+			    switch (seq[1]) {
+			    	case 'A': 	return FRECCIA_SU;
+			    	case 'B':	return FRECCIA_GIU;
+			    	case 'C':	return FRECCIA_DESTRA; 
+			    	case 'D':	return FRECCIA_SINISTRA;
+			    	case 'H':	return HOME;
+			    	case 'F': 	return END;
+		    	}
+	    	}
+	    }else if(seq[0] == 'O') {
+	      	switch (seq[1]) {
+	        	case 'H': return HOME;
+	        	case 'F': return END;
+      		}
+      	}
+	    return '\x1b';
+	    
+	} else return c;
 }
 
 //	4) Attende la pressione di un tasto e lo gestisce, gestendo anche i ctrl-*
 void processaChar(){
-	char c = letturaPerpetua();
-	if(c == CTRL_KEY('q'))	exit(0);
+	int c = letturaPerpetua();
+	switch (c) {
+	    case CTRL_KEY('q'):
+	      	write(STDOUT_FILENO, "\x1b[2J", 4);
+	     	write(STDOUT_FILENO, "\x1b[H", 3);
+	      	exit(0);
+	      	break;
+
+	    case HOME:
+	    	Editor.x = 0;
+	    	break;
+	   	case END:
+	   		Editor.x = Editor.colonne-1;
+	   		break;
+	    case PAGINA_SU:
+	    case PAGINA_GIU:
+	    	{
+		    	int times = Editor.righe;
+	        	while (times--)	muoviIlCursore(c == PAGINA_SU ? FRECCIA_SU : FRECCIA_GIU);
+	    	}
+	    	break;
+	    case FRECCIA_SU:
+	    case FRECCIA_GIU:
+	    case FRECCIA_SINISTRA:
+	    case FRECCIA_DESTRA:
+	      	muoviIlCursore(c);
+	      	break;
+	}
 }
 
 
@@ -181,8 +260,8 @@ void svuotaSchermo() {
 	sbAppend(&sb, "\x1b[?25h", 6);	// ... lo mostro subito dopo il completamento dell'aggiornamento
 									// h alla fine significa reset mode
 	write(STDOUT_FILENO, sb.b, sb.len);
+	
 	sbFree(&sb);
-
   	/*	OBSOLETE, GUARDA SU ^ ^
    	write(STDOUT_FILENO, "\x1b[2J", 4);
   	write(STDOUT_FILENO, "\x1b[H", 3);	// H == posizionamento del cursore
@@ -310,8 +389,29 @@ void sbFree(struct StringBuffer *sb) {
   free(sb->b);
 }
 
-/*12) Funzione Per Muovere il Cursore*/
-void muoviIlCursore(char tasto){
-	if(key == 'a')	Editor.x--;
-	else if(key == 'd')	Editor.x++;
+
+
+/*12) Funzione Per Muovere il Cursore
+Muovo il cursore con i tasti w-a-s-d
+-	w -> Freccia su
+-	a -> Freccia sinistra
+-	s -> Freccia in giù
+-	d -> Freccia destra
+Occorre anche gestire le eccezzioni per non far superare la dimensione dello schermo
+*/
+void muoviIlCursore(int tasto){
+	switch (tasto) {
+	    case FRECCIA_SINISTRA:
+	    	if(Editor.x != 0)	Editor.x--;	// Voglio che non vada oltre il bordo del terminale
+	      	break;
+	    case FRECCIA_DESTRA:
+	    	if(Editor.x != Editor.colonne -1)	Editor.x++;
+	      	break;
+	    case FRECCIA_SU:
+	    	if(Editor.y != 0)	Editor.y--;
+	      	break;
+	    case FRECCIA_GIU:
+	    	if(Editor.y != Editor.righe -1)		Editor.y++;
+	      	break;
+	}
 }
