@@ -296,46 +296,46 @@ void svuotaSchermo() {
 // 6) è l'ora di disegnare le righe del terminale
 void disegnaRighe(struct StringBuffer * sb) {
   	int i;
-  	for (i = 0; i < Editor.righe; i++) {	// disegno ad ogni inizio riga del terminale le mie iniziali
+    for (i = 0; i < Editor.righe; i++) {  // disegno ad ogni inizio riga del terminale le mie iniziali
 
-  		/*if(i%2 != 0)  write(STDOUT_FILENO, "Ⓛ\r\n", 5);
-      	else  write(STDOUT_FILENO, "Ⓣ\r\n", 5);*/
-      	/*sprintf(out, "%d%s", i, base);    // prova a mettere i numeri
-     	write(STDOUT_FILENO, out, 4);*/
+	    /*if(i%2 != 0)  write(STDOUT_FILENO, "Ⓛ\r\n", 5);
+	    else  write(STDOUT_FILENO, "Ⓣ\r\n", 5);*/
+	    /*sprintf(out, "%d%s", i, base);    // prova a mettere i numeri
+	    write(STDOUT_FILENO, out, 4);*/
 
-     	/*write(STDOUT_FILENO, "Ⓛ", 3);
-      	if(i <= Editor.righe) write(STDOUT_FILENO, "\r\n", 2);*/
+	    /*write(STDOUT_FILENO, "Ⓛ", 3);
+	    if(i <= Editor.righe) write(STDOUT_FILENO, "\r\n", 2);*/
 
-    	int filerow = i + Editor.offsetRiga;	/*Indice di riga del file*/
+	    int filerow = i + Editor.offsetRiga;  /*Indice di riga del file*/
 
-    	/*Controllo se sto scrivendo una riga che fa parte del buffer di edito di testo...*/
-    	if (filerow >= Editor.numRighe) {
-      		if (Editor.numRighe == 0 && i == Editor.righe / 3) {	/*Se non passo alcun file*/
-        		char welcomeMessage[80];
-        		int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),COLOR_GREEN"Il più bel text editor %s","[Mio]"COLOR_RESET);
-        		if (welcomelen > Editor.colonne) welcomelen = Editor.colonne;
-        		/*  Per centrare la stringa sullo schermo, divido la larghezza per 2
-          		Questo mi dice quanto lontano da destra e da sinistra devo stampare 
-          		*/
-        		int padding = (Editor.colonne - welcomelen) / 2;
-        		if(padding) {
-          			/*sbAppend(sb, "~", 1);*/
-          			sbAppend(sb, "Ⓛ", 3);
-          			padding--;
-        		}
-       		 	while(padding--) 	sbAppend(sb, " ", 1);
-       			sbAppend(sb, welcomeMessage, welcomelen);
-       			/*write(STDOUT_FILENO, "\033[48;5;57m ", 10)	COLORA LO SCHERMO DI BLU;
-*/      		} else 	sbAppend(sb, "Ⓛ", 3);
-   		} else {
-	      	int len = Editor.row[filerow].effSize - Editor.offsetColonna;	/*Sottraggo il numero di caratteri a sinistra dell'offset*/
-	      	if(len < 0)	len = 0;	/*Gestisco il caso in cui len sia negativo. Le setto a 0 in modo che nulla venga visualizzato su quella linea*/
-	      	if (len > Editor.colonne) len = Editor.colonne;
-	      	sbAppend(sb, &Editor.row[filerow].effRow[Editor.offsetColonna], len);
-    	}
-    	sbAppend(sb, "\x1b[K", 3);	 // rimuovo la sequenza di escape ('K'). K cancella la riga corrente
-    	if (i < Editor.righe - 1) 	sbAppend(sb, "\r\n", 2);
-  	}
+	    /*Controllo se sto scrivendo una riga che fa parte del buffer di edito di testo...*/
+	    if (filerow >= Editor.numRighe) {
+	        if (Editor.numRighe == 0 && i == Editor.righe / 3) {  /*Se non passo alcun file*/
+		    	char welcomeMessage[80];
+		        int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),COLOR_GREEN"Il più bel text editor %s","[Mio]"COLOR_RESET);
+		        if (welcomelen > Editor.colonne) welcomelen = Editor.colonne;
+		            /*  Per centrare la stringa sullo schermo, divido la larghezza per 2
+		              Questo mi dice quanto lontano da destra e da sinistra devo stampare 
+		              */
+		        int padding = (Editor.colonne - welcomelen) / 2;
+		        if(padding) {
+		            sbAppend(sb, "~", 1);
+		            /*sbAppend(sb, "Ⓛ", 3);*/
+		            padding--;
+		        }
+		        while(padding--)  sbAppend(sb, " ", 1);
+		        sbAppend(sb, welcomeMessage, welcomelen);
+		        /*write(STDOUT_FILENO, "\033[48;5;57m ", 10)  COLORA LO SCHERMO DI BLU;*/
+		    } else  sbAppend(sb, "~", 1);
+	    }else{
+	        int len = Editor.row[filerow].effSize - Editor.offsetColonna; /*Sottraggo il numero di caratteri a sinistra dell'offset*/
+	        if(len < 0) len = 0;  /*Gestisco il caso in cui len sia negativo. Le setto a 0 in modo che nulla venga visualizzato su quella linea*/
+	        if (len > Editor.colonne) len = Editor.colonne;
+	        sbAppend(sb, &Editor.row[filerow].effRow[Editor.offsetColonna], len);
+	    }
+	    sbAppend(sb, "\x1b[K", 3);   // rimuovo la sequenza di escape ('K'). K cancella la riga corrente
+	    if (i < Editor.righe - 1)   sbAppend(sb, "\r\n", 2);
+	}
 }
 
 
@@ -525,6 +525,7 @@ void appendRow(char *s, size_t len) {
   	/*Qui gestisco la grandezza degli spazi lasciati da un tab o da uno spazio*/
   	Editor.row[at].effSize = 0;
   	Editor.row[at].effRow = NULL;
+  	aggiornaRiga(&Editor.row[at]);
   	Editor.numRighe++;
 }
 
@@ -547,29 +548,24 @@ void editorScroll() {
 della stringa copiando ogni carattere e reindirizzandolo modificato*/
 void aggiornaRiga(EditorR* row){
 	int i, idx = 0, tabs = 0;
-
-	for(i = 0; i < row->size; i++){
-		/*Gestisco il tab*/
-		if(row->chars[i] == '\t')	tabs++;
-	}
-	free(row->effRow);
-
-	/*
-	Occorre scorrere i caratteri della riga per contare quanta memoria allocare per ogni tab, dato
-	che ognuno di essi occupa 8 caratteri. per ogni tab row->size parte da 1, quindi alloco 7*tab +1*/
-	row->effRow = malloc(row->size + tabs*(STOP_TAB -1)+1);
-
-	for(i = 0; i < row->size; i++){
-		/*Se becco un tab, aggiungo uno spazio*/
-		if(row->chars[i] == '\t'){
-			row->effRow[idx++] = ' ';
-			while(idx % STOP_TAB != 0)	row->effRow[idx] = ' ';
-		}else row->effRow[idx] = row->chars[i];
-	}
-	row->effRow[idx] = '\0';
-	row->effSize = idx;
-
-	/*Ora idx conterrà il numero di caratteri copiati e essegno la sua effettiva size*/
-	row->effRow[idx] = '\0';
-	row->effSize = idx;
+  	for (i = 0; i < row->size; i++)	if (row->chars[i] == '\t') tabs++;
+    
+  	free(row->effRow);
+  	/*
+  	Occorre scorrere i caratteri della riga per contare quanta memoria allocare per ogni tab, dato
+  	che ognuno di essi occupa 8 caratteri. per ogni tab row->size parte da 1, quindi alloco 7*tab +1*/
+  	row->effRow = malloc(row->size + tabs*(STOP_TAB -1)+1);
+  	
+  	for (i = 0; i < row->size; i++) {
+  		/*Gestisco il tab*/
+    	if (row->chars[i] == '\t') {	/*Se becco un tab, aggiungo uno spazio*/
+      		row->effRow[idx++] = ' ';
+      		while (idx % STOP_TAB != 0) row->effRow[idx++] = ' ';
+    	}else 	row->effRow[idx++] = row->chars[i];
+    
+  	}
+  	
+  	/*Ora idx conterrà il numero di caratteri copiati e essegno la sua effettiva size*/
+ 	row->effRow[idx] = '\0';
+  	row->effSize = idx;
 }
