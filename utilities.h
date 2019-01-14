@@ -6,6 +6,14 @@
 #include <stdio.h>
 void muoviIlCursore(int tasto);
 
+/*Struct per l'editor*/
+typedef struct EditorR{
+	int size;
+	int effSize;	/*Gestisco le effettive tabulazioni, mostrando gli spazi come dico io e non...*/
+	char* chars;
+	char* effRow;/*... come fa di default il terminale, altrimenti un TAB occuperebbe 7 caratteri circa*/
+} EditorR;
+
 
 #define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
 
@@ -43,3 +51,5 @@ void apriFileTest();
 void openFile(char* nomeFile);	
 
 void appendRow(char *s, size_t len);
+
+void aggiornaRiga(EditorR* row);

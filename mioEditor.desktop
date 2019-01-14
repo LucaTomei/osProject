@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Test        
+Comment=Test the terminal running a command inside it
+Exec=gnome-terminal -e "bash -c $HOME/Desktop/OS/osProject/mioEditor"
+Icon=/home/lucasmac/Desktop/OS/osProject/happyMac.png
+Terminal=true 
+Type=Application
+Categories=Application;

@@ -20,15 +20,11 @@
 #define COLOR_GREEN   "\x1b[32m"
 #define COLOR_RESET   "\x1b[0m"
 
+#define STOP_TAB 8
 
 #define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
 
 
-/*Struct per l'editor*/
-typedef struct EditorR{
-	int size;
-	char* chars;
-} EditorR;
 
 typedef struct config{
 	/*Coordinate orizzantali (colonne) e verticali (righe*/
@@ -332,10 +328,10 @@ void disegnaRighe(struct StringBuffer * sb) {
        			/*write(STDOUT_FILENO, "\033[48;5;57m ", 10)	COLORA LO SCHERMO DI BLU;
 */      		} else 	sbAppend(sb, "Ⓛ", 3);
    		} else {
-	      	int len = Editor.row[filerow].size - Editor.offsetColonna;	/*Sottraggo il numero di caratteri a sinistra dell'offset*/
+	      	int len = Editor.row[filerow].effSize - Editor.offsetColonna;	/*Sottraggo il numero di caratteri a sinistra dell'offset*/
 	      	if(len < 0)	len = 0;	/*Gestisco il caso in cui len sia negativo. Le setto a 0 in modo che nulla venga visualizzato su quella linea*/
 	      	if (len > Editor.colonne) len = Editor.colonne;
-	      	sbAppend(sb, &Editor.row[filerow].chars[Editor.offsetColonna], len);
+	      	sbAppend(sb, &Editor.row[filerow].effRow[Editor.offsetColonna], len);
     	}
     	sbAppend(sb, "\x1b[K", 3);	 // rimuovo la sequenza di escape ('K'). K cancella la riga corrente
     	if (i < Editor.righe - 1) 	sbAppend(sb, "\r\n", 2);
@@ -452,11 +448,23 @@ void muoviIlCursore(int tasto){
 	switch (tasto) {
 	    case FRECCIA_SINISTRA:
 	    	if(Editor.x != 0)	Editor.x--;	// Voglio che non vada oltre il bordo del terminale
+	    	/*Se non ho nulla nella linea in cui mi trovo, se premo la freccia a sinistra devo salire di
+	    	riga, come un qualsiasi editor  .....(*)*/
+	    	else if(Editor.y > 0){
+	    		Editor.y --;
+	    		Editor.x = Editor.row[Editor.y].size;
+	    	}
 	      	break;
 	    case FRECCIA_DESTRA:
 	    	/*Ora posso andare a destra solo fino alla fine del file*/
 	    	/*Se il cursore si trova su una riga effettiva, lo faccio puntare al cursore del terminale*/
 	    	if(row && Editor.x < row->size)	Editor.x++;
+	    	/*(*).... lo stesso gestisco per la freccia a destra, se sono alla fine della riga devo
+	    		scendere giù nella riga successiva*/
+	    	else if(row && Editor.x == row->size){
+	    		Editor.y++;
+	    		Editor.x = 0;
+	    	}
 	      	break;
 	    case FRECCIA_SU:
 	    	if(Editor.y != 0)	Editor.y--;
@@ -466,6 +474,11 @@ void muoviIlCursore(int tasto){
 	    	if(Editor.y < Editor.numRighe)		Editor.y++;
 	      	break;
 	}
+	/*Gestisco il caso in cui la x dell'editor finisce oltre la fine della linea
+	Considero NULL la linea vuota di lunghezza 0*/
+	row = (Editor.y >= Editor.numRighe)? NULL : &Editor.row[Editor.y];
+	int lunghRiga = row ? row->size : 0;
+	if(Editor.x > lunghRiga)	Editor.x = lunghRiga;
 }
 
 /*test*/
@@ -502,11 +515,16 @@ void openFile(char* nomeFile){
 /*13)*/
 void appendRow(char *s, size_t len) {
   	Editor.row = realloc(Editor.row, sizeof(EditorR) * (Editor.numRighe + 1));
+
   	int at = Editor.numRighe;
   	Editor.row[at].size = len;
   	Editor.row[at].chars = malloc(len + 1);
   	memcpy(Editor.row[at].chars, s, len);
   	Editor.row[at].chars[len] = '\0';
+
+  	/*Qui gestisco la grandezza degli spazi lasciati da un tab o da uno spazio*/
+  	Editor.row[at].effSize = 0;
+  	Editor.row[at].effRow = NULL;
   	Editor.numRighe++;
 }
 
@@ -523,4 +541,35 @@ void editorScroll() {
   	/*Faccio lo stesso per lo scrolling orizzontale*/
   	if(Editor.x < Editor.offsetColonna)	Editor.offsetColonna = Editor.x;
   	if(Editor.x >= Editor.offsetColonna + Editor.colonne)	Editor.offsetColonna = Editor.x - Editor.colonne +1;
+}
+
+/*15) Funzione di appoggio per aggiornamento degli spazi su una riga, riempie il contenuto
+della stringa copiando ogni carattere e reindirizzandolo modificato*/
+void aggiornaRiga(EditorR* row){
+	int i, idx = 0, tabs = 0;
+
+	for(i = 0; i < row->size; i++){
+		/*Gestisco il tab*/
+		if(row->chars[i] == '\t')	tabs++;
+	}
+	free(row->effRow);
+
+	/*
+	Occorre scorrere i caratteri della riga per contare quanta memoria allocare per ogni tab, dato
+	che ognuno di essi occupa 8 caratteri. per ogni tab row->size parte da 1, quindi alloco 7*tab +1*/
+	row->effRow = malloc(row->size + tabs*(STOP_TAB -1)+1);
+
+	for(i = 0; i < row->size; i++){
+		/*Se becco un tab, aggiungo uno spazio*/
+		if(row->chars[i] == '\t'){
+			row->effRow[idx++] = ' ';
+			while(idx % STOP_TAB != 0)	row->effRow[idx] = ' ';
+		}else row->effRow[idx] = row->chars[i];
+	}
+	row->effRow[idx] = '\0';
+	row->effSize = idx;
+
+	/*Ora idx conterrà il numero di caratteri copiati e essegno la sua effettiva size*/
+	row->effRow[idx] = '\0';
+	row->effSize = idx;
 }
