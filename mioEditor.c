@@ -28,8 +28,9 @@ typedef struct EditorR{
 typedef struct config{
 	/*Coordinate orizzantali (colonne) e verticali (righe*/
 	int x, y;
-	int offsetRiga; 	/*tiene traccia della riga in cui sono*/
-  	int righe, colonne;
+	int offsetRiga;		/*tiene traccia della riga/colonna in cui sono x lo scorrimento*/
+	int offsetColonna; 	/*orizzontale e verticale dell'editor. Sarà l'indice dei caratteri*/
+  	int righe, colonne;				
   	int numRighe;
   	EditorR* row;	/*Mi serve un puntatore ai dati di carattere da scrivere*/
   	struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
@@ -273,7 +274,7 @@ void svuotaSchermo() {
 	/*Posizionamento del cursore*/
 	char buf[32];
   	/*snprintf(buf, sizeof(buf), "\x1b[%d;%dH", Editor.y + 1, Editor.x + 1);*/
-  	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (Editor.y - Editor.offsetRiga) + 1, Editor.x + 1);
+  	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (Editor.y - Editor.offsetRiga) + 1,(Editor.x - Editor.offsetColonna) + 1);
   	sbAppend(&sb, buf, strlen(buf));
 
 	sbAppend(&sb, "\x1b[?25h", 6);	// ... lo mostro subito dopo il completamento dell'aggiornamento
@@ -321,9 +322,10 @@ void disegnaRighe(struct StringBuffer * sb) {
        			sbAppend(sb, welcomeMessage, welcomelen);
       		} else 	sbAppend(sb, "~", 1);
    		} else {
-	      	int len = Editor.row[filerow].size;
+	      	int len = Editor.row[filerow].size - Editor.offsetColonna;	/*Sottraggo il numero di caratteri a sinistra dell'offset*/
+	      	if(len < 0)	len = 0;	/*Gestisco il caso in cui len sia negativo. Le setto a 0 in modo che nulla venga visualizzato su quella linea*/
 	      	if (len > Editor.colonne) len = Editor.colonne;
-	      	sbAppend(sb, Editor.row[filerow].chars, len);
+	      	sbAppend(sb, &Editor.row[filerow].chars[Editor.offsetColonna], len);
     	}
     	sbAppend(sb, "\x1b[K", 3);	 // rimuovo la sequenza di escape ('K'). K cancella la riga corrente
     	if (i < Editor.righe - 1) 	sbAppend(sb, "\r\n", 2);
@@ -379,6 +381,7 @@ void inizializzaEditor(){
 	Editor.x = 0;
 	Editor.y = 0;
 	Editor.offsetRiga = 0;
+	Editor.offsetColonna = 0;
 	Editor.numRighe = 0;
 	Editor.row = NULL;
 
@@ -434,12 +437,15 @@ Muovo il cursore con i tasti w-a-s-d
 Occorre anche gestire le eccezzioni per non far superare la dimensione dello schermo
 */
 void muoviIlCursore(int tasto){
+	EditorR *row = (Editor.y >= Editor.numRighe) ? NULL: &Editor.row[Editor.y];
 	switch (tasto) {
 	    case FRECCIA_SINISTRA:
 	    	if(Editor.x != 0)	Editor.x--;	// Voglio che non vada oltre il bordo del terminale
 	      	break;
 	    case FRECCIA_DESTRA:
-	    	if(Editor.x != Editor.colonne -1)	Editor.x++;
+	    	/*Ora posso andare a destra solo fino alla fine del file*/
+	    	/*Se il cursore si trova su una riga effettiva, lo faccio puntare al cursore del terminale*/
+	    	if(row && Editor.x < row->size)	Editor.x++;
 	      	break;
 	    case FRECCIA_SU:
 	    	if(Editor.y != 0)	Editor.y--;
@@ -499,7 +505,11 @@ Funzione che ha lo scopo di verificare se il cursore si è spostato all'esterno 
 	da poter settare il cursore appena all'interno della finestra visibile*/
 void editorScroll() {
 	/*Se il cursore si trova sopra la finestra visibile, lo faccio scorrere fin dove si trova*/
-	if (Editor.y < Editor.offsetRiga) Editor.offsetRiga = Editor.y;
+	if(Editor.y < Editor.offsetRiga) Editor.offsetRiga = Editor.y;
 	/*Se il cursore è oltre la parte inferiore della finestra visibile, lo ri-regolo*/
-  	if (Editor.y >= Editor.offsetRiga + Editor.righe) Editor.offsetRiga = Editor.y - Editor.righe + 1;
+  	if(Editor.y >= Editor.offsetRiga + Editor.righe) Editor.offsetRiga = Editor.y - Editor.righe + 1;
+  	
+  	/*Faccio lo stesso per lo scrolling orizzontale*/
+  	if(Editor.x < Editor.offsetColonna)	Editor.offsetColonna = Editor.x;
+  	if(Editor.x >= Editor.offsetColonna + Editor.colonne)	Editor.offsetColonna = Editor.x - Editor.colonne +1;
 }

@@ -39,5 +39,3 @@ void apriFileTest();
 void openFile(char* nomeFile);	
 
 void appendRow(char *s, size_t len);
-
-
