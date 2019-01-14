@@ -2,8 +2,12 @@
 	Dichiarazione di Funzioni
 --------------------------------------------------------------------------------------------*/
 #include <stddef.h>
+#include <errno.h>
+#include <stdio.h>
 void muoviIlCursore(int tasto);
 
+
+#define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
 
 struct StringBuffer;
 void sbAppend(struct StringBuffer *sb, const char *s, int len);

@@ -15,8 +15,13 @@
 #include <unistd.h>
 #include <stdarg.h>
 
+#define COLORASCHERMO write(STDOUT_FILENO, "\033[48;5;148m ", 11);
+
+#define COLOR_GREEN   "\x1b[32m"
+#define COLOR_RESET   "\x1b[0m"
+
+
 #define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
-#define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
 
 
 /*Struct per l'editor*/
@@ -82,11 +87,14 @@ int main(int argc, char *argv[]){
 
 	/*apriFileTest();*/
 	if(argc >= 2)	openFile(argv[1]);
+
+	/*write(STDOUT_FILENO, "\033[48;5;148m ", 11);	COLORA LO SCHERMO*/
+	/*Ho definito la macro -----> COLORASCHERMO;*/
 	while(1){
+
 		svuotaSchermo();
 		processaChar();
 	}
-
 
 	// ripristino il terminale dei precedenti attributi
 	disabilitaRawMode();
@@ -308,19 +316,21 @@ void disegnaRighe(struct StringBuffer * sb) {
     	if (filerow >= Editor.numRighe) {
       		if (Editor.numRighe == 0 && i == Editor.righe / 3) {	/*Se non passo alcun file*/
         		char welcomeMessage[80];
-        		int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),"Il più bel text editor %s","[Mio]");
+        		int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),COLOR_GREEN"Il più bel text editor %s","[Mio]"COLOR_RESET);
         		if (welcomelen > Editor.colonne) welcomelen = Editor.colonne;
         		/*  Per centrare la stringa sullo schermo, divido la larghezza per 2
           		Questo mi dice quanto lontano da destra e da sinistra devo stampare 
           		*/
         		int padding = (Editor.colonne - welcomelen) / 2;
-        		if (padding) {
-          			sbAppend(sb, "~", 1);
+        		if(padding) {
+          			/*sbAppend(sb, "~", 1);*/
+          			sbAppend(sb, "Ⓛ", 3);
           			padding--;
         		}
-       		 	while (padding--) 	sbAppend(sb, " ", 1);
+       		 	while(padding--) 	sbAppend(sb, " ", 1);
        			sbAppend(sb, welcomeMessage, welcomelen);
-      		} else 	sbAppend(sb, "~", 1);
+       			/*write(STDOUT_FILENO, "\033[48;5;57m ", 10)	COLORA LO SCHERMO DI BLU;
+*/      		} else 	sbAppend(sb, "Ⓛ", 3);
    		} else {
 	      	int len = Editor.row[filerow].size - Editor.offsetColonna;	/*Sottraggo il numero di caratteri a sinistra dell'offset*/
 	      	if(len < 0)	len = 0;	/*Gestisco il caso in cui len sia negativo. Le setto a 0 in modo che nulla venga visualizzato su quella linea*/
@@ -384,9 +394,10 @@ void inizializzaEditor(){
 	Editor.offsetColonna = 0;
 	Editor.numRighe = 0;
 	Editor.row = NULL;
+	/*Per colorare lo schermo*/
+	/*write(STDOUT_FILENO, "\033[48;5;57m ", 10);	*/
 
-
-	if(prendiDimensioni(&Editor.righe, &Editor.colonne) == -1)	handle_error("Errore: nella size!");
+	if(prendiDimensioni(&Editor.righe, &Editor.colonne) == -1)	handle_error("Errore: nella size! Impossibile inizializzare l'editor");
 }
 
 // 9) 	Ora è il momento di prendere la posizione del cursore, dopo averlo spostato in basso 
