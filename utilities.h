@@ -53,3 +53,8 @@ void openFile(char* nomeFile);
 void appendRow(char *s, size_t len);
 
 void aggiornaRiga(EditorR* row);
+
+
+int xToRx(EditorR* row, int x);
+
+void statusBarInit(struct StringBuffer *sb);
