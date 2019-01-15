@@ -36,6 +36,7 @@ typedef struct config{
   	int righe, colonne;				
   	int numRighe;
   	EditorR* row;	/*Mi serve un puntatore ai dati di carattere da scrivere*/
+  	char* nomeFile;
   	struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
 }config;
 
@@ -400,6 +401,7 @@ void inizializzaEditor(){
 	Editor.offsetColonna = 0;
 	Editor.numRighe = 0;
 	Editor.row = NULL;
+	Editor.nomeFile = NULL;
 	/*Per colorare lo schermo*/
 	/*write(STDOUT_FILENO, "\033[48;5;57m ", 10);	*/
 
@@ -505,6 +507,8 @@ void muoviIlCursore(int tasto){
 
 /*12)*/
 void openFile(char* nomeFile){
+	free(Editor.nomeFile);
+	Editor.nomeFile = strdup(nomeFile);	/*Faccio una copia della stringa e alloco memoria per essa*/
 	FILE *fp = fopen(nomeFile, "r");
   	if (!fp) 	handle_error("Errore: open fallita");
   	char *line = NULL;
@@ -602,10 +606,24 @@ int xToRx(EditorR* row, int x){
 /*17) DIsegno la status bar*/
 void statusBarInit(struct StringBuffer *sb){
 	sbAppend(sb, "\x1b[7m", 4);	/*Inverto il colore del terminale da nero a bianco*/
-	int len = 0;
+	char status[80], rstatus[80];
+
+	/*Mostro fino a 20 caratteri del nome del file, seguiti dal numero di righe del file*/
+	int len = snprintf(status, sizeof(status), "%.20s - %d righe", 
+			Editor.nomeFile ? Editor.nomeFile : "[Nessun File Aperto]", Editor.numRighe);
+	int rlen = snprintf(rstatus, sizeof(rstatus), "%d%d", Editor.y +1, Editor.numRighe);
+	if(len > Editor.colonne)	len = Editor.colonne;
+	sbAppend(sb, status, len);
+
 	while(len < Editor.colonne){
-		sbAppend(sb, " ", 1);
-		len++;
+		/*Disegno spazi fino alla fine dello schermo*/
+		if(Editor.colonne - len == rlen){
+			sbAppend(sb, rstatus, rlen);
+			break;
+		}else{
+			sbAppend(sb, " ", 1);
+			len++;
+		}
 	}
 	sbAppend(sb, "\x1b[m", 3);	/*torno alla normale formattazione*/
 }
