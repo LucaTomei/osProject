@@ -29,6 +29,7 @@
 typedef struct config{
 	/*Coordinate orizzantali (colonne) e verticali (righe*/
 	int x, y;
+	int rx;	/*indice del campo di rendering, se non vi sono TAB rx == x, se ci sono rx > x*/
 	int offsetRiga;		/*tiene traccia della riga/colonna in cui sono x lo scorrimento*/
 	int offsetColonna; 	/*orizzontale e verticale dell'editor. Sarà l'indice dei caratteri*/
   	int righe, colonne;				
@@ -233,13 +234,19 @@ void processaChar(){
 	    	Editor.x = 0;
 	    	break;
 	   	case END:
-	   		Editor.x = Editor.colonne-1;
+	   		/*Porto il cursore alla fine della riga*/
+	   		if(Editor.y < Editor.numRighe)	Editor.x = Editor.row[Editor.y].size;
 	   		break;
 	    case PAGINA_SU:
 	    case PAGINA_GIU:
 	    	{
-		    	int times = Editor.righe;
-	        	while (times--)	muoviIlCursore(c == PAGINA_SU ? FRECCIA_SU : FRECCIA_GIU);
+	    		if(c == PAGINA_SU)	Editor.y = Editor.offsetRiga;
+	    		else if(c == PAGINA_GIU){
+	    			Editor.y = Editor.offsetRiga + Editor.righe -1;
+		    		if(Editor.y > Editor.numRighe)	Editor.y = Editor.numRighe;
+		    	}
+		    	int nTimes = Editor.righe;
+		    	while(nTimes--)	muoviIlCursore(c == PAGINA_SU ? FRECCIA_SU : FRECCIA_GIU);
 	    	}
 	    	break;
 	    case FRECCIA_SU:
@@ -274,11 +281,12 @@ void svuotaSchermo() {
 	sbAppend(&sb, "\x1b[H", 3);
 
 	disegnaRighe(&sb);
+	statusBarInit(&sb);
 
 	/*Posizionamento del cursore*/
 	char buf[32];
   	/*snprintf(buf, sizeof(buf), "\x1b[%d;%dH", Editor.y + 1, Editor.x + 1);*/
-  	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (Editor.y - Editor.offsetRiga) + 1,(Editor.x - Editor.offsetColonna) + 1);
+  	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (Editor.y - Editor.offsetRiga) + 1,(Editor.rx - Editor.offsetColonna) + 1);
   	sbAppend(&sb, buf, strlen(buf));
 
 	sbAppend(&sb, "\x1b[?25h", 6);	// ... lo mostro subito dopo il completamento dell'aggiornamento
@@ -334,7 +342,7 @@ void disegnaRighe(struct StringBuffer * sb) {
 	        sbAppend(sb, &Editor.row[filerow].effRow[Editor.offsetColonna], len);
 	    }
 	    sbAppend(sb, "\x1b[K", 3);   // rimuovo la sequenza di escape ('K'). K cancella la riga corrente
-	    if (i < Editor.righe - 1)   sbAppend(sb, "\r\n", 2);
+	    sbAppend(sb, "\r\n", 2);
 	}
 }
 
@@ -386,6 +394,7 @@ void inizializzaEditor(){
 	/*Inizializzo il cursore in alto a sinistra dello schermo*/
 	Editor.x = 0;
 	Editor.y = 0;
+	Editor.rx = 0;
 	Editor.offsetRiga = 0;
 	Editor.offsetColonna = 0;
 	Editor.numRighe = 0;
@@ -394,6 +403,7 @@ void inizializzaEditor(){
 	/*write(STDOUT_FILENO, "\033[48;5;57m ", 10);	*/
 
 	if(prendiDimensioni(&Editor.righe, &Editor.colonne) == -1)	handle_error("Errore: nella size! Impossibile inizializzare l'editor");
+	Editor.righe -= 1;/*tolgo una riga per aggiungere alla fine una status bar*/
 }
 
 // 9) 	Ora è il momento di prendere la posizione del cursore, dopo averlo spostato in basso 
@@ -534,14 +544,18 @@ Funzione che ha lo scopo di verificare se il cursore si è spostato all'esterno 
 	Questo mi serve per far si che avvenga correttamente lo scroll verticale in modo tale
 	da poter settare il cursore appena all'interno della finestra visibile*/
 void editorScroll() {
+	Editor.rx = 0;
+
+	if(Editor.y < Editor.numRighe)	Editor.rx = xToRx(&Editor.row[Editor.y], Editor.x);
+
 	/*Se il cursore si trova sopra la finestra visibile, lo faccio scorrere fin dove si trova*/
 	if(Editor.y < Editor.offsetRiga) Editor.offsetRiga = Editor.y;
 	/*Se il cursore è oltre la parte inferiore della finestra visibile, lo ri-regolo*/
   	if(Editor.y >= Editor.offsetRiga + Editor.righe) Editor.offsetRiga = Editor.y - Editor.righe + 1;
   	
   	/*Faccio lo stesso per lo scrolling orizzontale*/
-  	if(Editor.x < Editor.offsetColonna)	Editor.offsetColonna = Editor.x;
-  	if(Editor.x >= Editor.offsetColonna + Editor.colonne)	Editor.offsetColonna = Editor.x - Editor.colonne +1;
+  	if(Editor.rx < Editor.offsetColonna)	Editor.offsetColonna = Editor.rx;
+  	if(Editor.rx >= Editor.offsetColonna + Editor.colonne)	Editor.offsetColonna = Editor.rx - Editor.colonne +1;
 }
 
 /*15) Funzione di appoggio per aggiornamento degli spazi su una riga, riempie il contenuto
@@ -568,4 +582,29 @@ void aggiornaRiga(EditorR* row){
   	/*Ora idx conterrà il numero di caratteri copiati e essegno la sua effettiva size*/
  	row->effRow[idx] = '\0';
   	row->effSize = idx;
+}
+
+/*16) Funzione che aggiorna il valore di x della struct config in rx, per calcolare l'offset effettivo
+di ogni tab e tramutarlo in uno spazio vero!*/
+int xToRx(EditorR* row, int x){
+	int rx = 0, i;
+	for(i = 0; i < x; i++){
+		if(row->chars[i] == '\t')	rx += (STOP_TAB - 1) -(rx % STOP_TAB);
+		/*rx % STOP_TAB mi da quante colonne sono alla destra del tab. Sottraggo STOP_TAB -1
+		dunque per scoprire quante ne sono a sinistra. Infine rx++ mi porta direttamente al prossimo
+		tab*/
+		rx++;
+	}
+	return rx;
+}
+
+/*17) DIsegno la status bar*/
+void statusBarInit(struct StringBuffer *sb){
+	sbAppend(sb, "\x1b[7m", 4);	/*Inverto il colore del terminale da nero a bianco*/
+	int len = 0;
+	while(len < Editor.colonne){
+		sbAppend(sb, " ", 1);
+		len++;
+	}
+	sbAppend(sb, "\x1b[m", 3);	/*torno alla normale formattazione*/
 }
