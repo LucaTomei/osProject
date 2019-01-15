@@ -35,9 +35,8 @@ static int lockfile(const char *const filepath, int *const fdptr)
     int used = 0; /* Bits da 0 a 2: stdin, stdout, stderr */
     int fd;
 
-    /* Se i futuro mi servirà il descrittore, lo inizializzo con -1 (non valido) */
-    if (fdptr)
-        *fdptr = -1;
+    /* Se i futuro mi servirà il descrittore, lo inizializzo con -1 (disabile) */
+    if (fdptr)	*fdptr = -1;
 
     /* Path non valido*/
     if (filepath == NULL || *filepath == '\0')  return errno = EINVAL;
@@ -70,15 +69,12 @@ static int lockfile(const char *const filepath, int *const fdptr)
 
     /* Chiudo i descrittori standard che temporaneamente abbiamo usato. */
     if (used & 1){
-        printf("Ciao\n");
         close(STDIN_FILENO);
     }
     if (used & 2){
-        printf("Ciao\n");
         close(STDOUT_FILENO);
     }
     if (used & 4){
-        printf("Ciao 3\n");
         close(STDERR_FILENO);
     }
 
@@ -86,7 +82,7 @@ static int lockfile(const char *const filepath, int *const fdptr)
     if (fd == -1)   return errno = EMFILE;    
 
     /* Lock esclusiva su un file, riguarda l'intero file!*/
-    lock.l_type = F_WRLCK;
+    lock.l_type = F_WRLCK;	// blocco di lettura e scrittura
     lock.l_whence = SEEK_SET;
     lock.l_start = 0;
     lock.l_len = 0;
@@ -95,7 +91,7 @@ static int lockfile(const char *const filepath, int *const fdptr)
         return errno = EALREADY;
     }
 
-    /* Save salvo il descrittore */
+    /* Salvo il descrittore */
     if (fdptr)  *fdptr = fd;
 
     return 0;
@@ -108,12 +104,8 @@ int main(int argc, char const *argv[]){
         result = lockfile("lockTest.txt", NULL);
         if (result == 0)    printf("Lock esclusiva\n");
         else{
-            if (result == EALREADY) {
-                
-                printf("Sono occupato\n");
-            } else {
-                printf("Impossibile lock file\n");
-            }
+            if (result == EALREADY) 	printf("Sono occupato\n");
+            else 	printf("Impossibile lock file\n");
         }
     }
     return 0;
