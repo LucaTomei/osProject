@@ -16,8 +16,9 @@
 #include <stdarg.h>
 
 #define COLORASCHERMO write(STDOUT_FILENO, "\033[48;5;148m ", 11);
-
-#define COLOR_GREEN   "\x1b[32m"
+	
+	/*#define colore "\x1b[attr1;attr2;attr3m*/
+#define COLOR_GREEN   "\x1b[1;32m"	/*Bold Verde*/
 #define COLOR_RESET   "\x1b[0m"
 
 #define STOP_TAB 8
