@@ -81,7 +81,6 @@ int main(int argc, char *argv[]){
 	/*write(STDOUT_FILENO, "\033[48;5;148m ", 11);	COLORA LO SCHERMO*/
 	/*Ho definito la macro -----> COLORASCHERMO;*/
 	while(1){
-
 		svuotaSchermo();
 		processaChar();
 	}
@@ -523,9 +522,9 @@ void openFile(char* nomeFile){
   	size_t linecap = 0; /*capacità di linea, utili per sapere quanta memoria è stata assegnata
   						vale tanto quanto la riga o -1 a EOF*/
 	ssize_t linelen;
-  	linelen = getline(&line, &linecap, fp);	/*Prendo la prima riga del file. Uso getline
-  											piché la funzione si occupa della gestione della memoria
-  											autonomamente*/
+
+	/*Prendo la prima riga del file. Uso getline poiché la funzione si occupa della gestione 
+	della memoria autonomamente*/
 	while((linelen = getline(&line, &linecap, fp)) != -1){
     	while(linelen > 0 && (line[linelen - 1] == '\n' || line[linelen - 1] == '\r'))
       	linelen--;
