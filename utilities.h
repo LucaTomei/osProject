@@ -4,6 +4,20 @@
 #include <stddef.h>
 #include <errno.h>
 #include <stdio.h>
+
+enum editorKey {
+	BACKSPACE = 127,	/*ASCII == 127*/
+	FRECCIA_SINISTRA = 1000,	/*Dalla prossima kiave in poi i numeri incrementeranno di uno*/
+	FRECCIA_DESTRA,
+	FRECCIA_SU,
+	FRECCIA_GIU,
+	CANC,	/*<esc> [3 ~*/
+	HOME,	/*Fn + ←*/
+	END,	/*Fn + →*/
+	PAGINA_SU,
+	PAGINA_GIU
+};
+
 void muoviIlCursore(int tasto);
 
 /*Struct per l'editor*/
@@ -62,3 +76,12 @@ void statusBarInit(struct StringBuffer *sb);
 void setStatusMessage(const char* fmt, ...);
 
 void disegnaMessaggio(struct StringBuffer *sb);
+
+
+/*Funzioni per editor*/
+void scriviInRiga(EditorR *row, int at, int c);
+void inserisciChar(int c);
+
+char *rowToString(int *buflen);
+
+void salvaSuDisco();

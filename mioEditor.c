@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <termios.h>	/* Per sbilitare e dissbilitare Raw Mode*/
 #include <errno.h>
+#include <time.h>	/*per disabilitare dopo 5 secondi la barra sotto*/
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
@@ -13,6 +14,7 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <fcntl.h>	/*per i flag usati nel salvataggio del file su disco*/
 #include <stdarg.h>	/*Per va_start() e va_end()*/
 
 #define COLORASCHERMO write(STDOUT_FILENO, "\033[48;5;148m ", 11);
@@ -49,21 +51,6 @@ config Editor;
 struct StringBuffer {
   	char *b;
   	int len;
-};
-
-
-
-
-enum editorKey {
-	FRECCIA_SINISTRA = 1000,	/*Dalla prossima kiave in poi i numeri incrementeranno di uno*/
-	FRECCIA_DESTRA,
-	FRECCIA_SU,
-	FRECCIA_GIU,
-	CANC,	/*<esc> [3 ~*/
-	HOME,	/*Fn + ←*/
-	END,	/*Fn + →*/
-	PAGINA_SU,
-	PAGINA_GIU
 };
 
 
@@ -230,18 +217,26 @@ int letturaPerpetua(){
 void processaChar(){
 	int c = letturaPerpetua();
 	switch (c) {
+		case '\r':	/*Gestisci il tasto di invio*/
+			break;
 	    case CTRL_KEY('q'):
 	      	write(STDOUT_FILENO, "\x1b[2J", 4);
 	     	write(STDOUT_FILENO, "\x1b[H", 3);
 	      	exit(0);
 	      	break;
-
+	    case CTRL_KEY('s'):
+	    	salvaSuDisco();
+	    	break;
 	    case HOME:
 	    	Editor.x = 0;
 	    	break;
 	   	case END:
 	   		/*Porto il cursore alla fine della riga*/
 	   		if(Editor.y < Editor.numRighe)	Editor.x = Editor.row[Editor.y].size;
+	   		break;
+	   	case BACKSPACE:
+	   	case CTRL_KEY('h'):	/*Da gestire == codice di controllo (ASCII == 8)*/
+	   	case CANC:		/*Da gestire*/
 	   		break;
 	    case PAGINA_SU:
 	    case PAGINA_GIU:
@@ -261,6 +256,12 @@ void processaChar(){
 	    case FRECCIA_DESTRA:
 	      	muoviIlCursore(c);
 	      	break;
+	    case CTRL_KEY('l'):	/*tasto aggiurnamento schermo terminale, non lo gestisco*/
+	    case '\x1b':
+	    	break;
+	    default:	/*altrimenti scrivo*/
+	    	inserisciChar(c);
+	    	break;
 	}
 }
 
@@ -658,3 +659,61 @@ void disegnaMessaggio(struct StringBuffer *sb){
 /*-------------------------------
 	INIZIO LA SCRITTURA DI CHAR
 --------------------------------*/
+/*20) Funzione che mi fa scrivere su una riga*/
+void scriviInRiga(EditorR *row, int at, int c) {
+	/*at = indice in cui voglio inserire il carattere*/
+  	if (at < 0 || at > row->size) at = row->size;
+  	row->chars = realloc(row->chars, row->size + 2);	/*aggiungo 2 per fare spazio ai byte NULL*/
+  	/*uso memmove al posto di memcopy perché più sicuro quando gli array di origine e destinazione
+  	si sovrappongono*/
+  	memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);	/*faccio spazio al carattere da inserire*/
+  	row->size++;
+  	row->chars[at] = c;
+  	aggiornaRiga(row);
+}
+/*21) Funzione per inserimento di char su riga*/
+void inserisciChar(int c){
+	/*Verifico se il cursore si trova dopo la fine del file, quindi aggiungo una nuova riga*/
+	if(Editor.y == Editor.numRighe)	appendRow("", 0);	/*prima di inserire un carattere li*/
+	scriviInRiga(&Editor.row[Editor.y], Editor.x, c);
+	/*Sposto il cursore in avanti in modo che il prossimo carattere inserito andrà
+	dopo il carattere appena inserito su ^*/
+	Editor.x++;
+}
+
+/*22) Funzione che incapsula una riga e la converte in stringa*/
+char *rowToString(int *buflen) {
+  	int totlen = 0;
+  	int j;
+  	/*Sommo le lunghezze di ogni riga di testo*/
+  	for (j = 0; j < Editor.numRighe; j++)	totlen += Editor.row[j].size + 1;	/*aggiungo uno per newline*/
+  	*buflen = totlen;	/*salvo lunghezza totale per mostrare quanto è lunga la stringa*/
+  	char *buf = malloc(totlen);	/*assegno memoria necessaria*/
+  	char *p = buf;
+  	/*Esegui il ciclo sulle righe, copiando il contenuto di ogni riga fino alla fine del buffer...*/
+  	for (j = 0; j < Editor.numRighe; j++) {
+    	memcpy(p, Editor.row[j].chars, Editor.row[j].size);
+    	p += Editor.row[j].size;
+    	*p = '\n';	/*... aggiungendo un carattere alla fine di ogni riga*/
+    	p++;
+  	}
+  	return buf;	/*restituisco buf e faccio liberare memoria al chiamante*/
+}
+/*23) Finalmente il salvataggio effettivo di un file su disco*/
+void salvaSuDisco(){
+	/*Gestisco il caso di "nuovoFile", in tal caso sarà null e non saprò dove salvarlo*/
+	if(Editor.nomeFile == NULL)	return;
+
+	int len;
+	char *buf = rowToString(&len);
+
+	int fd = open(Editor.nomeFile, O_RDWR | O_CREAT, 0644);
+	ftruncate(fd, len);	/*imposto la dimensione del file alla lunghezza specificata*/
+	/*Uso ftruncate al posto di O_TRUNC poiché da test effettuati ho notato che se la write fallisce
+	tronca il totale del contenuto del file, cosa che non voglio. In tal caso con ftruncate, imposto
+	una dimensione statica al file, in modo che se è più corto aggiunge caratteri 0 di padding, se più
+	lungo lo taglia fino alla len, non troncando completamente il file!*/
+	write(fd, buf, len);
+	close(fd);
+	free(buf);
+}
