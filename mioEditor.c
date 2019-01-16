@@ -707,12 +707,25 @@ void salvaSuDisco(){
 	char *buf = rowToString(&len);
 
 	int fd = open(Editor.nomeFile, O_RDWR | O_CREAT, 0644);
-	ftruncate(fd, len);	/*imposto la dimensione del file alla lunghezza specificata*/
-	/*Uso ftruncate al posto di O_TRUNC poiché da test effettuati ho notato che se la write fallisce
-	tronca il totale del contenuto del file, cosa che non voglio. In tal caso con ftruncate, imposto
-	una dimensione statica al file, in modo che se è più corto aggiunge caratteri 0 di padding, se più
-	lungo lo taglia fino alla len, non troncando completamente il file!*/
-	write(fd, buf, len);
-	close(fd);
-	free(buf);
+	if(fd != -1){
+		/*imposto la dimensione del file alla lunghezza specificata*/
+		/*Uso ftruncate al posto di O_TRUNC poiché da test effettuati ho notato che se la write fallisce
+		tronca il totale del contenuto del file, cosa che non voglio. In tal caso con ftruncate, imposto
+		una dimensione statica al file, in modo che se è più corto aggiunge caratteri 0 di padding, se più
+		lungo lo taglia fino alla len, non troncando completamente il file!*/
+		if(ftruncate(fd, len) != -1){
+			/*devo essere sicuro che la write restituisca i byte letti con la stessa len che gli ho
+			detto di scrivere*/
+			if(write(fd, buf, len) == len){
+				close(fd);
+				free(buf);
+				
+				return;
+			}
+			close(fd);
+		}
+		free(buf);
+		
+	}
+
 }
