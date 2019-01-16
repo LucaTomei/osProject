@@ -58,3 +58,7 @@ void aggiornaRiga(EditorR* row);
 int xToRx(EditorR* row, int x);
 
 void statusBarInit(struct StringBuffer *sb);
+
+void setStatusMessage(const char* fmt, ...);
+
+void disegnaMessaggio(struct StringBuffer *sb);

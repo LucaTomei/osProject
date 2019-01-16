@@ -13,7 +13,7 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <stdarg.h>
+#include <stdarg.h>	/*Per va_start() e va_end()*/
 
 #define COLORASCHERMO write(STDOUT_FILENO, "\033[48;5;148m ", 11);
 	
@@ -37,6 +37,8 @@ typedef struct config{
   	int numRighe;
   	EditorR* row;	/*Mi serve un puntatore ai dati di carattere da scrivere*/
   	char* nomeFile;
+  	char statusmsg[80];	/*Stringa che mi serve per abilitare la ricerca nella barra di stato*/
+  	time_t statusmsg_time;	/*Timestamp per messaggio, in modo in poco tempo posso cancellarlo*/
   	struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
 }config;
 
@@ -86,6 +88,8 @@ int main(int argc, char *argv[]){
 
 	/*apriFileTest();*/
 	if(argc >= 2)	openFile(argv[1]);
+
+	setStatusMessage("Help CTR-q == quit");
 
 	/*write(STDOUT_FILENO, "\033[48;5;148m ", 11);	COLORA LO SCHERMO*/
 	/*Ho definito la macro -----> COLORASCHERMO;*/
@@ -284,6 +288,7 @@ void svuotaSchermo() {
 
 	disegnaRighe(&sb);
 	statusBarInit(&sb);
+	disegnaMessaggio(&sb);
 
 	/*Posizionamento del cursore*/
 	char buf[32];
@@ -402,11 +407,13 @@ void inizializzaEditor(){
 	Editor.numRighe = 0;
 	Editor.row = NULL;
 	Editor.nomeFile = NULL;
+	Editor.statusmsg[0] = '\0';
+	Editor.statusmsg_time = 0;
 	/*Per colorare lo schermo*/
 	/*write(STDOUT_FILENO, "\033[48;5;57m ", 10);	*/
 
 	if(prendiDimensioni(&Editor.righe, &Editor.colonne) == -1)	handle_error("Errore: nella size! Impossibile inizializzare l'editor");
-	Editor.righe -= 1;/*tolgo una riga per aggiungere alla fine una status bar*/
+	Editor.righe -= 2; /*Tolgo le due rige in basso (quella per la barra e quella per la scrittura)*/
 }
 
 // 9) 	Ora è il momento di prendere la posizione del cursore, dopo averlo spostato in basso 
@@ -626,4 +633,28 @@ void statusBarInit(struct StringBuffer *sb){
 		}
 	}
 	sbAppend(sb, "\x1b[m", 3);	/*torno alla normale formattazione*/
+	sbAppend(sb, "\r\n", 2);	/*Disegno nell'ultima riga quella di aiuto*/
 }
+
+/*18) Voglio che la funzione sia variadica e che chieda un numero arbitrario di argomenti */
+void setStatusMessage(const char* fmt, ...){	
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(Editor.statusmsg, sizeof(Editor.statusmsg), fmt, ap);
+	va_end(ap);
+	Editor.statusmsg_time = time(NULL);	/*time(NULL) mi da l'ora corrente*/
+}
+
+/*19) Questa funzione mostra un messaggio nell'ultima riga del terminale
+N.B.: "svuotaschermo è la funzione che inizializza tutto*/
+void disegnaMessaggio(struct StringBuffer *sb){
+	sbAppend(sb, "\x1b[K", 3);	/*pulisco la riga*/
+  	int msglen = strlen(Editor.statusmsg);	/*verifico che il messaggio entri nello schermo*/
+  	if (msglen > Editor.colonne) msglen = Editor.colonne;
+  	if (msglen && time(NULL) - Editor.statusmsg_time < 5)	/*faccio scomparire il messaggio dopo 5 secondi*/
+    sbAppend(sb, Editor.statusmsg, msglen);
+}
+
+/*-------------------------------
+	INIZIO LA SCRITTURA DI CHAR
+--------------------------------*/
