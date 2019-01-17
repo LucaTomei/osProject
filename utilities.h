@@ -64,7 +64,7 @@ void apriFileTest();
 
 void openFile(char* nomeFile);	
 
-void appendRow(char *s, size_t len);
+void inserisciRiga(int at, char *s, size_t len);
 
 void aggiornaRiga(EditorR* row);
 
@@ -92,3 +92,7 @@ void cancellaChar();
 void liberaRiga(EditorR* row);
 void cancellaRiga(int at);
 void appendiStringaInRiga(EditorR* row, char* s, size_t len);
+
+void inserisciNewLine();
+
+char *promptComando(char *prompt);

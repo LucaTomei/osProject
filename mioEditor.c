@@ -227,7 +227,8 @@ void processaChar(){
 	static int quantePress = ESCI;
 	int c = letturaPerpetua();
 	switch (c) {
-		case '\r':	/*Gestisci il tasto di invio*/
+		case '\r':
+			inserisciNewLine();
 			break;
 	    case CTRL_KEY('q'):
 	    	if(Editor.sporco && quantePress > 0){
@@ -550,18 +551,20 @@ void openFile(char* nomeFile){
 	while((linelen = getline(&line, &linecap, fp)) != -1){
     	while(linelen > 0 && (line[linelen - 1] == '\n' || line[linelen - 1] == '\r'))
       	linelen--;
-    	appendRow(line,linelen);
+    	inserisciRiga(Editor.numRighe ,line,linelen);
   	}
   	free(line);
   	fclose(fp);
   	Editor.sporco = 0;	/*Lo setto a 0 altrimenti ogni volta che apro l'editor mi dice il file è stato modificato senza ancora non toccarlo*/
 }
 
-/*13)*/
-void appendRow(char *s, size_t len) {
+/*13) Inserisce una nuova riga*/
+void inserisciRiga(int at, char *s, size_t len) {
+  	if (at < 0 || at > Editor.numRighe) return;
   	Editor.row = realloc(Editor.row, sizeof(EditorR) * (Editor.numRighe + 1));
+  	memmove(&Editor.row[at + 1], &Editor.row[at], sizeof(EditorR) * (Editor.numRighe - at));
 
-  	int at = Editor.numRighe;
+  	
   	Editor.row[at].size = len;
   	Editor.row[at].chars = malloc(len + 1);
   	memcpy(Editor.row[at].chars, s, len);
@@ -700,7 +703,7 @@ void scriviInRiga(EditorR *row, int at, int c) {
 /*21) Funzione per inserimento di char su riga*/
 void inserisciChar(int c){
 	/*Verifico se il cursore si trova dopo la fine del file, quindi aggiungo una nuova riga*/
-	if(Editor.y == Editor.numRighe)	appendRow("", 0);	/*prima di inserire un carattere li*/
+	if(Editor.y == Editor.numRighe)	inserisciRiga(Editor.numRighe,"", 0);	/*prima di inserire un carattere li*/
 	scriviInRiga(&Editor.row[Editor.y], Editor.x, c);
 	/*Sposto il cursore in avanti in modo che il prossimo carattere inserito andrà
 	dopo il carattere appena inserito su ^*/
@@ -728,7 +731,13 @@ char *rowToString(int *buflen) {
 /*23) Finalmente il salvataggio effettivo di un file su disco*/
 void salvaSuDisco(){
 	/*Gestisco il caso di "nuovoFile", in tal caso sarà null e non saprò dove salvarlo*/
-	if(Editor.nomeFile == NULL)	return;
+	if(Editor.nomeFile == NULL){
+		Editor.nomeFile = promptComando("Salva Come: %s");
+		if(Editor.nomeFile == NULL){
+			setStatusMessage("Salvataggio Interrotto");
+			return;
+		}
+	}
 
 	int len;
 	char *buf = rowToString(&len);
@@ -827,3 +836,60 @@ void appendiStringaInRiga(EditorR* row, char* s, size_t len){
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 								GESTIONE DEL TASTO INVIO
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+void inserisciNewLine(){
+	/*Se sono all'inizio del file, basta aggiungere una riga*/
+	if (Editor.x == 0) inserisciRiga(Editor.y, "", 0);
+  	else{	/*Altrimenti splitto la linea in 2*/
+	    EditorR *row = &Editor.row[Editor.y];
+	    /*1) Inserisco una riga con i caratteri che stanno a destra del cursore*/
+	    inserisciRiga(Editor.y + 1, &row->chars[Editor.x], row->size - Editor.x);
+	    row = &Editor.row[Editor.y];
+	    row->size = Editor.x;
+	    row->chars[row->size] = '\0';
+	    /*2) dato che la realloc della inserisciRiga potrebbe spostare la memoria e invalidare il
+	    	puntatore, tronco i contenuti della riga corrente, e la aggiorno con aggiornaRiga*/
+	    aggiornaRiga(row);
+  	}
+  	Editor.y++;
+  	Editor.x = 0;	/*Sposto il cursore all'inizio della riga successiva*/
+}
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+							FINE GESTIONE DEL TASTO INVIO
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+							GESTIONE PROMPT PER NUOVO FILE
+Ora occorre gestire il caso in cui non passo alcun file ad argv[1].
+In quel caso devo far inserire il nome del file di testo nella barra alla fine del
+file, altrimenti se scrivessi qualcosa, perderei tutto.
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+char *promptComando(char *prompt){
+  	size_t bufsize = 128;
+  	char *buf = malloc(bufsize);	/*Memorizzo l'input dell'utente*/
+  	size_t buflen = 0;
+  	buf[0] = '\0';
+  	while (1) {
+  		setStatusMessage(prompt, buf);
+    	svuotaSchermo();
+    	int c = letturaPerpetua();
+    	if (c == '\x1b') {	/*Se premo esc non fare nulla e libera la memoria*/
+    		setStatusMessage("");
+      		free(buf);	
+      		return NULL;
+    	}else if (c == '\r') {	/*Se premo invio e l'input non è vuoto, cancello il messaggio*/
+      		if (buflen != 0) {
+        		setStatusMessage("");
+        		return buf;
+      		}
+    	}else if(!iscntrl(c) && c < 128) {	/*Se inserisco un carattere stampabile, lo aggiungo a buf*/
+      		if (buflen == bufsize - 1) {	/*Se buflen è pieno, raddoppio la memoria a lei associata*/
+        		bufsize *= 2;	
+        		buf = realloc(buf, bufsize);
+      		}
+      		buf[buflen++] = c;
+      		buf[buflen] = '\0';	/*Mi devo assicurare che buf termini con '\0', altrimenti non
+      			funziona un ca*** */
+    	}
+  	}
+}
