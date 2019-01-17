@@ -1,0 +1,6 @@
+ciao	come	stai?
+
+io	tutto bene	TAB
+\n
+\n
+ok

@@ -17,8 +17,10 @@
 #include <fcntl.h>	/*per i flag usati nel salvataggio del file su disco*/
 #include <stdarg.h>	/*Per va_start() e va_end()*/
 
-#define COLORASCHERMO write(STDOUT_FILENO, "\033[48;5;148m ", 11);
-	
+#define COLORASCHERMO 		write(STDOUT_FILENO, "\033[48;5;148m ", 12);
+#define MODIFICA_CURSORE 	write(STDOUT_FILENO, "\033[5 q", 5);	/*Setto il cursore stile editor*/
+#define RESETTACURSORE		write(STDOUT_FILENO, "\033[1 q", 5);
+
 	/*#define colore "\x1b[attr1;attr2;attr3m*/
 #define COLOR_GREEN   	"\x1b[1;32m"	/*Bold Verde*/
 #define COLOR_RESET		"\x1b[0m"
@@ -76,11 +78,12 @@ int main(int argc, char *argv[]){
 	// leggo un byte alla volta dallo standard input
 	// e lo salvo in una varisbile 'c'. Ritornerà 0 a EOF
 	inizializzaEditor();
+	MODIFICA_CURSORE
 
 	/*apriFileTest();*/
 	if(argc >= 2)	openFile(argv[1]);
 
-	setStatusMessage("Help: CTRL-s == Save | CTRL-q == quit");
+	setStatusMessage("Help: CTRL+s == Save | CTRL+q == quit");
 
 	/*write(STDOUT_FILENO, "\033[48;5;148m ", 11);	COLORA LO SCHERMO*/
 	/*Ho definito la macro -----> COLORASCHERMO;*/
@@ -90,7 +93,9 @@ int main(int argc, char *argv[]){
 	}
 
 	// ripristino il terminale dei precedenti attributi
+	RESETTACURSORE;
 	disabilitaRawMode();
+	
 	return 0;
 }
 
@@ -226,7 +231,7 @@ void processaChar(){
 			break;
 	    case CTRL_KEY('q'):
 	    	if(Editor.sporco && quantePress > 0){
-	    		setStatusMessage(COLOR_ALERT      "Attenzione: Potresti perdere dati non salvati! \x1b[0m Premi Ctrl-Q %d volte per uscire.", 
+	    		setStatusMessage(COLOR_ALERT "  Attenzione:I tuoi dati andranno persi!\t\x1b[0m Ctrl-Q %d volte per uscire", 
 	    			quantePress);	
 	    		quantePress--;
 	    		return;
