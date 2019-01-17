@@ -24,6 +24,7 @@
 #define COLOR_RESET   "\x1b[0m"
 
 #define STOP_TAB 8
+#define ESCI 3	/*numero di volte che devo premere ctrl-q per uscire*/
 
 #define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
 
@@ -38,6 +39,7 @@ typedef struct config{
   	int righe, colonne;				
   	int numRighe;
   	EditorR* row;	/*Mi serve un puntatore ai dati di carattere da scrivere*/
+  	int sporco;	/*Si occuperà di mostrare se il file è stato modificato, verrà mostrato quando inizio a scrivere sul file e nascosto appena lo stalvo*/
   	char* nomeFile;
   	char statusmsg[80];	/*Stringa che mi serve per abilitare la ricerca nella barra di stato*/
   	time_t statusmsg_time;	/*Timestamp per messaggio, in modo in poco tempo posso cancellarlo*/
@@ -76,7 +78,7 @@ int main(int argc, char *argv[]){
 	/*apriFileTest();*/
 	if(argc >= 2)	openFile(argv[1]);
 
-	setStatusMessage("Help CTR-q == quit");
+	setStatusMessage("Help: CTRL-s == Save | CTRL-q == quit");
 
 	/*write(STDOUT_FILENO, "\033[48;5;148m ", 11);	COLORA LO SCHERMO*/
 	/*Ho definito la macro -----> COLORASCHERMO;*/
@@ -214,11 +216,19 @@ int letturaPerpetua(){
 
 //	4) Attende la pressione di un tasto e lo gestisce, gestendo anche i ctrl-*
 void processaChar(){
+	/*Tengo traccia di quante volte occorre premere ctrl-q per uscire*/
+	static int quantePress = ESCI;
 	int c = letturaPerpetua();
 	switch (c) {
 		case '\r':	/*Gestisci il tasto di invio*/
 			break;
 	    case CTRL_KEY('q'):
+	    	if(Editor.sporco && quantePress > 0){
+	    		setStatusMessage("Attenzione!!! Potresti perdere dati non salvati! Premi Ctrl-Q %d volte per uscire.", 
+	    			quantePress);	
+	    		quantePress--;
+	    		return;
+	    	}
 	      	write(STDOUT_FILENO, "\x1b[2J", 4);
 	     	write(STDOUT_FILENO, "\x1b[H", 3);
 	      	exit(0);
@@ -262,6 +272,7 @@ void processaChar(){
 	    	inserisciChar(c);
 	    	break;
 	}
+	quantePress = ESCI;
 }
 
 
@@ -406,9 +417,11 @@ void inizializzaEditor(){
 	Editor.offsetColonna = 0;
 	Editor.numRighe = 0;
 	Editor.row = NULL;
+	Editor.sporco = 0;
 	Editor.nomeFile = NULL;
 	Editor.statusmsg[0] = '\0';
 	Editor.statusmsg_time = 0;
+
 	/*Per colorare lo schermo*/
 	/*write(STDOUT_FILENO, "\033[48;5;57m ", 10);	*/
 
@@ -532,6 +545,7 @@ void openFile(char* nomeFile){
   	}
   	free(line);
   	fclose(fp);
+  	Editor.sporco = 0;	/*Lo setto a 0 altrimenti ogni volta che apro l'editor mi dice il file è stato modificato senza ancora non toccarlo*/
 }
 
 /*13)*/
@@ -549,6 +563,7 @@ void appendRow(char *s, size_t len) {
   	Editor.row[at].effRow = NULL;
   	aggiornaRiga(&Editor.row[at]);
   	Editor.numRighe++;
+  	Editor.sporco++;	/*Tengo traccia che il file è stato modificato*/
 }
 
 /*	14)
@@ -616,8 +631,10 @@ void statusBarInit(struct StringBuffer *sb){
 	char status[80], rstatus[80];
 
 	/*Mostro fino a 20 caratteri del nome del file, seguiti dal numero di righe del file*/
-	int len = snprintf(status, sizeof(status), "%.20s - %d righe", 
-			Editor.nomeFile ? Editor.nomeFile : "[Nessun File Aperto]", Editor.numRighe);
+	int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
+    		Editor.nomeFile ? Editor.nomeFile : "[Nessun File Aperto]", Editor.numRighe,
+    		Editor.sporco ? "(Modificato)" : "");
+	
 	int rlen = snprintf(rstatus, sizeof(rstatus), "%d%d", Editor.y +1, Editor.numRighe);
 	if(len > Editor.colonne)	len = Editor.colonne;
 	sbAppend(sb, status, len);
@@ -669,6 +686,7 @@ void scriviInRiga(EditorR *row, int at, int c) {
   	row->size++;
   	row->chars[at] = c;
   	aggiornaRiga(row);
+  	Editor.sporco++;	/*Tengo traccia che il file è stato modificato*/
 }
 /*21) Funzione per inserimento di char su riga*/
 void inserisciChar(int c){
@@ -719,13 +737,21 @@ void salvaSuDisco(){
 			if(write(fd, buf, len) == len){
 				close(fd);
 				free(buf);
-				
+				Editor.sporco = 0;
+				setStatusMessage("Ho scritto %d byte su disco", len);
 				return;
 			}
 			close(fd);
 		}
 		free(buf);
-		
+		setStatusMessage("Non riesco a salvare! I/O error: %s", strerror(errno));
 	}
-
+}
+/*24) Implemento la funzione di DEL, cancellazione del testo */
+void cancellaChar(EditorR* row, int at){
+	if(at < 0 || at >= row->size)	return;
+	memmove(&row->chars[at], &row->chars[at + 1], row->size - at);
+	row->size --;
+	aggiornaRiga(row);
+	Editor.sporco++;
 }
