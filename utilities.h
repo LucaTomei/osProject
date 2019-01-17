@@ -85,3 +85,10 @@ void inserisciChar(int c);
 char *rowToString(int *buflen);
 
 void salvaSuDisco();
+	
+void cancellaCharInRiga(EditorR* row, int at);	/*AUX*/
+void cancellaChar();
+
+void liberaRiga(EditorR* row);
+void cancellaRiga(int at);
+void appendiStringaInRiga(EditorR* row, char* s, size_t len);

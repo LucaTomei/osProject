@@ -20,8 +20,10 @@
 #define COLORASCHERMO write(STDOUT_FILENO, "\033[48;5;148m ", 11);
 	
 	/*#define colore "\x1b[attr1;attr2;attr3m*/
-#define COLOR_GREEN   "\x1b[1;32m"	/*Bold Verde*/
-#define COLOR_RESET   "\x1b[0m"
+#define COLOR_GREEN   	"\x1b[1;32m"	/*Bold Verde*/
+#define COLOR_RESET		"\x1b[0m"
+#define COLOR_ALERT		"\x1b[1;31m"
+
 
 #define STOP_TAB 8
 #define ESCI 3	/*numero di volte che devo premere ctrl-q per uscire*/
@@ -224,7 +226,7 @@ void processaChar(){
 			break;
 	    case CTRL_KEY('q'):
 	    	if(Editor.sporco && quantePress > 0){
-	    		setStatusMessage("Attenzione!!! Potresti perdere dati non salvati! Premi Ctrl-Q %d volte per uscire.", 
+	    		setStatusMessage(COLOR_ALERT      "Attenzione: Potresti perdere dati non salvati! \x1b[0m Premi Ctrl-Q %d volte per uscire.", 
 	    			quantePress);	
 	    		quantePress--;
 	    		return;
@@ -245,7 +247,9 @@ void processaChar(){
 	   		break;
 	   	case BACKSPACE:
 	   	case CTRL_KEY('h'):	/*Da gestire == codice di controllo (ASCII == 8)*/
-	   	case CANC:		/*Da gestire*/
+	   	case CANC:		
+	   		if(c == CANC)	muoviIlCursore(FRECCIA_DESTRA);
+	   		cancellaChar();
 	   		break;
 	    case PAGINA_SU:
 	    case PAGINA_GIU:
@@ -672,9 +676,9 @@ void disegnaMessaggio(struct StringBuffer *sb){
     sbAppend(sb, Editor.statusmsg, msglen);
 }
 
-/*-------------------------------
-	INIZIO LA SCRITTURA DI CHAR
---------------------------------*/
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+							Inizio la Scrittura di Char
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /*20) Funzione che mi fa scrivere su una riga*/
 void scriviInRiga(EditorR *row, int at, int c) {
 	/*at = indice in cui voglio inserire il carattere*/
@@ -747,11 +751,74 @@ void salvaSuDisco(){
 		setStatusMessage("Non riesco a salvare! I/O error: %s", strerror(errno));
 	}
 }
-/*24) Implemento la funzione di DEL, cancellazione del testo */
-void cancellaChar(EditorR* row, int at){
-	if(at < 0 || at >= row->size)	return;
-	memmove(&row->chars[at], &row->chars[at + 1], row->size - at);
-	row->size --;
-	aggiornaRiga(row);
-	Editor.sporco++;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+									FUNZIONI DI CANC
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/*24) Implemento la funzione di DEL, mangia il testo dalla destra del prossimo char
+	(Funzione ausiliaria)*/
+void cancellaCharInRiga(EditorR* row, int at){
+	if (at < 0 || at >= row->size) return;
+	/*Sovrascrivo il il carattere cancellato con il carattere alla posizione successiva*/
+  	memmove(&row->chars[at], &row->chars[at + 1], row->size - at);
+  	row->size--;
+  	aggiornaRiga(row);
+  	Editor.sporco++;
 }
+
+/*25) In questo modo cancello il primo char che è sulla sinistra del cursore*/
+void cancellaChar(){
+	/*Se il cursore supera la fine del file, non cancello nulla*/
+	if(Editor.y == Editor.numRighe)	return;
+	/*Se il cursore è all'inizio della prima riga, non deve fare nulla*/
+	if(Editor.x == 0 && Editor.y == 0)	return;
+
+	/*Altrimenti se c'è un carattere a sinistra del cursore, lo cancello e sposto il cursore a sinistra
+	N.B.: row punta alla riga che sto cancellando*/
+	EditorR *row = &Editor.row[Editor.y];
+	if(Editor.x > 0){
+		cancellaCharInRiga(row, Editor.x -1);
+		Editor.x --;
+	}else{	/*Se la x dell'Editor è uguale a 0 ( => all'inizio di qualsiasi riga)*/
+		Editor.x = Editor.row[Editor.y - 1].size;
+		/*Dato che row punta alla riga che sto cancellando, appendo la successiva riga a quella prima ...*/
+		appendiStringaInRiga(&Editor.row[Editor.y -1 ], row->chars, row->size);
+		cancellaRiga(Editor.y);	/*... e cancello la riga su cui è presente*/
+		Editor.y--;
+	}
+}
+
+/*26) Il cancellaChar non fa nulla se mi trovo su una linea sotto la prima e cancello dall'inizio, cosa 
+che gestisce ogni edito. Quindi devo fare in modo che unisca le due righe*/
+void liberaRiga(EditorR* row){
+	free(row->effRow);
+	free(row->chars);
+}
+void cancellaRiga(int at){
+	if(at < 0 || at >= Editor.numRighe)	return;
+	liberaRiga(&Editor.row[at]);
+	/*Sovrascrivo la struttura della riga cancellata con il resto delle righe che vengono dopo di essa*/
+	memmove(&Editor.row[at], &Editor.row[at + 1], sizeof(EditorR) * (Editor.numRighe - at - 1));
+  	Editor.numRighe--;
+  	Editor.sporco++;	/*avviene una modifica, quindi aggiorno*/
+}
+
+/*27) Funzione che aggiunge una riga alla fine di una riga*/
+void appendiStringaInRiga(EditorR* row, char* s, size_t len){
+	/*Le nuove dimensioni della riga saranno la size della riga + la lunghezza +1(comprende il byte null)*/
+	row->chars = realloc(row->chars, row->size + len + 1);
+	/*Copio la stringa data alla fine del contenuto di di row->chars*/
+  	memcpy(&row->chars[row->size], s, len);
+  	row->size += len;
+  	row->chars[row->size] = '\0';
+  	aggiornaRiga(row);
+ 	Editor.sporco++;
+}
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+								FINE FUNZIONI DI CANC
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+								GESTIONE DEL TASTO INVIO
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
