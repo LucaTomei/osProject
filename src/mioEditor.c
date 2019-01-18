@@ -78,7 +78,7 @@ int main(int argc, char *argv[]){
 	// leggo un byte alla volta dallo standard input
 	// e lo salvo in una varisbile 'c'. Ritornerà 0 a EOF
 	inizializzaEditor();
-	MODIFICA_CURSORE
+	MODIFICA_CURSORE;
 
 	/*apriFileTest();*/
 	if(argc >= 2)	openFile(argv[1]);
@@ -100,10 +100,6 @@ int main(int argc, char *argv[]){
 }
 
 
-
-/*
-	CORPO DI FUNZIONI
-*/
 
 static void pulisciTerminale(){
 	char *cmd = "tput";
@@ -732,7 +728,7 @@ char *rowToString(int *buflen) {
 void salvaSuDisco(){
 	/*Gestisco il caso di "nuovoFile", in tal caso sarà null e non saprò dove salvarlo*/
 	if(Editor.nomeFile == NULL){
-		Editor.nomeFile = promptComando("Salva Come: %s");
+		Editor.nomeFile = promptComando("Salva Come: %s\t(ESC per uscire)");
 		if(Editor.nomeFile == NULL){
 			setStatusMessage("Salvataggio Interrotto");
 			return;
@@ -873,7 +869,9 @@ char *promptComando(char *prompt){
   		setStatusMessage(prompt, buf);
     	svuotaSchermo();
     	int c = letturaPerpetua();
-    	if (c == '\x1b') {	/*Se premo esc non fare nulla e libera la memoria*/
+    	if(c == CANC || c == CTRL_KEY('h') || c == BACKSPACE){	/*Cancellazione nel prompt*/
+    		if(buflen != 0)	buf[--buflen] = '\0';
+    	}else if (c == '\x1b') {	/*Se premo esc*/
     		setStatusMessage("");
       		free(buf);	
       		return NULL;
@@ -892,4 +890,30 @@ char *promptComando(char *prompt){
       			funziona un ca*** */
     	}
   	}
+}
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+							FINE GESTIONE PROMPT PER NUOVO FILE
+* In Futuro inserisci l'apertura di un nuovo file dal prompt (come richiesto dal prof)
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+							GESTIONE RICERCA TESTO IN EDITOR
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+void cercaTesto() {
+  	char *toFind = promptComando("Search: %s (ESC to cancel)");
+  	if (toFind == NULL) return;	/*Se premo esc ---> esco*/
+  	int i;
+  	for (i = 0; i < Editor.numRighe; i++) {	/*Altrimenti ciclo su tutte le righe del file*/
+    	EditorR *row = &Editor.row[i];
+    	/*Uso strstr per verificare se la toFind è una sottostringa della riga corrente*/
+    	char *match = strstr(row->effRow, toFind);
+    	if (match) {
+      		Editor.y = i;
+      		Editor.x = match - row->effRow;
+      		Editor.offsetRiga = Editor.numRighe;
+      		break;
+    	}
+  	}
+  	free(toFind);
 }

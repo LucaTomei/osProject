@@ -96,3 +96,5 @@ void appendiStringaInRiga(EditorR* row, char* s, size_t len);
 void inserisciNewLine();
 
 char *promptComando(char *prompt);
+
+void cercaTesto();
