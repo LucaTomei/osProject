@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
 	/*apriFileTest();*/
 	if(argc >= 2)	openFile(argv[1]);
 
-	setStatusMessage("Help: CTRL+s == Save | CTRL+q == quit");
+	setStatusMessage("Help: CTRL+s == Salva | CTRL+q == Esci | Ctrl+F = Cerca");
 
 	/*write(STDOUT_FILENO, "\033[48;5;148m ", 11);	COLORA LO SCHERMO*/
 	/*Ho definito la macro -----> COLORASCHERMO;*/
@@ -246,6 +246,9 @@ void processaChar(){
 	   	case END:
 	   		/*Porto il cursore alla fine della riga*/
 	   		if(Editor.y < Editor.numRighe)	Editor.x = Editor.row[Editor.y].size;
+	   		break;
+	   	case CTRL_KEY('f'):
+	   		cercaTesto();
 	   		break;
 	   	case BACKSPACE:
 	   	case CTRL_KEY('h'):	/*Da gestire == codice di controllo (ASCII == 8)*/
@@ -728,7 +731,7 @@ char *rowToString(int *buflen) {
 void salvaSuDisco(){
 	/*Gestisco il caso di "nuovoFile", in tal caso sarà null e non saprò dove salvarlo*/
 	if(Editor.nomeFile == NULL){
-		Editor.nomeFile = promptComando("Salva Come: %s\t(ESC per uscire)");
+		Editor.nomeFile = promptComando("Salva Come: %s\t(ESC per uscire)", NULL);
 		if(Editor.nomeFile == NULL){
 			setStatusMessage("Salvataggio Interrotto");
 			return;
@@ -832,6 +835,7 @@ void appendiStringaInRiga(EditorR* row, char* s, size_t len){
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 								GESTIONE DEL TASTO INVIO
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/*28) Inserimento new line per tasto di invio*/
 void inserisciNewLine(){
 	/*Se sono all'inizio del file, basta aggiungere una riga*/
 	if (Editor.x == 0) inserisciRiga(Editor.y, "", 0);
@@ -859,8 +863,10 @@ Ora occorre gestire il caso in cui non passo alcun file ad argv[1].
 In quel caso devo far inserire il nome del file di testo nella barra alla fine del
 file, altrimenti se scrivessi qualcosa, perderei tutto.
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-char *promptComando(char *prompt){
+/*29) Scrittura nel prompt ---> Ultima riga editor*/
+/*Inserisco come argomento un puntatore a funzione in modo tale che se gli passo null non fa niente
+e se gli passo caratteri con la propria size mi ricerca il testo*/
+char *promptComando(char *prompt, void (*callback)(char *, int)){	
   	size_t bufsize = 128;
   	char *buf = malloc(bufsize);	/*Memorizzo l'input dell'utente*/
   	size_t buflen = 0;
@@ -873,11 +879,13 @@ char *promptComando(char *prompt){
     		if(buflen != 0)	buf[--buflen] = '\0';
     	}else if (c == '\x1b') {	/*Se premo esc*/
     		setStatusMessage("");
+    		if(callback)	callback(buf, c);
       		free(buf);	
       		return NULL;
     	}else if (c == '\r') {	/*Se premo invio e l'input non è vuoto, cancello il messaggio*/
       		if (buflen != 0) {
         		setStatusMessage("");
+        		if (callback) callback(buf, c);
         		return buf;
       		}
     	}else if(!iscntrl(c) && c < 128) {	/*Se inserisco un carattere stampabile, lo aggiungo a buf*/
@@ -889,6 +897,7 @@ char *promptComando(char *prompt){
       		buf[buflen] = '\0';	/*Mi devo assicurare che buf termini con '\0', altrimenti non
       			funziona un ca*** */
     	}
+    	if(callback) 	callback(buf, c);
   	}
 }
 
@@ -900,20 +909,34 @@ char *promptComando(char *prompt){
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 							GESTIONE RICERCA TESTO IN EDITOR
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-void cercaTesto() {
-  	char *toFind = promptComando("Search: %s (ESC to cancel)");
-  	if (toFind == NULL) return;	/*Se premo esc ---> esco*/
+/*30) Ricerca del testo*/
+void cercaTesto(){
+  	char *toFind = promptComando("Search: %s (ESC to cancel)", NULL);
+  	if(toFind == NULL) 	return;	/*Se premo esc ---> esco*/
   	int i;
-  	for (i = 0; i < Editor.numRighe; i++) {	/*Altrimenti ciclo su tutte le righe del file*/
+  	for(i = 0; i < Editor.numRighe; i++) {	/*Altrimenti ciclo su tutte le righe del file*/
     	EditorR *row = &Editor.row[i];
     	/*Uso strstr per verificare se la toFind è una sottostringa della riga corrente*/
     	char *match = strstr(row->effRow, toFind);
     	if (match) {
-      		Editor.y = i;
-      		Editor.x = match - row->effRow;
-      		Editor.offsetRiga = Editor.numRighe;
+      		Editor.y = i;	/*ho trovato l'indice*/
+      		Editor.x = cercaAndTabAux(row, match - row->effRow);
+      		Editor.offsetRiga = Editor.numRighe;	/*Scorro fino alla fine del file*/
       		break;
     	}
   	}
   	free(toFind);
+}
+/*31) Mi serve per migliorare la ricerca del testo, per non farla fallire se il file presenta TAB.
+	In questo modo converto l'indice di trovato con un indice di char per poi restituirlo e 
+	assegnarlo alla variabile x dell'Editor per trovare il punto preciso in cui si trova.*/
+int cercaAndTabAux(EditorR *row, int rx) {
+  	int curr = 0;
+  	int i;
+  	for (i = 0; i < row->size; i++) {
+    	if (row->chars[i] == '\t')	curr += (STOP_TAB - 1) - (curr % STOP_TAB);
+    	curr++;
+    	if (curr > rx) return i;
+  	}
+  	return i;
 }

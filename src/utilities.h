@@ -95,6 +95,7 @@ void appendiStringaInRiga(EditorR* row, char* s, size_t len);
 
 void inserisciNewLine();
 
-char *promptComando(char *prompt);
+char *promptComando(char *prompt, void (*callback)(char *, int));
 
 void cercaTesto();
+int cercaAndTabAux(EditorR *row, int rx);
