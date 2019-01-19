@@ -1,6 +1,6 @@
 CC=gcc
-mioEditor: mioEditor.c
-	$(CC) mioEditor.c -o mioEditor -Wall -Wextra -pedantic -std=c99
+mioEditor: main.c
+	$(CC) main.c termFunc.c editorFunc.c -o mioEditor -Wall -Wextra -pedantic -std=c99
 test1:
 	./mioEditor TestInProgress/fileDaleggereUnaRiga.txt
 test2:	

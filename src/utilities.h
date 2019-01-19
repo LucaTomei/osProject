@@ -1,9 +1,43 @@
 /*-------------------------------------------------------------------------------------------
 				Dichiarazione di Funzioni
 --------------------------------------------------------------------------------------------*/
-#include <stddef.h>
 #include <errno.h>
-#include <stdio.h>
+#include <termios.h>	/* Per qbilitare e disabilitare Raw Mode*/
+#include <time.h>	/*per disabilitare dopo 5 secondi la barra sotto*/
+
+#define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
+
+#define StringBuffer_INIT {NULL, 0}	// inizializza la struct 
+struct StringBuffer {
+  	char *b;
+  	int len;
+};
+
+#define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
+
+/*Struct per l'editor*/
+typedef struct EditorR{
+	int size;
+	int effSize;	/*Gestisco le effettive tabulazioni, mostrando gli spazi come dico io e non...*/
+	char* chars;
+	char* effRow;/*... come fa di default il terminale, altrimenti un TAB occuperebbe 7 caratteri circa*/
+} EditorR;
+
+typedef struct config{
+	/*Coordinate orizzantali (colonne) e verticali (righe*/
+	int x, y;
+	int rx;	/*indice del campo di rendering, se non vi sono TAB rx == x, se ci sono rx > x*/
+	int offsetRiga;		/*tiene traccia della riga/colonna in cui sono x lo scorrimento*/
+	int offsetColonna; 	/*orizzontale e verticale dell'editor. Sarà l'indice dei caratteri*/
+  	int righe, colonne;				
+  	int numRighe;
+  	EditorR* row;	/*Mi serve un puntatore ai dati di carattere da scrivere*/
+  	int sporco;	/*Si occuperà di mostrare se il file è stato modificato, verrà mostrato quando inizio a scrivere sul file e nascosto appena lo stalvo*/
+  	char* nomeFile;
+  	char statusmsg[80];	/*Stringa che mi serve per abilitare la ricerca nella barra di stato*/
+  	time_t statusmsg_time;	/*Timestamp per messaggio, in modo in poco tempo posso cancellarlo*/
+  	struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
+}config;
 
 enum editorKey {
 	BACKSPACE = 127,	/*ASCII == 127*/
@@ -17,85 +51,3 @@ enum editorKey {
 	PAGINA_SU,
 	PAGINA_GIU
 };
-
-void muoviIlCursore(int tasto);
-
-/*Struct per l'editor*/
-typedef struct EditorR{
-	int size;
-	int effSize;	/*Gestisco le effettive tabulazioni, mostrando gli spazi come dico io e non...*/
-	char* chars;
-	char* effRow;/*... come fa di default il terminale, altrimenti un TAB occuperebbe 7 caratteri circa*/
-} EditorR;
-
-
-#define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
-
-struct StringBuffer;
-void sbAppend(struct StringBuffer *sb, const char *s, int len);
-void sbFree(struct StringBuffer *sb);
-void disegnaRighe(struct StringBuffer *sb);
-
-static void pulisciTerminale();
-
-void abilitaRawMode();
-void disabilitaRawMode();
-void testaCioCheScrivi(char c);
-
-int letturaPerpetua();
-void processaChar();
-
-void svuotaSchermo();
-
-
-/*void disegnaRighe();*/
-/*void disegnaRighe(struct StringBuffer *sb);*/
-
-int prendiDimensioni(int *righe, int *colonne);
-
-void editorScroll();
-void inizializzaEditor();
-
-int posizioneCursore(int* righe, int* colonne);
-
-enum editorKey;
-
-void apriFileTest();
-
-void openFile(char* nomeFile);	
-
-void inserisciRiga(int at, char *s, size_t len);
-
-void aggiornaRiga(EditorR* row);
-
-
-int xToRx(EditorR* row, int x);
-
-void statusBarInit(struct StringBuffer *sb);
-
-void setStatusMessage(const char* fmt, ...);
-
-void disegnaMessaggio(struct StringBuffer *sb);
-
-
-/*Funzioni per editor*/
-void scriviInRiga(EditorR *row, int at, int c);
-void inserisciChar(int c);
-
-char *rowToString(int *buflen);
-
-void salvaSuDisco();
-	
-void cancellaCharInRiga(EditorR* row, int at);	/*AUX*/
-void cancellaChar();
-
-void liberaRiga(EditorR* row);
-void cancellaRiga(int at);
-void appendiStringaInRiga(EditorR* row, char* s, size_t len);
-
-void inserisciNewLine();
-
-char *promptComando(char *prompt, void (*callback)(char *, int));
-
-void cercaTesto();
-int cercaAndTabAux(EditorR *row, int rx);
