@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------------------------
-				Dichiarazione di Funzioni
+						Dichiarazione di Strutture Dati
 --------------------------------------------------------------------------------------------*/
 #include <errno.h>
 #include <termios.h>	/* Per qbilitare e disabilitare Raw Mode*/
@@ -21,7 +21,9 @@ typedef struct EditorR{
 	int effSize;	/*Gestisco le effettive tabulazioni, mostrando gli spazi come dico io e non...*/
 	char* chars;
 	char* effRow;/*... come fa di default il terminale, altrimenti un TAB occuperebbe 7 caratteri circa*/
+	unsigned char *color;	/*conterrà valori da 0 a 255 e vedrà se ogn carattere matcherà con un stringa mia, per l'highlight*/
 } EditorR;
+
 
 typedef struct config{
 	/*Coordinate orizzantali (colonne) e verticali (righe*/
@@ -36,6 +38,7 @@ typedef struct config{
   	char* nomeFile;
   	char statusmsg[80];	/*Stringa che mi serve per abilitare la ricerca nella barra di stato*/
   	time_t statusmsg_time;	/*Timestamp per messaggio, in modo in poco tempo posso cancellarlo*/
+  	struct editorSyntax *syntax;	/*Contiene tutto ciò che mi serve per riconosce il tipo di file*/
   	struct termios initialState;	// Salvo lo stato iniziale del terminale e tutti i suoi flag
 }config;
 
@@ -50,4 +53,10 @@ enum editorKey {
 	END,	/*Fn + →*/
 	PAGINA_SU,
 	PAGINA_GIU
+};
+
+struct editorSyntax {	/*Per gestire per ogni tipo di file (.c, ...) la colorazione*/
+  	char *filetype;
+  	char **filematch;	/*Array di stringhe, ognuna delle quali contiene un pattern per verificare se il tipo file matcha*/
+  	int flags;	/*Per gestire cosa devo colorare (numeri, stringhe, ...)*/
 };

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include "termFunc.h"
+#include "editorFunc.h"
 #include <unistd.h>
 #include <string.h>
 #include <sys/ioctl.h>	/*Per la struct winsize e ottenere le dimensioni dello schermo*/
@@ -178,7 +179,33 @@ void disegnaRighe(struct StringBuffer * sb){
 	        int len = Editor.row[filerow].effSize - Editor.offsetColonna; /*Sottraggo il numero di caratteri a sinistra dell'offset*/
 	        if(len < 0) len = 0;  /*Gestisco il caso in cui len sia negativo. Le setto a 0 in modo che nulla venga visualizzato su quella linea*/
 	        if (len > Editor.colonne) len = Editor.colonne;
-	        sbAppend(sb, &Editor.row[filerow].effRow[Editor.offsetColonna], len);
+	        /*sbAppend(sb, &Editor.row[filerow].effRow[Editor.offsetColonna], len);*/
+
+	        char *c = &Editor.row[filerow].effRow[Editor.offsetColonna];
+	        unsigned char* hl = &Editor.row[filerow].color[Editor.offsetColonna];
+	        
+	        int curr_color = -1;	/*Se voglio il colore di default ---> -1*/
+
+	        int j;
+	        for(j = 0; j < len; j++){	/*Itero tra i caratteri*/
+	        	if(hl[j] == NORMALE){	/*Se non è particolare*/
+	        		if(curr_color != -1){
+		        		sbAppend(sb, "\x1b[39m", 5);	/*Resetto il colore*/
+		        		curr_color = -1;
+	        		}
+	        		sbAppend(sb, &c[j], 1);
+	        	}else{	/*Altriment, basta scrivere la sequenza di escape nel buffer*/
+	        		int color = daSintassiAColore(hl[j]);
+	        		if(color != curr_color){
+	        			curr_color = color;
+	        			char buf[16];
+	        			int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
+	        			sbAppend(sb, buf, clen);
+	        		}
+	        		sbAppend(sb, &c[j], 1);
+	        	}
+	        }
+	        sbAppend(sb, "\x1b[39m", 5);	/*Devo essere sicuro che poi tutto sia resettato*/
 	    }
 	    sbAppend(sb, "\x1b[K", 3);   // rimuovo la sequenza di escape ('K'). K cancella la riga corrente
 	    sbAppend(sb, "\r\n", 2);
@@ -278,8 +305,10 @@ void statusBarInit(struct StringBuffer *sb){
 	int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
     		Editor.nomeFile ? Editor.nomeFile : "[Nessun File Aperto]", Editor.numRighe,
     		Editor.sporco ? "(Modificato)" : "");
-	
-	int rlen = snprintf(rstatus, sizeof(rstatus), "%d%d", Editor.y +1, Editor.numRighe);
+
+	int rlen = snprintf(rstatus, sizeof(rstatus), "%s | %d/%d",
+    	Editor.syntax ? Editor.syntax->filetype : "Nessun Tipo Trovato", Editor.y + 1, Editor.numRighe);
+
 	if(len > Editor.colonne)	len = Editor.colonne;
 	sbAppend(sb, status, len);
 

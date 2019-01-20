@@ -5,6 +5,8 @@ test1:
 	./mioEditor TestInProgress/fileDaleggereUnaRiga.txt
 test2:	
 	./mioEditor TestInProgress/fileTabbato.txt
+test3:
+	./mioEditor TestInProgress/fileC.c
 nuovo:
 	./mioEditor
 clean: 

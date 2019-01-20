@@ -3,6 +3,7 @@
 #include "utilities.h"
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 
 int prendiDimensioni(int *righe, int *colonne);
 void sbAppend(struct StringBuffer *sb, const char *s, int len);

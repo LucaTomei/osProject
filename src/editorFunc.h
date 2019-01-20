@@ -2,6 +2,15 @@
 #include <fcntl.h>	/*per i flag usati nel salvataggio del file su disco*/
 #include <stdarg.h>	/*Per va_start() e va_end()*/
 
+#define COLORA_NUMERI (1<<0)
+
+
+enum highLight{
+	NORMALE = 0,
+	NUMERO,
+	RICERCA
+};
+
 void inizializzaEditor();
 void processaChar();
 void sbAppend(struct StringBuffer *sb, const char *s, int len);
@@ -26,3 +35,7 @@ char *promptComando(char *prompt, void (*callback)(char *, int));
 void cercaTesto();
 /*int cercaAndTabAux(EditorR *row, int rx);*/
 void cercaTestoCallback(char *toFind, int key);
+void aggiornaSintassi(EditorR *row);
+int daSintassiAColore(int color);
+int is_separator(int c);
+void selezionaSintassiDaColorare();

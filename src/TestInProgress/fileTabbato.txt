@@ -1,5 +1,5 @@
 ciao	come	stai?
-
+	3.4 
 io	tutto bene	TAB
 \n
 \n

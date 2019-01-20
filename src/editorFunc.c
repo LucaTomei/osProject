@@ -3,13 +3,27 @@
 #include "editorFunc.h"	
 #include <stdio.h>
 
-config Editor;
-
 #define COLOR_RESET		"\x1b[0m"
 #define COLOR_ALERT		"\x1b[1;31m"
 
 #define STOP_TAB 8
 #define ESCI 3	/*numero di volte che devo premere ctrl-q per uscire*/
+
+
+
+char *ESTENSIONI_C[] = { ".c", ".h", ".cpp", NULL };
+struct editorSyntax HLDB[] = {
+  {
+    "c",
+    ESTENSIONI_C,
+    COLORA_NUMERI
+  },
+};
+
+#define HLDB_ENTRIES (sizeof(HLDB) / sizeof(HLDB[0]))	/*Contiene la lunghezza dell'array HLDB*/
+
+
+config Editor;
 
 
 
@@ -27,6 +41,7 @@ void inizializzaEditor(){
 	Editor.nomeFile = NULL;
 	Editor.statusmsg[0] = '\0';
 	Editor.statusmsg_time = 0;
+	Editor.syntax = NULL;	/*Quando lo setto a NULL significa che il file non matcha il tipo e non coloro nulla*/
 
 	/*Per colorare lo schermo*/
 	/*write(STDOUT_FILENO, "\033[48;5;57m ", 10);	*/
@@ -229,6 +244,9 @@ void muoviIlCursore(int tasto){
 void openFile(char* nomeFile){
 	free(Editor.nomeFile);
 	Editor.nomeFile = strdup(nomeFile);	/*Faccio una copia della stringa e alloco memoria per essa*/
+
+	selezionaSintassiDaColorare();
+
 	FILE *fp = fopen(nomeFile, "r");
   	if (!fp) 	handle_error("Errore: open fallita");
   	char *line = NULL;
@@ -251,9 +269,9 @@ void openFile(char* nomeFile){
 /*13) Inserisce una nuova riga*/
 void inserisciRiga(int at, char *s, size_t len){
   	if (at < 0 || at > Editor.numRighe) return;
+
   	Editor.row = realloc(Editor.row, sizeof(EditorR) * (Editor.numRighe + 1));
   	memmove(&Editor.row[at + 1], &Editor.row[at], sizeof(EditorR) * (Editor.numRighe - at));
-
   	
   	Editor.row[at].size = len;
   	Editor.row[at].chars = malloc(len + 1);
@@ -263,6 +281,7 @@ void inserisciRiga(int at, char *s, size_t len){
   	/*Qui gestisco la grandezza degli spazi lasciati da un tab o da uno spazio*/
   	Editor.row[at].effSize = 0;
   	Editor.row[at].effRow = NULL;
+  	Editor.row[at].color = NULL;
   	aggiornaRiga(&Editor.row[at]);
   	Editor.numRighe++;
   	Editor.sporco++;	/*Tengo traccia che il file è stato modificato*/
@@ -293,6 +312,8 @@ void aggiornaRiga(EditorR* row){
   	/*Ora idx conterrà il numero di caratteri copiati e essegno la sua effettiva size*/
  	row->effRow[idx] = '\0';
   	row->effSize = idx;
+
+  	aggiornaSintassi(row);
 }
 
 /*16) Funzione che aggiorna il valore di x della struct config in rx, per calcolare l'offset effettivo
@@ -372,6 +393,7 @@ void salvaSuDisco(){
 			setStatusMessage("Salvataggio Interrotto");
 			return;
 		}
+		selezionaSintassiDaColorare();
 	}
 
 	int len;
@@ -442,6 +464,7 @@ che gestisce ogni edito. Quindi devo fare in modo che unisca le due righe*/
 void liberaRiga(EditorR* row){
 	free(row->effRow);
 	free(row->chars);
+	free(row->color);
 }
 void cancellaRiga(int at){
 	if(at < 0 || at >= Editor.numRighe)	return;
@@ -548,8 +571,19 @@ char *promptComando(char *prompt, void (*callback)(char *, int)){
 
 /*30) Ricerca del testo*/
 void cercaTesto(){
+	/*Voglio che quanto termino una ricerca con ESC il cursore torni indietro al punto
+	in cui si trovava all'inizio, prima della ricerca.*/
+	int vecchio_x = Editor.x, vecchio_y = Editor.y;
+	int vecchio_offsetCol = Editor.offsetColonna, vecchio_offsetRiga = Editor.offsetRiga;
+    
     char *query = promptComando("Search: %s (ESC per uscire)", cercaTestoCallback);
     if (query)  free(query);
+    else{	/*---->Restore<----*/
+    	Editor.x = vecchio_x;
+    	Editor.y = vecchio_y;
+    	Editor.offsetRiga = vecchio_offsetRiga;
+    	Editor.offsetColonna = vecchio_offsetCol;
+    }
 }
 /*31) Mi serve per migliorare la ricerca del testo, per non farla fallire se il file presenta TAB.
   In questo modo converto l'indice di trovato con un indice di char per poi restituirlo e 
@@ -565,20 +599,149 @@ void cercaTesto(){
     return i;
 }*/
 
+/*32) Funzione di callback per la ricerca di testo*/
 void cercaTestoCallback(char *toFind, int key){
-  	if (key == '\r' || key == '\x1b') return; /*Se premo invio o  esc ---> esco*/
-    
+	/*Voglio consentire la ricerca direzionale nel testo tramite le frecce!*/
+	static int last_match = -1;	/*Contiene indice di riga su cui si trova l'ultimo result trovato (-1 se no)*/
+	static int direction = 1;	/*memorizza la direzione della ricerca (1 in avanti, -1 per indietro)*/
+
+	static int old_riga_color;	/*Li uso per salvare e resettare il coloro dopo l'uscita dalla Ricerca*/
+	static char* old_color = NULL;
+
+	if(old_color){
+		memcpy(Editor.row[old_riga_color].color, old_color, Editor.row[old_riga_color].effSize);
+		free(old_color);
+		old_color = NULL;
+	}
+
+  	if (key == '\r' || key == '\x1b') {
+  		last_match = -1;
+  		direction = 1;
+  		return; /*Se premo invio o  esc ---> esco*/
+    }else if(key == FRECCIA_DESTRA || key == FRECCIA_GIU)	direction = 1;
+    else if(key == FRECCIA_SINISTRA || key == FRECCIA_SU)	direction = -1;
+    else{
+    	last_match = -1;
+    	direction = 1;
+    }
+
+    if(last_match == -1)	direction = 1;	/*Se ho già trovato roba, inizio dalla riga successiva*/
+    int curr = last_match;
+
     int i;
     for(i = 0; i < Editor.numRighe; i++) {  /*Altrimenti ciclo su tutte le righe del file*/
-      EditorR *row = &Editor.row[i];
-      /*Uso strstr per verificare se la toFind è una sottostringa della riga corrente*/
-      char *match = strstr(row->effRow, toFind);
-      if (match) {
-          Editor.y = i; /*ho trovato l'indice*/
-          Editor.x = xToRx(row, match - row->effRow);
-          Editor.offsetRiga = Editor.numRighe;  /*Scorro fino alla fine del file*/
-          break;
-      }
+    	curr += direction;
+
+    	if(curr == -1)	curr = Editor.numRighe -1;	/*Se ho finito le parole che matchano...*/
+    	else if(curr == Editor.numRighe)	curr = 0;	/*... ricomincio dall'inizio*/
+      	
+      	EditorR *row = &Editor.row[curr];
+      	/*Uso strstr per verificare se la toFind è una sottostringa della riga corrente*/
+      	char *match = strstr(row->effRow, toFind);
+      	if (match) {
+      		last_match = curr;	/*setto il last a curr in modo che se premo freccia su ricomincio*/
+          	Editor.y = curr; /*ho trovato l'indice*/
+          	Editor.x = xToRx(row, match - row->effRow);
+          	Editor.offsetRiga = Editor.numRighe;  /*Scorro fino alla fine del file*/
+
+          	old_riga_color = curr;
+          	old_color = malloc(row->effSize);
+          	memcpy(old_color, row->color, row->effSize);
+
+          	memset(&row->color[match - row->effRow], RICERCA, strlen(toFind));	/*Setto il blu per il carattere trovato*/
+          	break;
+      	}
     }
 }
-	
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						FINE GESTIONE RICERCA TESTO IN EDITOR
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+									GESTIONE HIGHLIT
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/*33) Per la gestione dei colori*/
+void aggiornaSintassi(EditorR *row){
+  	row->color = realloc(row->color, row->effSize);	/*Rialloco la memoria necessaria, poiché il colore occuperà di più*/
+  	memset(row->color, NORMALE, row->effSize);	/*alloco il 'color' della struct highlight*/
+  	
+  	if(Editor.syntax == NULL)	return;	/*Se non trova nessun estensione file, non serve colorare*/
+
+  	/*tengo traccia dei separatori che trovo, lo setto a true perché considero l'inizio riga come
+  	  separatore*/
+  	int prec_sep = 1;
+
+  	int i = 0;
+  	/*Itero su tutti i caratteri e setto il colore ai numeri se li trovo*/
+  	while(i < row->effSize){
+  		char c = row->effRow[i];
+  		/*Setto il colore precedente = al tipo di colore del carattere precedente*/
+  		unsigned char prec_color = (i > 0) ? row->color[i - 1]: NORMALE;
+
+  		if(Editor.syntax->flags & COLORA_NUMERI){
+	  		/*Vedo se trovo anche numeri decimali*/
+			if ((isdigit(c) && (prec_sep || prec_color == NUMERO)) || (c == '.' && prec_color == NUMERO)){
+	  			row->color[i] = NUMERO;
+	  			i++;	/*gli faccio mangiare il carattere successivo*/
+
+	  			prec_sep = 0;	/*Sto in mezzo alla stringa colorata*/
+	  			continue;	/*continuo il loop*/
+	  		}
+  		}
+
+  		prec_sep = is_separator(c);
+  		i++;
+  	}
+}
+
+/*34) Dice tutto il nome*/
+int daSintassiAColore(int color){
+	switch(color){
+		case NUMERO: 	return 31;	/*Ritorno il rosso*/
+		case RICERCA:	return 34;	/*Ritorno il blu*/
+		default: return 37;	/*Altrimenti bianco*/
+	}
+}
+
+/*35) Prende un carattere e ritorna true se è considerato un carattere di separazione*/
+int is_separator(int c){
+	return isspace(c) || c == '\0' 
+		|| strchr(",.()+-/*=~%<>[];", c) != NULL;	/*strcht ---> vedo se la prima occorrenza di un carattere nella stringa*/
+}
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+								FINE GESTIONE HIGHLIT
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+								GESTIONE TIPO DI FILE
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/*36) Cerca di vedere se il file in ingresso corrisponde ad uno dei miei file dichiarati nella struct*/
+void selezionaSintassiDaColorare(){
+  	Editor.syntax = NULL;	/*Se niente matcha o se non c'è nessun nomeFile*/
+  	if (Editor.nomeFile == NULL) return;
+  	/*Con strrchr prendo proprio l'ultimo char della stringa del nomeFile, ovvero l'estensione*/
+  	char *ext = strrchr(Editor.nomeFile, '.');	/*Ritorno il puntatore all'ultima occorrenza del carattere in stringa*/
+  	
+  	for(unsigned int j = 0; j < HLDB_ENTRIES; j++) {	/*Ricerca se l'estensione del file matcha con una delle mie*/
+    	struct editorSyntax *s = &HLDB[j];
+    	unsigned int i = 0;
+    	while (s->filematch[i]) {
+      		int is_ext = (s->filematch[i][0] == '.');
+      		
+      		if((is_ext && ext && !strcmp(ext, s->filematch[i])) ||
+          		(!is_ext && strstr(Editor.nomeFile, s->filematch[i]))) {
+        		Editor.syntax = s;
+        		
+        		int rigaFile;
+        		for(rigaFile = 0; rigaFile < Editor.numRighe; rigaFile++){
+        			aggiornaSintassi(&Editor.row[rigaFile]);
+        		}
+
+        		return;
+      		}
+      		i++;
+    	}
+  	}
+}
