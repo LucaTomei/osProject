@@ -3,10 +3,15 @@
 #include <stdarg.h>	/*Per va_start() e va_end()*/
 
 #define COLORA_NUMERI (1<<0)
-
+#define COLORA_STRINGHE (1<<1)
 
 enum highLight{
 	NORMALE = 0,
+	COMMENTO,
+	COMMENTO_MULTILINEA,
+	MATCHA1,	/* Per evidenziare le parole chiavi di C*/
+	MATCHA2,	/*......................................*/
+	STRINGA,
 	NUMERO,
 	RICERCA
 };

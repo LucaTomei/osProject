@@ -17,11 +17,13 @@ struct StringBuffer {
 
 /*Struct per l'editor*/
 typedef struct EditorR{
+	int index;	// Per gestire i commenti /* */ su più linee gestendo l'indice all'interno del file
 	int size;
 	int effSize;	/*Gestisco le effettive tabulazioni, mostrando gli spazi come dico io e non...*/
 	char* chars;
 	char* effRow;/*... come fa di default il terminale, altrimenti un TAB occuperebbe 7 caratteri circa*/
 	unsigned char *color;	/*conterrà valori da 0 a 255 e vedrà se ogn carattere matcherà con un stringa mia, per l'highlight*/
+	int is_comment;	/*Variabile boolean per gestione commento*/
 } EditorR;
 
 
@@ -58,5 +60,9 @@ enum editorKey {
 struct editorSyntax {	/*Per gestire per ogni tipo di file (.c, ...) la colorazione*/
   	char *filetype;
   	char **filematch;	/*Array di stringhe, ognuna delle quali contiene un pattern per verificare se il tipo file matcha*/
+  	char **parole;	/*Array di stringhe, ognuna delle quali conterrà una parola che matcha con una parola chiave del linguaggio*/
+  	char *commento_singolo;
+  	char* inizio_multilinea;
+  	char* fine_multilinea;
   	int flags;	/*Per gestire cosa devo colorare (numeri, stringhe, ...)*/
 };

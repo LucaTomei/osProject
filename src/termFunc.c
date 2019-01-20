@@ -188,7 +188,18 @@ void disegnaRighe(struct StringBuffer * sb){
 
 	        int j;
 	        for(j = 0; j < len; j++){	/*Itero tra i caratteri*/
-	        	if(hl[j] == NORMALE){	/*Se non è particolare*/
+	        	if(iscntrl(c[j])){	/*Traduco i caratteri control che non mi servono in caratteri ASCII*/
+	        		char strano = (c[j] <= 26) ? '@' + c[j] : '?';	/*aggiungendo il suo valore a @, poiché le lettere maiuscolo in ascii vanno dopo la @*/
+	        		/*? se non è nell'alfabeto*/
+	        		sbAppend(sb, "\x1b[7m", 4);	/*passo a colori invertiti prima di stampare il carattere tradotto*/
+          			sbAppend(sb, &strano, 1);
+          			sbAppend(sb, "\x1b[m", 3);	/*disattivo i colori invertiti*/
+	        		if(curr_color != -1){
+	        			char buf[16];
+            			int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", curr_color);
+            			sbAppend(sb, buf, clen);
+	        		}
+	        	}else if(hl[j] == NORMALE){	/*Se non è particolare*/
 	        		if(curr_color != -1){
 		        		sbAppend(sb, "\x1b[39m", 5);	/*Resetto il colore*/
 		        		curr_color = -1;

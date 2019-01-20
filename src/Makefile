@@ -11,3 +11,4 @@ nuovo:
 	./mioEditor
 clean: 
 	$(RM) mioEditor
+.PHONY: mioEditor clean		#Forzo la compilazione ogni volta
