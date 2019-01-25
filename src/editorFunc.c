@@ -115,6 +115,9 @@ void processaChar(){
 	static int quantePress = ESCI;
 	int c = letturaPerpetua();
 	switch (c) {
+		case CTRL_KEY('n'):
+			openNewFileFromPrompt();
+			break;	
 		case '\r':
 			inserisciNewLine();
 			break;
@@ -857,4 +860,31 @@ void selezionaSintassiDaColorare(){
       		i++;
     	}
   	}
+}
+
+
+void openNewFileFromPrompt(){
+	char *nomeFile = promptComando("Quale file vorresti aprire? %s", NULL);
+
+	free(Editor.nomeFile);
+	inizializzaEditor();
+	Editor.nomeFile = strdup(nomeFile);
+
+	selezionaSintassiDaColorare();
+
+	FILE *fp = fopen(nomeFile, "w");
+  	if (!fp) 	handle_error("Errore: open fallita");
+  	char *line = NULL;
+  	size_t linecap = 0; 
+	ssize_t linelen;
+
+	while((linelen = getline(&line, &linecap, fp)) != -1){
+    	while(linelen > 0 && (line[linelen - 1] == '\n' || line[linelen - 1] == '\r'))
+      	linelen--;
+    	inserisciRiga(Editor.numRighe ,line,linelen);
+  	}
+
+  	free(line);
+  	fclose(fp);	
+  	Editor.sporco = 0;
 }

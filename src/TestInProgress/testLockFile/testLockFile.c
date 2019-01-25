@@ -29,8 +29,7 @@ Per avere il lock esclusivo su un file, utilizzerò la system call fcntl
     blocca i blocchi fcntl fino al suo rilascio.
 */
 
-static int lockfile(const char *const filepath, int *const fdptr)
-{
+static int lockfile(const char *const filepath, int *const fdptr){
     struct flock lock;
     int used = 0; /* Bits da 0 a 2: stdin, stdout, stderr */
     int fd;

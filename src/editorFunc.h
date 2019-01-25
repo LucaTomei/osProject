@@ -44,3 +44,4 @@ void aggiornaSintassi(EditorR *row);
 int daSintassiAColore(int color);
 int is_separator(int c);
 void selezionaSintassiDaColorare();
+void openNewFileFromPrompt();
