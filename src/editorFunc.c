@@ -2,6 +2,7 @@
 #include "termFunc.h"	// contiene le dichiarazioni di funzioni
 #include "editorFunc.h"	
 #include <stdio.h>
+#include <sys/wait.h>
 
 #define COLOR_RESET		"\x1b[0m"
 #define COLOR_ALERT		"\x1b[1;31m"
@@ -865,26 +866,53 @@ void selezionaSintassiDaColorare(){
 
 void openNewFileFromPrompt(){
 	char *nomeFile = promptComando("Quale file vorresti aprire? %s", NULL);
-
 	free(Editor.nomeFile);
-	inizializzaEditor();
-	Editor.nomeFile = strdup(nomeFile);
 
-	selezionaSintassiDaColorare();
+	/*Verifico se il file esiste*/
+	if(access(nomeFile, F_OK) != -1){	/*Il file esiste*/
+		/*	-----> Versione 1
+		free(Editor.nomeFile);
+		Editor.nomeFile = strdup(nomeFile);
+		selezionaSintassiDaColorare();
+		FILE *fp = fopen(nomeFile, "r");
+		if(!fp) 	handle_error("Errore: open fallita");
+		char *line = NULL;
+		size_t linecap = 0; 
+		ssize_t linelen;
+		while((linelen = getline(&line, &linecap, fp)) != -1){
+    		while(linelen > 0 && (line[linelen - 1] == '\n' || line[linelen - 1] == '\r'))
+      		linelen--;
+    		inserisciRiga(Editor.numRighe ,line,linelen);
+  		}
+  		free(line);
+	  	fclose(fp);	
+	  	Editor.sporco = 0;*/
 
-	FILE *fp = fopen(nomeFile, "w");
-  	if (!fp) 	handle_error("Errore: open fallita");
-  	char *line = NULL;
-  	size_t linecap = 0; 
-	ssize_t linelen;
+		/*----> Versione 2 <---- + Performance*/
+		char *cmd = "./mioEditor";
+		char *args[3];
+		args[0] = "./mioEditor";
+		args[1] = nomeFile;
+		args[2] = NULL;
+		pid_t pulitore = vfork();
+		if(pulitore == 0){
+			int res = execvp(cmd, args);
+			if(res == -1)	handle_error("Errore nella Exec");
+		}else if(pulitore > 0){
+			int status;
+			wait(&status);
+			disabilitaRawMode();
+			abilitaRawMode();
+		}else 	handle_error("Errore nella vfork");
+	}else{	/*Il file non esiste*/
+		free(Editor.nomeFile);
+	  	inizializzaEditor();
+	  	selezionaSintassiDaColorare();
+	  	Editor.nomeFile = strdup(nomeFile);
+	  	FILE *fp = fopen(nomeFile, "w");
+	  	if(!fp) 	handle_error("Errore: open fallita");
+	  	fclose(fp);	
+	  	Editor.sporco = 0;
+	}
 
-	while((linelen = getline(&line, &linecap, fp)) != -1){
-    	while(linelen > 0 && (line[linelen - 1] == '\n' || line[linelen - 1] == '\r'))
-      	linelen--;
-    	inserisciRiga(Editor.numRighe ,line,linelen);
-  	}
-
-  	free(line);
-  	fclose(fp);	
-  	Editor.sporco = 0;
 }
