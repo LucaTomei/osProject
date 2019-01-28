@@ -70,7 +70,7 @@ int letturaPerpetua(){
 
 	/*Sostituisco i tasti wasd con i tasti freccia. Muovere i tasti freccia equivale a muovere il cursore
 	di  '\ x1b' concatenato con A, B, C o D*/
-	if (c == '\x1b') {
+	if (c == ) {
 	    char seq[3];	// per gestire le sequenze di escape
 	    if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
 	    if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
@@ -170,7 +170,7 @@ void processaChar(){
 	    case FRECCIA_DESTRA:
 	      	muoviIlCursore(c);
 	      	break;
-	    case CTRL_KEY('l'):	/*tasto aggiurnamento schermo terminale, non lo gestisco*/
+	    case CTRL_KEY('l'):	/*tasto aggiornamento schermo terminale, non lo gestisco*/
 	    case '\x1b':
 	    	break;
 	    default:	/*altrimenti scrivo*/
