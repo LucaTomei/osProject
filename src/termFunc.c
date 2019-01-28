@@ -49,25 +49,25 @@ void pulisciTerminale(){
 	}else 	handle_error("Errore nella vfork");
 }
 
-// 1) 	Esco dalla modalità cooked del terminale, dissbilitando la stampa a video per entrare in
+// 1) 	Esco dalla modalità cooked del terminale, disabilitando la stampa a video per entrare in
 //		raw mode
 void abilitaRawMode(){
 	if(tcgetattr(STDIN_FILENO, &Editor.initialState) == -1) 	handle_error("Errore nell'ensbleRawMode!");
 	atexit(disabilitaRawMode);		// quando termina il programma, ripristino i flag
 	struct termios raw = Editor.initialState;	// copia locale
 
-	raw.c_iflag &= ~(IXON);		// dissbilito ctrl-s e ctrl-q
-	raw.c_iflag &= ~(ISIG);		// dissbilito ctrl-v
-	raw.c_iflag &= ~(IEXTEN);	// dissbilito ctr-o
-	raw.c_iflag &= ~(ICRNL);	// dissbilito \n
-	raw.c_oflag &= ~(OPOST);	// dissbilito funzionalità di elsborazione dell'output
+	raw.c_iflag &= ~(IXON);		// disabilito ctrl-s e ctrl-q
+	raw.c_iflag &= ~(ISIG);		// disabilito ctrl-v
+	raw.c_iflag &= ~(IEXTEN);	// disabilito ctr-o
+	raw.c_iflag &= ~(ICRNL);	// disabilito \n
+	raw.c_oflag &= ~(OPOST);	// disabilito funzionalità di elaborazione dell'output
 
 	// dissbilito ECHO,
 	// la modalità canonica per leggere byte a byte,
 	// e ISIG --> Gestore dei segnali, dissbilita ctrl-c e ctrl-z
 	raw.c_lflag &= ~(ECHO | ICANON | ISIG);	
 
-	// dissbilito altri flag (prova a vedere se non servono)
+	// disabilito tutti gli altri flag	
 	raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);	
 	raw.c_cflag |= (CS8);
 	
@@ -82,7 +82,7 @@ void abilitaRawMode(){
 
 // 2) Ripristino tutti i flag del terminale, all'uscita
 void disabilitaRawMode(){
-	if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &Editor.initialState) == -1) handle_error("Errore: non riesco a dissbilitare la raw mode!");	
+	if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &Editor.initialState) == -1) handle_error("Errore: non riesco a disabilitare la raw mode!");	
 	char *cmd = "tput";
 	char *args[3];
 	args[0] = "tput";
@@ -105,10 +105,10 @@ void svuotaSchermo(){
 	/* Per fare questo bisogna scrivere sullo standard output 4 byte, di cui
 		* il primo \x1b == 27 in decimale è il carattere di escape
 		* il secondo [ è un carattere di escape
-		* il terzo == 2 -> Indica che voglio cancellare l'intero schermo
+		* il terzo ?25== 2 -> Indica che voglio cancellare l'intero schermo
 		* il quarto J -> Indica che voglio eliminare <esc>
 		Le sequenze di escape su terminale iniziano sempre con un carattere escape (27), seguito da
-		[. In questo modo istruisco al terminale di spostare il cursore, cambiare il colore del font,
+		[. In questo modo comunico al terminale di spostare il cursore, cambiare il colore del font,
 		cancellare parti dello schermo,...Guarda (https://vt100.net/docs/vt100-ug/chapter3.html#ED)
 	*/
 	editorScroll();
