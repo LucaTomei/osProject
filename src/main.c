@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
 	/*apriFileTest();*/
 	if(argc >= 2)	openFile(argv[1]);
 
-	setStatusMessage("Help: CTRL+s == Salva | CTRL+q == Esci | Ctrl+F = Cerca");
+	setStatusMessage("Help: CTRL+s == Salva | CTRL+q == Esci | Ctrl+f = Cerca | Ctrl+n = Apri File");
 
 	/*write(STDOUT_FILENO, "\033[48;5;148m ", 11);	COLORA LO SCHERMO*/
 	/*Ho definito la macro -----> COLORASCHERMO;*/

@@ -307,7 +307,7 @@ void editorScroll(){
 }
 
 
-/*17) DIsegno la status bar*/
+/*17) Disegno la status bar*/
 void statusBarInit(struct StringBuffer *sb){
 	sbAppend(sb, "\x1b[7m", 4);	/*Inverto il colore del terminale da nero a bianco*/
 	char status[80], rstatus[80];

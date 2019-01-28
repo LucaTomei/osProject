@@ -124,7 +124,7 @@ void processaChar(){
 			break;
 	    case CTRL_KEY('q'):
 	    	if(Editor.sporco && quantePress > 0){
-	    		setStatusMessage(COLOR_ALERT "  Attenzione:I tuoi dati andranno persi!\t\x1b[0m Ctrl-Q %d volte per uscire", 
+	    		setStatusMessage(COLOR_ALERT "  Attenzione:I tuoi dati andranno persi!\t\x1b[0m Ctrl-q %d volte per uscire", 
 	    			quantePress);	
 	    		quantePress--;
 	    		return;
