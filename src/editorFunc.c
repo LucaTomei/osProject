@@ -870,8 +870,9 @@ void openNewFileFromPrompt(){
 
 	/*Verifico se il file esiste*/
 	if(access(nomeFile, F_OK) != -1){	/*Il file esiste*/
-		/*	-----> Versione 1
-		free(Editor.nomeFile);
+		
+		inizializzaEditor();
+
 		Editor.nomeFile = strdup(nomeFile);
 		selezionaSintassiDaColorare();
 		FILE *fp = fopen(nomeFile, "r");
@@ -886,10 +887,10 @@ void openNewFileFromPrompt(){
   		}
   		free(line);
 	  	fclose(fp);	
-	  	Editor.sporco = 0;*/
+	  	Editor.sporco = 0;
 
 		/*----> Versione 2 <---- + Performance*/
-		char *cmd = "./mioEditor";
+		/*char *cmd = "./mioEditor";
 		char *args[3];
 		args[0] = "./mioEditor";
 		args[1] = nomeFile;
@@ -903,9 +904,8 @@ void openNewFileFromPrompt(){
 			wait(&status);
 			disabilitaRawMode();
 			abilitaRawMode();
-		}else 	handle_error("Errore nella vfork");
+		}else 	handle_error("Errore nella vfork");*/
 	}else{	/*Il file non esiste*/
-		free(Editor.nomeFile);
 	  	inizializzaEditor();
 	  	selezionaSintassiDaColorare();
 	  	Editor.nomeFile = strdup(nomeFile);
@@ -914,5 +914,4 @@ void openNewFileFromPrompt(){
 	  	fclose(fp);	
 	  	Editor.sporco = 0;
 	}
-
 }

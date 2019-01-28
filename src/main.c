@@ -7,7 +7,6 @@
 #define MODIFICA_CURSORE 	write(STDOUT_FILENO, "\033[5 q", 5);	/*Setto il cursore stile editor*/
 #define RESETTACURSORE		write(STDOUT_FILENO, "\033[1 q", 5);
 
-
 int main(int argc, char *argv[]){
 	pulisciTerminale();
 	abilitaRawMode();

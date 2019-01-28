@@ -29,7 +29,7 @@ Per avere il lock esclusivo su un file, utilizzerò la system call fcntl
     blocca i blocchi fcntl fino al suo rilascio.
 */
 
-static int lockfile(const char *const filepath, int *const fdptr){
+int lockfile(const char *const filepath, int *const fdptr){
     struct flock lock;
     int used = 0; /* Bits da 0 a 2: stdin, stdout, stderr */
     int fd;
@@ -41,29 +41,12 @@ static int lockfile(const char *const filepath, int *const fdptr){
     if (filepath == NULL || *filepath == '\0')  return errno = EINVAL;
 
     /* Open the file. */
-    do {
-        fd = open(filepath, O_RDWR | O_CREAT, 0600);    // apro il file in lettura
-    } while (fd == -1 && errno == EINTR);
+    
+    fd = open(filepath, O_RDWR | O_CREAT, 0600);    // apro il file in lettura
+    
     if (fd == -1) {
         if (errno == EALREADY)  errno = EIO;    // ritorno EIO = Input/output error
         return errno;
-    }
-
-    /* sposto il file lontano dai file descriptor standard, creando una copia*/
-    while (1){
-        if (fd == STDIN_FILENO) {
-            used |= 1;
-            fd = dup(fd);
-        } else
-        if (fd == STDOUT_FILENO) {
-            used |= 2;
-            fd = dup(fd);
-        } else
-        if (fd == STDERR_FILENO) {
-            used |= 4;
-            fd = dup(fd);
-        } else
-            break;
     }
 
     /* Chiudo i descrittori standard che temporaneamente abbiamo usato. */
@@ -90,8 +73,6 @@ static int lockfile(const char *const filepath, int *const fdptr){
         return errno = EALREADY;
     }
 
-    /* Salvo il descrittore */
-    if (fdptr)  *fdptr = fd;
 
     return 0;
 }
