@@ -376,8 +376,8 @@ void scriviInRiga(EditorR *row, int at, int c){
 }
 /*21) Funzione per inserimento di char su riga*/
 void inserisciChar(int c){
-	/*Verifico se il cursore si trova dopo la fine del file, quindi aggiungo una nuova riga*/
-	if(Editor.y == Editor.numRighe)	inserisciRiga(Editor.numRighe,"", 0);	/*prima di inserire un carattere li*/
+	/*Verifico se il cursore si trova dopo la fine del file, quindi aggiungo una nuova riga...*/
+	if(Editor.y == Editor.numRighe)	inserisciRiga(Editor.numRighe,"", 0);	/*...prima di inserire un carattere li*/
 	scriviInRiga(&Editor.row[Editor.y], Editor.x, c);
 	/*Sposto il cursore in avanti in modo che il prossimo carattere inserito andrà
 	dopo il carattere appena inserito su ^*/
