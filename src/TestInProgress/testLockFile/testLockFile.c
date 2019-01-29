@@ -32,10 +32,12 @@ Per avere il lock esclusivo su un file, utilizzerò la system call fcntl
 int lockfile(const char *const filepath, int *const fdptr){
     struct flock lock;
     int used = 0; /* Bits da 0 a 2: stdin, stdout, stderr */
+    
+
     int fd;
 
     /* Se i futuro mi servirà il descrittore, lo inizializzo con -1 (disabile) */
-    if (fdptr)	*fdptr = -1;
+    if (fdptr)  *fdptr = -1;
 
     /* Path non valido*/
     if (filepath == NULL || *filepath == '\0')  return errno = EINVAL;
@@ -64,7 +66,7 @@ int lockfile(const char *const filepath, int *const fdptr){
     if (fd == -1)   return errno = EMFILE;    
 
     /* Lock esclusiva su un file, riguarda l'intero file!*/
-    lock.l_type = F_WRLCK;	// blocco di lettura e scrittura
+    lock.l_type = F_WRLCK;  // blocco di lettura e scrittura
     lock.l_whence = SEEK_SET;
     lock.l_start = 0;
     lock.l_len = 0;
@@ -84,8 +86,8 @@ int main(int argc, char const *argv[]){
         result = lockfile("lockTest.txt", NULL);
         if (result == 0)    printf("Lock esclusiva\n");
         else{
-            if (result == EALREADY) 	printf("Sono occupato\n");
-            else 	printf("Impossibile lock file\n");
+            if (result == EALREADY)     printf("Sono occupato\n");
+            else    printf("Impossibile lock file\n");
         }
     }
     return 0;

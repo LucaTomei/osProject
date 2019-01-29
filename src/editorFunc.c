@@ -70,7 +70,7 @@ int letturaPerpetua(){
 
 	/*Sostituisco i tasti wasd con i tasti freccia. Muovere i tasti freccia equivale a muovere il cursore
 	di  '\ x1b' concatenato con A, B, C o D*/
-	if (c == ) {
+	if(c == '\x1b'){
 	    char seq[3];	// per gestire le sequenze di escape
 	    if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
 	    if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
@@ -252,6 +252,53 @@ void muoviIlCursore(int tasto){
   	Editor.numRighe = 1;
 }*/
 
+
+int lockfile(const char *const filepath, int *const fdptr){
+    struct flock lock;
+    int used = 0; /* Bits da 0 a 2: stdin, stdout, stderr */
+    int fd;
+
+    FILE *fp = fopen(filepath, "a+");
+    /* Se i futuro mi servirà il descrittore, lo inizializzo con -1 (disabile) */
+    if (fdptr)  *fdptr = -1;
+
+    /* Path non valido*/
+    if (filepath == NULL || *filepath == '\0')  return errno = EINVAL;
+
+    /* Open the file. */
+    
+    fd = fileno(fp);    // apro il file in lettura
+    
+    if (fd == -1) {
+        if (errno == EALREADY)  errno = EIO;    // ritorno EIO = Input/output error
+        return errno;
+    }
+
+    /* Chiudo i descrittori standard che temporaneamente abbiamo usato. */
+    if (used & 1){
+        close(STDIN_FILENO);
+    }
+    if (used & 2){
+        close(STDOUT_FILENO);
+    }
+    if (used & 4){
+        close(STDERR_FILENO);
+    }
+
+    /* Se sono finiti i descrittori  */
+    if (fd == -1)   return errno = EMFILE;    
+
+    /* Lock esclusiva su un file, riguarda l'intero file!*/
+    lock.l_type = F_WRLCK;  // blocco di lettura e scrittura	/*F_WRLCK --- F_RDLCK*/
+    lock.l_whence = SEEK_SET;
+    lock.l_start = 0;
+    lock.l_len = 0;
+    if (fcntl(fd, F_SETLK, &lock) == -1) {  // lock fallita, chiudo il file e ritorno l'errore
+        close(fd);
+        return errno = EALREADY;
+    }else return 0;
+}
+
 /*12)*/
 void openFile(char* nomeFile){
 	free(Editor.nomeFile);
@@ -259,7 +306,8 @@ void openFile(char* nomeFile){
 
 	selezionaSintassiDaColorare();
 
-	FILE *fp = fopen(nomeFile, "r");
+	/*FILE *fp = fopen(nomeFile, "r");*/
+	FILE *fp = fopen(nomeFile, "a+");
   	if (!fp) 	handle_error("Errore: open fallita");
   	char *line = NULL;
   	size_t linecap = 0; /*capacità di linea, utili per sapere quanta memoria è stata assegnata

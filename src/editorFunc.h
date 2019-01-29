@@ -21,6 +21,7 @@ void processaChar();
 void sbAppend(struct StringBuffer *sb, const char *s, int len);
 void sbFree(struct StringBuffer *sb);
 void muoviIlCursore(int tasto);
+int lockfile(const char *const filepath, int *const fdptr);
 void openFile(char* nomeFile);
 void inserisciRiga(int at, char *s, size_t len);
 void aggiornaRiga(EditorR* row);
