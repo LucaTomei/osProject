@@ -108,7 +108,7 @@ A questo punto sono pronto a __salvare__ il contenuto del file __sul disco__ tra
 	void salvaSuDisco()
 Anche il salvataggio sarà dinamico, infatti prima di tutto verifico se il file è esistente, se si saprò il suo nome e dove salvarlo, altrimenti dovrò far immettere il nome per il suo successivo salvataggio e dovrò anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Aprirò successivamente il file in modalità lettura e scrittura se esiste, altrimenti verrà creato, tramite il flag `O_RDWR | O_CREAT`. Imposterò quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione _rowToString_ e con la funzione `int ftruncate(int fildes, off_t length)` di _\<unistd.h\>_ imposterò una dimensione statica al file, in modo che se è più corto, inserisce _0_ di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. A questo punto sono pronto ad usare la `write` per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.
 #### __3. Funzioni di utility ausiliarie: Ricerca del Testo e Apertura file da Prompt__
-
+s
 #### __4. Funzioni per Colorazione della Sintassi e riconoscimento del tipo di File__
 
 [1]:	https://vt100.net/docs/vt100-ug/chapter3.html#ED
