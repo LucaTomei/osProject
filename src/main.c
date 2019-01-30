@@ -23,33 +23,26 @@ int main(int argc, char *argv[]){
     if(argc >= 2){
         openFile(argv[1]);
         result = lockfile(argv[1], NULL);
-        if (result == 0)    goto BUONO;
-        else    goto APERTO;
     }
 
+    if (result == 0){
+    	setStatusMessage("Help: CTRL+s == Salva | CTRL+q == Esci | Ctrl+f = Cerca | Ctrl+n = Apri File");
+        while(1){
+            svuotaSchermo();
+            processaChar();
+        }
+    }else{
+    	setStatusMessage(COLOR_ALERT"Il file è già stato aperto. Premi CTRL+q 3 volte per uscire"COLOR_RESET);
+        while(1){
+            svuotaSchermo();
+            processaChar();
+        }
+    }
 
-    if(argv[2] == NULL) goto BUONO;
     /*write(STDOUT_FILENO, "\033[48;5;148m ", 11);  COLORA LO SCHERMO*/
     /*Ho definito la macro -----> COLORASCHERMO;*/
-
-    BUONO:
-        setStatusMessage("Help: CTRL+s == Salva | CTRL+q == Esci | Ctrl+f = Cerca | Ctrl+n = Apri File");
-        while(1){
-            svuotaSchermo();
-            processaChar();
-        }
-        goto EXIT;
-    APERTO:
-        setStatusMessage(COLOR_ALERT"Il file è già stato aperto. Premi CTRL+q 3 volte per uscire"COLOR_RESET);
-        while(1){
-            svuotaSchermo();
-            processaChar();
-        }
-        goto EXIT;
-
-    // ripristino il terminale dei precedenti attributi
-    EXIT:
-        RESETTACURSORE;
-        disabilitaRawMode();        
-        return 0;
+    
+    RESETTACURSORE;
+    disabilitaRawMode();        
+    return 0;
 }

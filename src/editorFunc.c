@@ -307,7 +307,7 @@ void openFile(char* nomeFile){
 	selezionaSintassiDaColorare();
 
 	/*FILE *fp = fopen(nomeFile, "r");*/
-	FILE *fp = fopen(nomeFile, "a+");
+	FILE *fp = fopen(nomeFile, "r");
   	if (!fp) 	handle_error("Errore: open fallita");
   	char *line = NULL;
   	size_t linecap = 0; /*capacità di linea, utili per sapere quanta memoria è stata assegnata
