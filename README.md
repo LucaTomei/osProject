@@ -240,7 +240,7 @@ Se sono all’interno di una stringa e il carattere corrispondente è ‘//’ e
 Mi occuperò di verificare se trovo anche numeri decimali, colorandoli di rosso e ricorsivamente invoco la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.
 
 
-__Link Utili__:
+> __Link Utili__:
 	- Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI_escape_code#Colors ](#) e [https://i.stack.imgur.com/7H7H9.png](https://i.stack.imgur.com/7H7H9.png)
 	- Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html](#)
 	- Caratteri Speciali Prompt: [https://ss64.com/osx/syntax-prompt.html](#)
