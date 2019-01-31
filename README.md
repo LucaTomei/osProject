@@ -87,7 +87,7 @@ Tale funzione lavorerà insieme a…
 	void processaChar()
 …, la quale si occuperà di gestire ogni carattere passato, controllando se questo rappresenta un carattere speciale, se ho premuto _CTRL_ o se semplicemente dovrà scrivere. Per gestire i tasti _CTRL_, utilizzo la seguente macro: `#define CTRL_KEY(k) ((k) & 0x1f)`.
 ---- 
-Una volta gestiti tutti questi casi, posso finalmente occuparmi dell’\_\_apertura di una file\_\_ tramite la funzione
+Una volta gestiti tutti questi casi, posso finalmente occuparmi dell’__apertura di una file__ tramite la funzione
 	void openFile(char* nomeFile)
 Appena un file viene aperto dovrò liberare la memoria allocata per il   `char* nomeFile` presente nella struct principale dell’Editor e successivamente riallocarla con il nome del file appena aperto, tramite la funzione _strdup_ che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione.  Per mostrare il contenuto del file sullo schermo dovrò scandire ogni sua linea, tramite la funzione ` ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)`, gratuitamente offerta da _\<stdio.h\>_ ,ed “iniettare” tante righe sul terminale, quante sono quelle scandite dal file. 
 Per __modificare il contenuto del file__, utilizzo principalmente le seguenti funzioni:
@@ -98,11 +98,11 @@ Per __modificare il contenuto del file__, utilizzo principalmente le seguenti fu
 	void inserisciChar(int c);
 	char *rowToString(int *buflen);
 *  La prima funzione la utilizzo per __gestire l’allocazione della memoria__ delle stringhe presenti su una riga, per gestire gli indici di ogni riga,  per processare ogni `char *` presente nell’Editor, incrementando il numero di righe e la sua lunghezza se presente un carattere di tabulazione
-* La seconda funzione è una funzione ausiliaria, utilizzata per l’\_\_aggiornamento degli spazi su una riga\__, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo una volta modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per i \_TAB_. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare  `row->size + tabs*(STOP_TAB -1)+1`, in modo tale che ogni carattere letto venga copiato interamente nella \_struct EditorR\_.
-* La terza funzione è anch’essa di appoggio e servirà per aggiornare il valore _x_ della _struct config_ in un valore _rx_ , per\_\_ calcolare\_\_ l’effettivo __offset di ogni tab__ e tramutarlo in un vero e proprio spazio. Per fare ciò devo sapere quante colonne sono alla destra del _TAB_ e quante ne sono a sinistra (_8 - 1_), quindi farò un controllo in un ciclo _for_ incrementando il valore di _rx_ per cercare il successivo _TAB_.
+* La seconda funzione è una funzione ausiliaria, utilizzata per l’__aggiornamento degli spazi su una riga__, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo una volta modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per i _TAB_. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare  `row->size + tabs*(STOP_TAB -1)+1`, in modo tale che ogni carattere letto venga copiato interamente nella _struct EditorR_.
+* La terza funzione è anch’essa di appoggio e servirà per aggiornare il valore _x_ della _struct config_ in un valore _rx_ , per __ calcolare__ l’effettivo __offset di ogni tab__ e tramutarlo in un vero e proprio spazio. Per fare ciò devo sapere quante colonne sono alla destra del _TAB_ e quante ne sono a sinistra (_8 - 1_), quindi farò un controllo in un ciclo _for_ incrementando il valore di _rx_ per cercare il successivo _TAB_.
 * Dalla quarta funzione in poi, mi occuperò dell’effettiva __scrittura di caratteri su__ una __riga__, dato che precedentemente ho gestito le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si occuperà dell’effettiva scrittura di caratteri nella struct dell’Editor.
 * La quinta funzione __inserisce__ le __stringhe__ precedentemente lette __sulle righe del terminale__. Per fare ciò verifico dapprima la posizione del cursore sullo schermo  e se quest’ultimo si trova nella fine del file, dovrò aggiungere una nuova riga per dare la possibilità di scrivere oltre la fine del file. Sposterò successivamente la posizione del cursore in avanti in modo tale che il prossimo carattere inserito capiti subito dopo il carattere precedentemente aggiunto.
-* La sesta funzione invece __incapsulerà una riga__ presente nel terminale __convertendola in una__ vera e propria\_\_ stringa\__. Un primo ciclo \_for\_ sommerà le lunghezze di ogni riga di testo salvando il suo valore in una variabile in modo tale che io possa allocare l’effettiva memoria necessaria per la stringa. Mi servirà anche un secondo ciclo _for\_ per copiare il contenuto di ogni riga all’interno del buffer precedentemente allocato, aggiungendo un ulteriore carattere alla fine di ogni riga.
+* La sesta funzione invece __incapsulerà una riga__ presente nel terminale __convertendola in una__ vera e propria __ stringa__. Un primo ciclo _for_ sommerà le lunghezze di ogni riga di testo salvando il suo valore in una variabile in modo tale che io possa allocare l’effettiva memoria necessaria per la stringa. Mi servirà anche un secondo ciclo _for_ per copiare il contenuto di ogni riga all’interno del buffer precedentemente allocato, aggiungendo un ulteriore carattere alla fine di ogni riga.
 ---- 
 A questo punto sono pronto a __salvare__ il contenuto del file __sul disco__ tramite la funzione
 	void salvaSuDisco();
@@ -119,7 +119,7 @@ L’ultima funzione invece si occuperà dell’aggiunta della stringa modificata
 ---- 
 Per il __tasto invio__ invece, basterà intercettare l’inserimento del carattere `\r` e `\n` tramite la funzione
 	void inserisciNewLine()
-Anche in questo caso verifico sia se sono all’inizio del file, e quindi aggiungo una riga al campo\_y\_ della struct , altrimenti basterà splittare la riga in cui mi trovo in 2 righe, inserendo la prima con i caratteri che si trovano sulla sinistra e la seconda con quelli che sono a destra. A questo punto sposto il cursore in posizione _(0, n)_ (con _n_ = inizio riga successiva) e aggiorno il contenuto della riga troncando il contenuto della riga corrente, poiché la _realloc_ potrebbe invalidare il puntatore che sto utilizzando. Tronco il contenuto della riga corrente e lo aggiorno tramite la funzione
+Anche in questo caso verifico sia se sono all’inizio del file, e quindi aggiungo una riga al campo_y_ della struct , altrimenti basterà splittare la riga in cui mi trovo in 2 righe, inserendo la prima con i caratteri che si trovano sulla sinistra e la seconda con quelli che sono a destra. A questo punto sposto il cursore in posizione _(0, n)_ (con _n_ = inizio riga successiva) e aggiorno il contenuto della riga troncando il contenuto della riga corrente, poiché la _realloc_ potrebbe invalidare il puntatore che sto utilizzando. Tronco il contenuto della riga corrente e lo aggiorno tramite la funzione
 	void aggiornaRiga(EditorR* row)
 #### __3. Funzioni di utility ausiliarie: Ricerca del Testo e Apertura file da Prompt__
 Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, utilizzerò come appoggio la funzione
@@ -179,7 +179,6 @@ Se sono all’interno di un commento multilinea, nel ciclo _while_ verifico che:
 
 Se sono all’interno di una stringa e il carattere corrispondente è ‘//’ e c’è almeno un altro carattere all’interno di quella riga, evidenzio quel carattere.
 Mi occuperò di verificare se trovo anche numeri decimali, colorandoli di rosso e ricorsivamente invoco la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.
-
 [^1]
 
 [^1]:	Link Utili:
