@@ -239,7 +239,7 @@ Se sono all’interno di un commento multilinea, nel ciclo _while_ verifico che:
 Se sono all’interno di una stringa e il carattere corrispondente è ‘//’ e c’è almeno un altro carattere all’interno di quella riga, evidenzio quel carattere.
 Mi occuperò di verificare se trovo anche numeri decimali, colorandoli di rosso e ricorsivamente invoco la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.
 
-
+---- 
 > __Link Utili__:
 > - Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI_escape_code#Colors ](#) e [https://i.stack.imgur.com/7H7H9.png](https://i.stack.imgur.com/7H7H9.png)
 > - Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html](#)
