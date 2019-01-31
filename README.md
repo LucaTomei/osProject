@@ -107,8 +107,8 @@ Tale funzione lavorerà insieme a…
 ```C
 void processaChar()
 ```
+…la quale si occuperà di gestire ogni carattere passato, controllando se questo rappresenta un carattere speciale, se ho premuto _CTRL_ o se semplicemente dovrà scrivere. Per gestire i tasti _CTRL_, utilizzo la seguente macro: `#define CTRL_KEY(k) ((k) & 0x1f)`.
 
-…, la quale si occuperà di gestire ogni carattere passato, controllando se questo rappresenta un carattere speciale, se ho premuto _CTRL_ o se semplicemente dovrà scrivere. Per gestire i tasti _CTRL_, utilizzo la seguente macro: `#define CTRL_KEY(k) ((k) & 0x1f)`.
 ---- 
 Una volta gestiti tutti questi casi, posso finalmente occuparmi dell’__apertura di una file__ tramite la funzione
 
@@ -136,8 +136,8 @@ A questo punto sono pronto a __salvare__ il contenuto del file __sul disco__ tra
 ```C
 void salvaSuDisco();
 ```
-
 Anche il salvataggio sarà dinamico, infatti prima di tutto verifico se il file è esistente, se si saprò il suo nome e dove salvarlo, altrimenti dovrò far immettere il nome per il suo successivo salvataggio e dovrò anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Aprirò successivamente il file in modalità lettura e scrittura se esiste, altrimenti verrà creato, tramite il flag `O_RDWR | O_CREAT`. Imposterò quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione _rowToString_ e con la funzione `int ftruncate(int fildes, off_t length)` di _\<unistd.h\>_ imposterò una dimensione statica al file, in modo che se è più corto, inserisce _0_ di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. A questo punto sono pronto ad usare la `write` per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.
+
 ---- 
 Finora l’Editor sarà in grado solamente di scrivere testo, gestendo le tabulazioni e l’inserimento di caratteri concatenandoli tra loro. A questo punto occorre gestire la __cancellazione del testo__, utilizzando le seguenti funzioni:
 ```C
@@ -150,6 +150,7 @@ void appendiStringaInRiga(EditorR* row, char* s, size_t len);
 
 Le precedenti funzioni dovranno gestire sia il tasto _CANC_ che il tasto _DEL_. Per fare ciò una funzione “mangerà” il testo dalla destra del prossimo char che si trova in corrispondenza del cursore, attraverso _memmove_, e un’altra consumerà il carattere da sinistra, utilizzando la stessa funzione ma giostrando gli indici della stringa in modo accurato.  Occorre gestire anche il caso in cui un carattere si trovi o in posizione _(0, 0)_ dello schermo o in posizione _(0, n)_. Nel primo caso la cancellazione non dovrà essere effettuata il cursore dovrà essere ri-posizonato al suo posto e nel secondo caso invece una funzione ausiliaria concatenerà le due righe unendole, cancellerà la riga sottostante e aggiornerà gli indici di riga. 
 L’ultima funzione invece si occuperà dell’aggiunta della stringa modificata nell’opportuno campo della _struct conf_.
+
 ---- 
 Per il __tasto invio__ invece, basterà intercettare l’inserimento del carattere `\r` e `\n` tramite la funzione
 ```C
@@ -185,8 +186,8 @@ Tale funzione di callback verrà presa in input dalla funzione _ promptComando_
 ```C
 void cercaTesto();
 ```
-
 Quest’ultima si occuperà solamente di salvare la posizione che aveva il cursore prima della ricerca e di ripristinarlo a ricerca terminata.
+
 ---- 
 Per __aprire un nuovo file__ nella schermata dell’Editor verifico se il file esiste, tramite la system call `int access(const char *path, int mode);` con il flag di modalità settato ad ` F_OK `
 - Se esiste, inizializzerò l’Editor e aprirò il file in sola lettura
