@@ -162,19 +162,23 @@ void disegnaRighe(struct StringBuffer * sb){
 		    	char welcomeMessage[80];
 		        int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),COLOR_GREEN"Il più bel text editor %s","[Mio]"COLOR_RESET);
 		        if (welcomelen > Editor.colonne) welcomelen = Editor.colonne;
-		            /*  Per centrare la stringa sullo schermo, divido la larghezza per 2
-		              Questo mi dice quanto lontano da destra e da sinistra devo stampare 
-		              */
+		        /*  Per centrare la stringa sullo schermo, divido la larghezza per 2
+		            Questo mi dice quanto lontano da destra e da sinistra devo stampare 
+		        */
 		        int padding = (Editor.colonne - welcomelen) / 2;
 		        if(padding) {
-		            sbAppend(sb, "~", 1);
-		            /*sbAppend(sb, "Ⓛ", 3);*/
+		            /*sbAppend(sb, "~", 1);*/
+		            if(i % 2 == 0)	sbAppend(sb, "Ⓛ", 3);
+		        	else sbAppend(sb, "Ⓣ", 3);
 		            padding--;
 		        }
 		        while(padding--)  sbAppend(sb, " ", 1);
 		        sbAppend(sb, welcomeMessage, welcomelen);
 		        /*write(STDOUT_FILENO, "\033[48;5;57m ", 10)  COLORA LO SCHERMO DI BLU;*/
-		    } else  sbAppend(sb, "~", 1);
+		    }else{	/*sbAppend(sb, "~", 1);*/ 
+		        if(i % 2 == 0)	sbAppend(sb, "Ⓛ", 3);
+		        else sbAppend(sb, "Ⓣ", 3);
+		    }
 	    }else{
 	        int len = Editor.row[filerow].effSize - Editor.offsetColonna; /*Sottraggo il numero di caratteri a sinistra dell'offset*/
 	        if(len < 0) len = 0;  /*Gestisco il caso in cui len sia negativo. Le setto a 0 in modo che nulla venga visualizzato su quella linea*/
