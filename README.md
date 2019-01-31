@@ -18,7 +18,6 @@ Il cuore dell’Editor di Testo è rappresentato dalla struct config, presente n
 	}config;
 Per l’implementazione dell’editor, ho suddiviso il progetto il 5 macro sezioni:
 #### __1. Modifica del Terminale, con funzioni che lo implementano__
----- 
 I files _ termFunc.h_ e _ termFunc.c_ contengono le funzioni che ho utilizzato per settare determinati flag sul terminale.
 Per prima cosa, ho scritto una funzione chiamata _”abilitaRawMode”_, che si occupa di uscire dalla classica modalità “cooked mode” del terminale ed entrare in modalità “Raw Mode”. Occorre quindi:
 - Disabilitare tutti i tasti _ctrl_ che utilizza di default 
@@ -124,7 +123,6 @@ Per il __tasto invio__ invece, basterà intercettare l’inserimento del caratte
 Anche in questo caso verifico sia se sono all’inizio del file, e quindi aggiungo una riga al campo_y_ della struct , altrimenti basterà splittare la riga in cui mi trovo in 2 righe, inserendo la prima con i caratteri che si trovano sulla sinistra e la seconda con quelli che sono a destra. A questo punto sposto il cursore in posizione _(0, n)_ (con _n_ = inizio riga successiva) e aggiorno il contenuto della riga troncando il contenuto della riga corrente, poiché la _realloc_ potrebbe invalidare il puntatore che sto utilizzando. Tronco il contenuto della riga corrente e lo aggiorno tramite la funzione
 	void aggiornaRiga(EditorR* row)
 #### __3. Funzioni di utility ausiliarie: Ricerca del Testo e Apertura file da Prompt__
----- 
 Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, utilizzerò come appoggio la funzione
 	char *promptComando(char *prompt, void (*callback)(char *, int))
 Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un `char*` e un `int`. Dare in input un puntatore a funzione mi da la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua _size_, sia l’apertura di un file, passandogli come valore al puntatore a funzione _NULL_.
@@ -151,7 +149,6 @@ Per __aprire un nuovo file__ nella schermata dell’Editor verifico se il file e
 Tutto ciò verrà verificato attraverso la funzione
 	void openNewFileFromPrompt()
 #### __4. Funzioni per Riconoscimento del Tipo di File e Colorazione di Sintassi__
----- 
 __Riconoscere__ il tipo di __file in input__ è abbastanza semplice, basterà solamente vedere cosa contiene `argv[1]` tramite la funzione
 	void selezionaSintassiDaColorare();
 Se `argv[1]`: 
@@ -173,7 +170,6 @@ Per __impostare__ determinati __colori__ in base al tipo di file utilizzerò le 
 - La prima funzione prenderà un intera riga del file e per ogni stringa presente in essa riallocherà la memoria necessaria, dato che colorare il testo incrementerà la dimensione della stringa in questione. Tale funzione si occuperà anche di verificare se nel file sono presenti i caratteri `//` e `/*` o `*/`, per colorare di _cyan_ i commenti trovati.
 - La seconda funzione invece, prende in input un intero e restituisce un altro intero corrispondente al carattere _ANSI_ da abbinare alla sequenza di escape che mi permetterà di colorare il testo
 #### __5. Gestione commenti singoli e multilinea__
----- 
 Gestire i commenti singoli è molto semplice, infatti ho creato una funzione ‘booleana’ che verifica, tramite la funzione _strchr_, se il carattere preso in input è considerato un carattere di separazione (_.()+-/*=%<>;_).
 	int is_separator(int c);
 Anche in questo caso mi appoggerò alla funzione _void aggiornaSintassi(EditorR *row)_ per verificare se nel testo sono presenti caratteri considerati commenti in file _.c_. A questo punto mi serviranno 3 stringhe, che conterranno rispettivamente la stringa contenuta in un commento su una singola linea, la stringa di inizio del commento multilinea e la fine, e 3 variabili intere per contenere la loro lunghezza. Successivamente itero su tutti i caratteri di ogni riga e se trovo una stringa che riconosco la colorerò, solo se questa non è contenuta all’interno di un commento. Per tenere traccia nella scansione se mi trovo all’interno di un commento, utilizzo un’espressione ternaria `int in_comment = (row->index > 0 && Editor.row[row->index - 1].is_comment); ` che varrà 1 (True) se la riga precedente è evidenziata, 0 (False) altrimenti.
