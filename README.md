@@ -1,4 +1,7 @@
 # Progetto Del Corso di Sistemi Operativi
+
+<img src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/788px-Happy_Mac.svg.png" alt="Happy Mac" width="250px" height="250px">
+
 Il progetto ha lo scopo di creare un editor di testo da terminale, che implementi più comandi possibili per l’utilizzo dello stesso. 
 Il cuore dell’Editor di Testo è rappresentato dalla struct config, presente nel file _utilities.h_, così definita:
 ```C
