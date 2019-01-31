@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<title>Progetto Del Corso di Sistemi Operativi</title>
+		<style>
+			body {
+				text-align:  center;
+				color:       #000;
+				font-family: georgia, serif;
+				font-size:   120%;
+				line-height: 1.6;
+				margin:      0;
+				padding:     2em 2em 5em;
+				background:  rgb(253, 253, 253);
+				margin:      auto;
+				color:       rgb(10, 10, 10);
+			}
+
+			a {
+				outline:         none !important;
+				font-weight:     bold;
+				text-decoration: none;
+			}
+
+			a:link {
+				color: #c00;
+			}
+
+			a:visited {
+				color: #606;
+			}
+
+			a:hover {
+				color: #606;
+			}
+
+			a:active {
+				color:   #900;
+				outline: none;
+			}
+
+			h1 {
+				font-size:   300%;
+				line-height: 1.2;
+				font-style:  normal;
+				margin:      2.5em 0 1em;
+			}
+
+			h2 {
+				font-weight: bold;
+				font-size:   200%;
+				line-height: 140%;
+				margin:      1.5em 0 0.75em;
+			}
+
+			h3 {
+				font-weight:    normal;
+				text-transform: uppercase;
+				font-size:      150%;
+				letter-spacing: 0.15em;
+				margin:         1.75em 0 0.75em;
+			}
+
+			h4 {
+				font-weight:    normal;
+				font-size:      150%;
+				letter-spacing: 0.1em;
+				margin:         1.5em 0 0.75em;
+			}
+
+			h5 {
+				font-weight: normal;
+				font-style:  italic;
+				font-size:   150%;
+				margin:      1.5em 0 0.75em;
+			}
+
+			h6 {
+				font-weight:    bold;
+				font-size:      100%;
+				letter-spacing: 0.1em;
+				margin:         1.5em 0 0.75em;
+			}
+
+			p {
+				text-align: left;
+				font-size:  100%;
+				margin:     1em 0 0;
+			}
+
+			p + p {
+				margin:      0;
+				text-indent: 1.5em;
+			}
+
+			h1 + p {
+				text-indent: 0;
+			}
+
+			p + ul, p + ol, p + dl {
+				margin-bottom: 1.5em;
+			}
+
+			img {
+				max-width: 100%;
+			}
+
+			figure {
+				margin:     2em 0 1.5em 0;
+				width:      100%;
+				text-align: center;
+			}
+
+			figure img {
+				border: 1px solid #ccc;
+			}
+
+			figcaption {
+				font-size:   66%;
+				padding:     1em;
+				padding-top: 0.5em;
+				color:       #aaa;
+			}
+
+			blockquote {
+				border-left:  5px solid #eee;
+				padding-left: 1.5em;
+				margin:       1em 0;
+			}
+
+			blockquote p {
+				text-indent: 0 !important;
+				font-style:  italic;
+			}
+
+			blockquote small {
+				display:     block;
+				line-height: 1.7em;
+			}
+
+			ul, ol, dl {
+				text-align: left;
+			}
+
+			
+
+			ul li, ol li {
+				padding-left: 0.3em;
+				margin-top:   0.6em;
+			}
+
+			li p {
+				margin-top:  0px;
+				text-indent: 0em;
+			}
+
+			li {
+				margin-bottom: 0.6em;
+			}
+
+			.hr {
+				border:    none;
+				font-size: 200%;
+				color:     #ddd;
+			}
+
+			.hr:after {
+				content: "❧"
+			}
+
+			h1 + .hr {
+				margin:    -0.5em 0 1.5em;
+				font-size: 400%;
+			}
+
+			ol#footnotes {
+				margin-top:   4.5em;
+				border-top:   1px solid #eee;
+				padding-top:  1em;
+				font-size:    80%;
+				padding-left: 1.5em;
+			}
+
+			ol#footnotes p {
+				text-indent: 0px;
+			}
+
+			figure + p {
+				text-indent: 0em !important;
+			}
+
+			/* Code Highlighting */
+
+			code {
+				font-family: 'Courier', monospace;
+				font-size:   80%;
+				font-style: oblique;
+				color: forestgreen;
+			}
+
+			p > code {
+				padding: 0.3em 0.2em;
+				background:    #272822;
+				border-radius: 5px;
+			}
+
+			pre {
+				color:         #f8f8f2;
+				text-align:    left;
+				line-height:   1.2em;
+				overflow-x:    scroll;
+				background:    #272822;
+				padding: 12pt;
+				border-radius: 3pt;
+				white-space:   pre-wrap;
+				tab-size:      4;
+			}
+
+			.syntax-all {
+			}
+
+			.syntax-entity {
+				color: #fd971f;
+			}
+
+			.syntax-tag {
+				color: #f92672;
+			}
+
+			.syntax-keyword {
+				color: #f92672;
+			}
+
+			.syntax-parameter {
+				color: #a6e22e;
+			}
+
+			.syntax-string {
+				color: #e6db74;
+			}
+
+			.syntax-constant {
+				color: #9effff;
+			}
+
+			.syntax-variable {
+				color: #a6e22e;
+			}
+
+			.syntax-escape {
+				color: #ae81ff;
+			}
+
+			.syntax-comment {
+				color: #75715e;
+			}
+
+			.syntax-error {
+				color:      #f8f8f0;
+				background: #f92672;
+				padding:    2px 6px;
+			}
+
+			/* Markup Highlighting */
+
+			.syntax-heading {
+				font-weight: bold;
+				color:       #ae81ff;
+			}
+
+			.syntax-italic {
+				font-style: italic;
+			}
+
+			.syntax-bold {
+				font-weight: bold;
+			}
+
+			.syntax-deleted {
+				color:            #b31d28;
+				background-color: #ffeef0;
+			}
+
+			.syntax-inserted {
+				color:            #22863a;
+				background-color: #f0fff4;
+			}
+
+			.syntax-changed {
+				color:            #e36209;
+				background-color: #ffebda;
+			}
+
+			.syntax-link {
+				text-decoration: underline;
+				color:           #008fff;
+			}
+
+			.syntax-list {
+				color: #fd971f;
+			}
+
+			@keyframes highfade {
+				0% {
+					background-color: none;
+				}
+				20% {
+					background-color: yellow;
+				}
+				100% {
+					background-color: none;
+				}
+			}
+
+			@-webkit-keyframes highfade {
+				0% {
+					background-color: none;
+				}
+				20% {
+					background-color: yellow;
+				}
+				100% {
+					background-color: none;
+				}
+			}
+
+			a:target, ol#footnotes li:target, sup a:target {
+				animation-name:                    highfade;
+				animation-duration:                2s;
+				animation-iteration-count:         1;
+				animation-timing-function:         ease-in-out;
+				-webkit-animation-name:            highfade;
+				-webkit-animation-duration:        2s;
+				-webkit-animation-iteration-count: 1;
+				-webkit-animation-timing-function: ease-in-out;
+			}
+
+			@media screen and (max-width: 736px) {
+				body {
+					padding:   1em 20px 1em 20px;
+					font-size: 120%;
+				}
+				h1 {
+					font-size: 250%;
+				}
+				h2 {
+					font-size: 150%;
+				}
+				h3, h4, h5 {
+					font-size: 140%;
+				}
+			}
+		</style>
+	</head>
+<body>
+<h1>Progetto Del Corso di Sistemi Operativi</h1>
+
+<p>Il progetto ha lo scopo di creare un editor di testo da terminale, che implementi più comandi possibili per l’utilizzo dello stesso. </p>
+
+<p>Il cuore dell’Editor di Testo è rappresentato dalla struct config, presente nel file <em>utilities.h</em>, così definita:</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">typedef</span> <span class="syntax-all syntax-keyword">struct</span> config{
+	<span class="syntax-all syntax-keyword">int</span> x, y;   <span class="syntax-all syntax-comment">/*Indice di Riga e di Colonna del Terminale*/</span>
+	<span class="syntax-all syntax-keyword">int</span> rx; <span class="syntax-all syntax-comment">/* Indice del campo di rendering, se non vi sono TAB rx == x, se ci sono rx &gt; x*/</span>
+	<span class="syntax-all syntax-keyword">int</span> offsetRiga;     <span class="syntax-all syntax-comment">/*Tiene traccia della riga in cui sono */</span>
+	<span class="syntax-all syntax-keyword">int</span> offsetColonna;  <span class="syntax-all syntax-comment">/*Tiene traccia della colonna in cui sono. Rappresenterà l&#39;indice dei caratteri*/</span>
+	<span class="syntax-all syntax-keyword">int</span> righe, colonne;
+	<span class="syntax-all syntax-keyword">int</span> numRighe;
+	EditorR* row;   <span class="syntax-all syntax-comment">/*Mi serve un puntatore ai dati di carattere da scrivere*/</span>
+	<span class="syntax-all syntax-keyword">int</span> sporco; <span class="syntax-all syntax-comment">/*Si occuperà di mostrare se il file è stato modificato*/</span>
+	<span class="syntax-all syntax-keyword">char</span>* nomeFile;
+	<span class="syntax-all syntax-keyword">char</span> statusmsg[<span class="syntax-all syntax-constant">80</span>];  <span class="syntax-all syntax-comment">/*Stringa che utilizzo per la ricerca bella barra di stato*/</span>
+	<span class="syntax-all syntax-constant">time_t</span> statusmsg_time;  <span class="syntax-all syntax-comment">/*Timestamp per messaggio, in modo tale in poco tempo posso cancellarlo*/</span>
+	<span class="syntax-all syntax-keyword">struct</span> editorSyntax *syntax;    <span class="syntax-all syntax-comment">/*Contiene tutto ciò che mi serve per riconosce il tipo di file*/</span>
+	<span class="syntax-all syntax-keyword">struct</span> termios initialState;    <span class="syntax-all syntax-comment">// Salvo lo stato iniziale del terminale e tutti i suoi flag
+</span>}config;</code></pre>
+
+<p>Per l’implementazione dell’editor, ho suddiviso il progetto il 5 macro sezioni:</p>
+
+<h4><strong>1. Modifica del Terminale, con funzioni che lo implementano</strong></h4>
+
+<p>I files <em>&nbsp;termFunc.h</em> e <em>&nbsp;termFunc.c</em> contengono le funzioni che ho utilizzato per settare determinati flag sul terminale.</p>
+
+<p>Per prima cosa, ho scritto una funzione chiamata <em>”abilitaRawMode”</em>, che si occupa di uscire dalla classica modalità “cooked mode” del terminale ed entrare in modalità “Raw Mode”. Occorre quindi:</p>
+
+<ul>
+	<li>Disabilitare tutti i tasti <em>ctrl</em> che utilizza di default </li>
+	<li>Disabilitare gli accapo e la funzionalità di elaborazione dell’output (comprese le printf)</li>
+	<li>Disabilitare la gestione dei segnali </li>
+	<li>Settare il numero minimo di byte prima che la <em>read</em> ritorni e il tempo massimo di attesa</li>
+	<li>Eliminare qualsiasi input non letto</li>
+</ul>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+
+<p>Ovviamente, una volta terminata la scrittura nell’Editor, mi servirà la funzione <em>disabilitaRawMode</em> per riassegnare tutti gli attributi che originariamente possedeva il terminale.</p>
+
+<p>Il <em>main</em>, una volta abilitata la modalità <em>RawMode</em>, dovrà continuamente svuotare lo schermo e processare ogni singolo char che daremo in input sul terminale. Per fare ciò, utilizzo le <em>”Sequenze di Escape”</em>, le quali iniziano sempre con un carattere escape <code>\x1b</code>, seguito sempre da <code>[</code>. In questo modo comunico al terminale di spostare il cursore, cambiare il colore del font, cancellare parti dello schermo,...</p>
+
+<blockquote>
+<p><em>Molto Utile è stata la guida sul sito <a href="">https://vt100.net/docs/vt100-ug/chapter3.html#ED</a>(https://vt100.net/docs/vt100-ug/chapter3.html#ED), che mostra il significato di ogni singola sequenza di escape.</em></p>
+</blockquote>
+
+<p>Per svuotare lo schermo, occorre scrivere sullo standard output 4 byte:</p>
+
+<ul>
+	<li>Il Primo <code>\x1b</code> (27 in decimale) è il carattere di escape</li>
+	<li> Il Secondo<code>[</code> è un altro carattere di escape</li>
+	<li>Il Terzo <code>?25</code> indica che voglio cancellare l&#39;intero schermo</li>
+	<li>Il Quarto <code>J</code> indica che voglio eliminare <em>&lt;esc&gt;</em></li>
+</ul>
+
+<p>Dopo aver impostato tutto l’occorrente, mi servirò di una struct <code>StringBuffer</code> e delle relative funzioni associate ad essa:</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">struct</span> StringBuffer {
+	<span class="syntax-all syntax-keyword">char</span> *b;
+	<span class="syntax-all syntax-keyword">int</span> len;
+};</code></pre>
+
+<p>La struct, mi servirà per creare una <em>write</em> dinamica, in cui scriverò, tramite la funzione <em>memcpy</em>, l’input scritto nel terminale nel <code>char* b</code>, riallocando i byte necessari per la stringa, aggiornando anche la sua rispettiva lunghezza. Per ottenere il risultato che voglio aspettarmi utilizzo due funzioni:</p>
+
+<ul>
+	<li>Il costruttore:
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">sbAppend</span>(<span class="syntax-all syntax-keyword">struct</span> StringBuffer *sb, <span class="syntax-all syntax-keyword">const</span> <span class="syntax-all syntax-keyword">char</span> *s, <span class="syntax-all syntax-keyword">int</span> len)</code></pre></li>
+	<li>Il distruttore:
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">sbFree</span>(<span class="syntax-all syntax-keyword">struct</span> StringBuffer *sb)</code></pre></li>
+</ul>
+
+<p>La funzione <em>&nbsp;sbAppend</em> verrà utilizzata anche per svuotare lo schermo, per nascondere il cursore <code>&quot;sbAppend(&amp;sb, &quot;\x1b[?25l&quot;, 6);&quot;</code> e successivamente per riposizionarlo in alto a sinistra nel terminale.</p>
+
+<p>A questo punto, dovrò sapere l’effettiva dimensione del terminale (larghezza e altezza), per far si che:</p>
+
+<ul>
+	<li>Il file in ingresso sia perfettamente centrato nel terminale</li>
+	<li>Mostrare un messaggio di benvenuto nel caso in cui non passi alcun file</li>
+	<li>Scrivere due righe sottostanti per mostrare sia la lista dei comandi implementati che per abilitare la ricerca nel file o l’apertura di un altro nella stessa finestra
+
+		<p>void disegnaRighe(struct StringBuffer * sb)</p></li>
+</ul>
+
+<p>Per sapere l’effettiva dimensione del file, utilizzo la <code>struct winsize</code> che contiene tutto ciò che mi occorre, cioè il numero di righe e di colonne e i pixel in orizzontale e verticale. Ora è il momento di posizionare il cursore sullo schermo, tramite la comoda funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">posizioneCursore</span>(<span class="syntax-all syntax-keyword">int</span>* righe, <span class="syntax-all syntax-keyword">int</span>* colonne)</code></pre>
+
+<p>Tale funzione mi servirà come appoggio per posizionare il cursore in posizione (0, 0).</p>
+
+<p>Successivamente, dovrò verificare se il cursore si è spostato all’esterno della finestra, altrimenti potrebbe non funzionare lo scroll verticale, e posizionarlo all’interno della finestra “visibile”.</p>
+
+<p>È il momento di inizializzare e disegnare la <em>status bar</em>:</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">statusBarInit</span>(<span class="syntax-all syntax-keyword">struct</span> StringBuffer *sb)</code></pre>
+
+<p>Innanzitutto, occorre invertire il colore dell’ultima riga del terminale, per creare contrasto e renderla visibile <code>sbAppend(sb, &quot;\x1b[7m&quot;, 4)</code>. La status bar dovrà mostrare il nome del file, il tipo (se conosciuto dall’editor), se è stato modificato, il numero di righe del file, l’indice di riga in cui mi trovo e una seconda barra che utilizzerò per la ricerca del testo, per l’apertura di un nuovo file e per mostrare un messaggio contenente i comandi da me implementati che verrà visualizzato solo per 5 secondi.</p>
+
+<h4><strong>2. Funzioni di Utility per Editor</strong></h4>
+
+<p>L’Editor utilizza principalmente una struct, contenente tutto ciò che reputo necessario per la gestione dello stesso.</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">typedef</span> <span class="syntax-all syntax-keyword">struct</span> EditorR{
+	<span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-constant">index</span>;  <span class="syntax-all syntax-comment">// Per gestire i commenti /* */ su più linee gestendo l&#39;indice all&#39;interno del file
+</span>	<span class="syntax-all syntax-keyword">int</span> size;    <span class="syntax-all syntax-comment">/*Conterrà la size che occuperanno le stringhe*/</span>
+	<span class="syntax-all syntax-keyword">int</span> effSize;    <span class="syntax-all syntax-comment">/*Gestisco le effettive tabulazioni, mostrando gli spazi come dico io e non...*/</span>
+	<span class="syntax-all syntax-keyword">char</span>* chars;
+	<span class="syntax-all syntax-keyword">char</span>* effRow;   <span class="syntax-all syntax-comment">/*... come fa di default il terminale, altrimenti un TAB occuperebbe 7 caratteri circa*/</span>
+	<span class="syntax-all syntax-keyword">unsigned</span> <span class="syntax-all syntax-keyword">char</span> *color;   <span class="syntax-all syntax-comment">/*conterrà valori da 0 a 255 e vedrà se ogn carattere matcherà con un stringa definita da me, per l&#39;highlight*/</span>
+	<span class="syntax-all syntax-keyword">int</span> is_comment; <span class="syntax-all syntax-comment">/*Variabile boolean per gestione commento*/</span>
+} EditorR;</code></pre>
+
+<p>Prima di tutto occorre inizializzare la struct config, in modo tale da resettare ogni dato presente in essa e posizionare il cursore all’inizio del file. All’inizio ho gestito il posizionamento del cursore attraverso la combinazione di tasti <em>W-A-S-D</em>, ma successivamente ho sostituito tale implementazione con la seguente struttura:</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">enum</span> editorKey {
+	BACKSPACE = <span class="syntax-all syntax-constant">127</span>,    <span class="syntax-all syntax-comment">/*ASCII == 127*/</span>
+	FRECCIA_SINISTRA = <span class="syntax-all syntax-constant">1000</span>,    <span class="syntax-all syntax-comment">/* Dalla prossima chiave in poi i numeri incrementeranno di uno*/</span>
+	FRECCIA_DESTRA,
+	FRECCIA_SU,
+	FRECCIA_GIU,
+	CANC,   <span class="syntax-all syntax-comment">/*&lt;esc&gt; [3 ~*/</span>
+	HOME,   <span class="syntax-all syntax-comment">/*Fn + ←*/</span>
+	END,    <span class="syntax-all syntax-comment">/*Fn + →*/</span>
+	PAGINA_SU,
+	PAGINA_GIU
+};</code></pre>
+
+<p>In questo modo mi basterà concatenare la sequenza di escape <code>\x1b</code> con char che vanno da ‘1’ a ‘8’ per gestire i tasti <em>HOME, END, CANC PAGE-UP, PAGE-DOWN&nbsp;</em> e da ‘A’ a ‘F’ per gestire i tasti <em>FRECCIA-SU, FRECCIA-GIU, FRECCIA-SINISTRA, FRECCIA-DESTRA</em> tramite un semplicissimo switch nella funzione:</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">letturaPerpetua</span>()</code></pre>
+
+<p>Tale funzione lavorerà insieme a…</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">processaChar</span>()</code></pre>
+
+<p>…la quale si occuperà di gestire ogni carattere passato, controllando se questo rappresenta un carattere speciale, se ho premuto <em>CTRL</em> o se semplicemente dovrà scrivere. Per gestire i tasti <em>CTRL</em>, utilizzo la seguente macro: <code>#define CTRL_KEY(k) ((k) &amp; 0x1f)</code>.</p>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="max-width: 2%; margin-top: 2%;">
+
+<p>Una volta gestiti tutti questi casi, posso finalmente occuparmi dell’<strong>apertura di una file</strong> tramite la funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">openFile</span>(<span class="syntax-all syntax-keyword">char</span>* nomeFile);</code></pre>
+
+<p>Appena un file viene aperto dovrò liberare la memoria allocata per il <code>char* nomeFile</code> presente nella struct principale dell’Editor e successivamente riallocarla con il nome del file appena aperto, tramite la funzione <em>strdup</em> che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione. Per mostrare il contenuto del file sullo schermo dovrò scandire ogni sua linea, tramite la funzione <code>&nbsp;ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)</code>, gratuitamente offerta da <em>&lt;stdio.h&gt;</em> ,ed “iniettare” tante righe sul terminale, quante sono quelle scandite dal file. </p>
+
+<p>Per <strong>modificare il contenuto del file</strong>, utilizzo principalmente le seguenti funzioni:</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">inserisciRiga</span>(<span class="syntax-all syntax-keyword">int</span> at, <span class="syntax-all syntax-keyword">char</span> *s, <span class="syntax-all syntax-constant">size_t</span> len);
+<span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">aggiornaRiga</span>(EditorR* row);
+<span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">xToRx</span>(EditorR* row, <span class="syntax-all syntax-keyword">int</span> x);
+<span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">scriviInRiga</span>(EditorR *row, <span class="syntax-all syntax-keyword">int</span> at, <span class="syntax-all syntax-keyword">int</span> c);
+<span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">inserisciChar</span>(<span class="syntax-all syntax-keyword">int</span> c);
+<span class="syntax-all syntax-keyword">char</span> *<span class="syntax-all syntax-entity">rowToString</span>(<span class="syntax-all syntax-keyword">int</span> *buflen);</code></pre>
+
+<ul>
+	<li> La prima funzione la utilizzo per <strong>gestire l’allocazione della memoria</strong> delle stringhe presenti su una riga, per gestire gli indici di ogni riga, per processare ogni <code>char *</code> presente nell’Editor, incrementando il numero di righe e la sua lunghezza se presente un carattere di tabulazione</li>
+	<li>La seconda funzione è una funzione ausiliaria, utilizzata per l’ <strong>aggiornamento degli spazi su una riga</strong>, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo una volta modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per i le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare <code>row-&gt;size + tabs*(STOP_TAB -1)+1</code>, in modo tale che ogni carattere letto venga copiato interamente nella&nbsp;<em>struct EditorR</em>.</li>
+	<li>La terza funzione è anch’essa di appoggio e servirà per aggiornare il valore <em>x</em> della <em>struct config</em> in un valore <em>rx</em> , per <strong>&nbsp;calcolare</strong> l’effettivo <strong>offset di ogni tab</strong> e tramutarlo in un vero e proprio spazio. Per fare ciò devo sapere quante colonne sono alla destra del <em>TAB</em> e quante ne sono a sinistra (<em>8 - 1</em>), quindi farò un controllo in un ciclo <em>for</em> incrementando il valore di <em>rx</em> per cercare il successivo <em>TAB</em>.</li>
+	<li>Dalla quarta funzione in poi, mi occuperò dell’effettiva <strong>scrittura di caratteri su</strong> una <strong>riga</strong>, dato che precedentemente ho gestito le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si occuperà dell’effettiva scrittura di caratteri nella struct dell’Editor.</li>
+	<li>La quinta funzione <strong>inserisce</strong> le <strong>stringhe</strong> precedentemente lette <strong>sulle righe del terminale</strong>. Per fare ciò verifico dapprima la posizione del cursore sullo schermo e se quest’ultimo si trova nella fine del file, dovrò aggiungere una nuova riga per dare la possibilità di scrivere oltre la fine del file. Sposterò successivamente la posizione del cursore in avanti in modo tale che il prossimo carattere inserito capiti subito dopo il carattere precedentemente aggiunto.</li>
+	<li>La sesta funzione invece <strong>incapsulerà una riga</strong> presente nel terminale <strong>convertendola in una</strong> vera e propria <strong>&nbsp;stringa</strong>. Un primo ciclo&nbsp;<em>for</em> sommerà le lunghezze di ogni riga di testo salvando il suo valore in una variabile in modo tale che io possa allocare l’effettiva memoria necessaria per la stringa. Mi servirà anche un secondo ciclo <em>for</em> per copiare il contenuto di ogni riga all’interno del buffer precedentemente allocato, aggiungendo un ulteriore carattere alla fine di ogni riga.</li>
+</ul>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+
+<p>A questo punto sono pronto a <strong>salvare</strong> il contenuto del file <strong>sul disco</strong> tramite la funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">salvaSuDisco</span>();</code></pre>
+
+<p>Anche il salvataggio sarà dinamico, infatti prima di tutto verifico se il file è esistente, se si saprò il suo nome e dove salvarlo, altrimenti dovrò far immettere il nome per il suo successivo salvataggio e dovrò anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Aprirò successivamente il file in modalità lettura e scrittura se esiste, altrimenti verrà creato, tramite il flag <code>O_RDWR | O_CREAT</code>. Imposterò quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione <em>rowToString</em> e con la funzione <code>int ftruncate(int fildes, off_t length)</code> di <em>&lt;unistd.h&gt;</em> imposterò una dimensione statica al file, in modo che se è più corto, inserisce <em>0</em> di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. A questo punto sono pronto ad usare la <code>write</code> per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.</p>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+
+<p>Finora l’Editor sarà in grado solamente di scrivere testo, gestendo le tabulazioni e l’inserimento di caratteri concatenandoli tra loro. A questo punto occorre gestire la <strong>cancellazione del testo</strong>, utilizzando le seguenti funzioni:</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">cancellaCharInRiga</span>(EditorR* row, <span class="syntax-all syntax-keyword">int</span> at);
+<span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">cancellaChar</span>();
+<span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">liberaRiga</span>(EditorR* row);
+<span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">cancellaRiga</span>(<span class="syntax-all syntax-keyword">int</span> at);
+<span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">appendiStringaInRiga</span>(EditorR* row, <span class="syntax-all syntax-keyword">char</span>* s, <span class="syntax-all syntax-constant">size_t</span> len);</code></pre>
+
+<p>Le precedenti funzioni dovranno gestire sia il tasto <em>CANC</em> che il tasto <em>DEL</em>. Per fare ciò una funzione “mangerà” il testo dalla destra del prossimo char che si trova in corrispondenza del cursore, attraverso <em>memmove</em>, e un’altra consumerà il carattere da sinistra, utilizzando la stessa funzione ma giostrando gli indici della stringa in modo accurato. Occorre gestire anche il caso in cui un carattere si trovi o in posizione <em>(0, 0)</em> dello schermo o in posizione <em>(0, n)</em>. Nel primo caso la cancellazione non dovrà essere effettuata il cursore dovrà essere ri-posizonato al suo posto e nel secondo caso invece una funzione ausiliaria concatenerà le due righe unendole, cancellerà la riga sottostante e aggiornerà gli indici di riga. </p>
+
+<p>L’ultima funzione invece si occuperà dell’aggiunta della stringa modificata nell’opportuno campo della <em>struct conf</em>.</p>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+
+<p>Per il <strong>tasto invio</strong> invece, basterà intercettare l’inserimento del carattere <code>\r</code> e <code>\n</code> tramite la funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">inserisciNewLine</span>()</code></pre>
+
+<p>Anche in questo caso verifico sia se sono all’inizio del file, e quindi aggiungo una riga al campo<em>y</em> della struct , altrimenti basterà splittare la riga in cui mi trovo in 2 righe, inserendo la prima con i caratteri che si trovano sulla sinistra e la seconda con quelli che sono a destra. A questo punto sposto il cursore in posizione <em>(0, n)</em> (con <em>n</em> = inizio riga successiva) e aggiorno il contenuto della riga troncando il contenuto della riga corrente, poiché la <em>realloc</em> potrebbe invalidare il puntatore che sto utilizzando. Tronco il contenuto della riga corrente e lo aggiorno tramite la funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">aggiornaRiga</span>(EditorR* row)</code></pre>
+
+<h4><strong>3. Funzioni di utility ausiliarie: Ricerca del Testo e Apertura file da Prompt</strong></h4>
+
+<p>Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, utilizzerò come appoggio la funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">char</span> *<span class="syntax-all syntax-entity">promptComando</span>(<span class="syntax-all syntax-keyword">char</span> *prompt, <span class="syntax-all syntax-keyword">void</span> (*callback)(<span class="syntax-all syntax-keyword">char</span> *, <span class="syntax-all syntax-keyword">int</span>))</code></pre>
+
+<p>Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un <code>char*</code> e un <code>int</code>. Dare in input un puntatore a funzione mi da la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua <em>size</em>, sia l’apertura di un file, passandogli come valore al puntatore a funzione <em>NULL</em>.<br>Tale funzione memorizzerà l’input inserito dall’utente in un buffer appositamente allocato e attraverso un ciclo while si occuperà di verificare:</p>
+
+
+<ul>
+	<li>La cancellazione del testo</li>
+	<li>La gestione del tasto invio</li>
+	<li>Il riconoscimento dei caratteri, in modo tale che nel prompt possa inserire solo caratteri <em>ASCII</em> riconoscibili dal terminale</li>
+</ul>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+
+<p>Per la <strong>ricerca del testo</strong> dovrò passare al puntatore a funzione di <em>&nbsp;promptComando</em> il metodo</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">cercaTestoCallback</span>(<span class="syntax-all syntax-keyword">char</span> *toFind, <span class="syntax-all syntax-keyword">int</span> key)</code></pre>
+
+<p>Tale funzione si occuperà di gestire la ricerca direzionale (tramite i tasti freccia) settando opportunamente due variabili intere che memorizzeranno l’indice di riga su cui si trova l’ultimo risultato trovato (se non esiste <em>-1</em>), e la direzione della ricerca (<em>1</em> per cercare in avanti e <em>-1</em> per cercare indietro) tramite un ciclo <em>for</em> che servirà a scandire l’intero contenuto del file:</p>
+
+<ul>
+	<li>Se ho premuto invio o un qualsiasi altro carattere di escape basta uscire dalla ricerca</li>
+	<li>Altrimenti:
+
+		<ul>
+			<li>Se premo <em>FRECCIA DESTRA</em> o <em>FRECCIA GIÙ</em> mi sposterò in avanti</li>
+			<li>Se premo <em>FRECCIA SINISTRA</em> o <em>FRECCIA SU</em> mi sposterò indietro</li>
+		</ul></li>
+</ul>
+
+<p>Per verificare se la stringa inserita è contenuta in una riga, utilizzo la comodissima funzione <code>char * strstr(const char *haystack, const char *needle);</code> gratuitamente offerta da <em>&lt;string.h&gt;</em>. Se ho trovato la stringa in questione, la colorerò di blu, altrimenti il suo colore sarà quello di default.</p>
+
+<p>Tale funzione di callback verrà presa in input dalla funzione <em>&nbsp;promptComando</em> che però verrà invocata dalla funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">cercaTesto</span>();</code></pre>
+
+<p>Quest’ultima si occuperà solamente di salvare la posizione che aveva il cursore prima della ricerca e di ripristinarlo a ricerca terminata.</p>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+
+<p>Per <strong>aprire un nuovo file</strong> nella schermata dell’Editor verifico se il file esiste, tramite la system call <code>int access(const char *path, int mode);</code> con il flag di modalità settato ad <code>&nbsp;F_OK&nbsp;</code></p>
+
+<ul>
+	<li>Se esiste, inizializzerò l’Editor e aprirò il file in sola lettura</li>
+	<li>Altrimenti prenderò in input il file, salvando opportunamente il suo nome e lo aprirò in scrittura</li>
+</ul>
+
+<p>Tutto ciò verrà verificato attraverso la funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">openNewFileFromPrompt</span>()</code></pre>
+
+<h4><strong>4. Funzioni per Riconoscimento del Tipo di File e Colorazione di Sintassi</strong></h4>
+
+<p><strong>Riconoscere</strong> il tipo di <strong>file in input</strong> è abbastanza semplice, basterà solamente vedere cosa contiene <code>argv[1]</code> tramite la funzione</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">selezionaSintassiDaColorare</span>();</code></pre>
+
+<p>Se <code>argv[1]</code>: </p>
+
+<ul>
+	<li>È <em>NULL</em>, esco </li>
+	<li>Altrimenti ritorno salvo il puntatore all’ultima occorrenza dei caratteri nella stringa, ovvero l’estensione, tramite la funzione <em>strrchr</em> di <em>&lt;string.h&gt;</em>. Verifico se questa meccia con la mia struct e procedo con la colorazione del testo.</li>
+</ul>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">struct</span> editorSyntax HLDB[] = {
+  	{
+			<span class="syntax-all syntax-string">&quot;c&quot;</span>,
+			ESTENSIONI_C,
+			PAROLE_C,
+			<span class="syntax-all syntax-string">&quot;//&quot;</span>, <span class="syntax-all syntax-string">&quot;/*&quot;</span>, <span class="syntax-all syntax-string">&quot;*/&quot;</span>,
+			COLORA_NUMERI | COLORA_STRINGHE
+  	},
+};</code></pre>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+
+<p>Per <strong>impostare</strong> determinati <strong>colori</strong> in base al tipo di file utilizzerò le seguenti funzioni:</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">aggiornaSintassi</span>(EditorR *row);
+<span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">daSintassiAColore</span>(<span class="syntax-all syntax-keyword">int</span> color);</code></pre>
+
+<ul>
+	<li>La prima funzione prenderà un intera riga del file e per ogni stringa presente in essa riallocherà la memoria necessaria, dato che colorare il testo incrementerà la dimensione della stringa in questione. Tale funzione si occuperà anche di verificare se nel file sono presenti i caratteri <code>//</code> e <code>/*</code> o <code>*/</code>, per colorare di <em>cyan</em> i commenti trovati.</li>
+	<li>La seconda funzione invece, prende in input un intero e restituisce un altro intero corrispondente al carattere <em>ANSI</em> da abbinare alla sequenza di escape che mi permetterà di colorare il testo</li>
+</ul>
+
+<h4><strong>5. Gestione commenti singoli e multilinea</strong></h4>
+
+<p>Gestire i commenti singoli è molto semplice, infatti ho creato una funzione ‘booleana’ che verifica, tramite la funzione <em>strchr</em>, se il carattere preso in input è considerato un carattere di separazione (<code>.()+-/*=~%&lt;&gt;[];</code>).</p>
+
+<pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">is_separator</span>(<span class="syntax-all syntax-keyword">int</span> c);</code></pre>
+
+<p>Anche in questo caso mi appoggerò alla funzione <em>void aggiornaSintassi(EditorR <em>row)</em></em> per verificare se nel testo sono presenti caratteri considerati commenti in file <em>.c</em>. A questo punto mi serviranno 3 stringhe, che conterranno rispettivamente la stringa contenuta in un commento su una singola linea, la stringa di inizio del commento multilinea e la fine, e 3 variabili intere per contenere la loro lunghezza. Successivamente itero su tutti i caratteri di ogni riga e se trovo una stringa che riconosco la colorerò, solo se questa non è contenuta all’interno di un commento. Per tenere traccia nella scansione se mi trovo all’interno di un commento, utilizzo un’espressione ternaria <code>int in_comment = (row-&gt;index &gt; 0 &amp;&amp; Editor.row[row-&gt;index - 1].is_comment);&nbsp;</code> che varrà 1 (True) se la riga precedente è evidenziata, 0 (False) altrimenti.</p>
+
+<p>Se sono all’interno di un commento multilinea, nel ciclo <em>while</em> verifico che:</p>
+
+<ul>
+	<li>Le tre variabili stringhe non sono nulle e
+
+		<ul>
+			<li>Se <code>in_comment&nbsp;</code> vale 1, l’indice di riga in cui mi trovo sarà settato con la macro <code>COMMENTO_MULTILINEA</code></li>
+			<li>Se <code>in_comment&nbsp;</code> vale 0, la imposto ad 1 e continuo a “mangiare” il contenuto della riga</li>
+		</ul></li>
+</ul>
+
+<p>Se sono all’interno di una stringa e il carattere corrispondente è ‘//’ e c’è almeno un altro carattere all’interno di quella riga, evidenzio quel carattere.</p>
+
+<p>Mi occuperò di verificare se trovo anche numeri decimali, colorandoli di rosso e ricorsivamente invoco la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.</p>
+
+<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+
+<blockquote>
+<p><strong>Link Utili</strong>:</p>
+
+<ul>
+	<li>Tabella colori <em>ANSI</em>: <a href="">https://en.wikipedia.org/wiki/ANSI<em>escape</em>code#Colors&nbsp;</a>(#) e <a href="">https://i.stack.imgur.com/7H7H9.png</a>(https://i.stack.imgur.com/7H7H9.png)</li>
+	<li>Guida VT100 e sequenze di escape: <a href="">https://vt100.net/docs/vt100-ug/chapter3.html</a>(#)</li>
+	<li>Caratteri Speciali Prompt: <a href="">https://ss64.com/osx/syntax-prompt.html</a>(#)</li>
+</ul>
+</blockquote>
+
+</body>
+</html>
+
