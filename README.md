@@ -70,7 +70,6 @@ void statusBarInit(struct StringBuffer *sb)
 ```
 Innanzitutto, occorre invertire il colore dell’ultima riga del terminale, per creare contrasto e renderla visibile `sbAppend(sb, "\x1b[7m", 4)`. La status bar dovrà mostrare il nome del file, il tipo (se conosciuto dall’editor), se è stato modificato, il numero di righe del file, l’indice di riga in cui mi trovo e una seconda barra che utilizzerò per la ricerca del testo, per l’apertura di un nuovo file e per mostrare un messaggio contenente i comandi da me implementati che verrà visualizzato solo per 5 secondi.
 #### __2. Funzioni di Utility per Editor__
----- 
 L’Editor utilizza principalmente una struct, contenente tutto ciò che reputo necessario per la gestione dello stesso.
 
 ```C
