@@ -586,7 +586,7 @@ void inserisciNewLine(){
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-							GESTIONE PROMPT PER NUOVO FILE
+								GESTIONE PROMPT PER NUOVO FILE
 Ora occorre gestire il caso in cui non passo alcun file ad argv[1].
 In quel caso devo far inserire il nome del file di testo nella barra alla fine del
 file, altrimenti se scrivessi qualcosa, perderei tutto.
@@ -630,8 +630,7 @@ char *promptComando(char *prompt, void (*callback)(char *, int)){
 }
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-							FINE GESTIONE PROMPT PER NUOVO FILE
-* In Futuro inserisci l'apertura di un nuovo file dal prompt (come richiesto dal prof)
+							FINE GESTIONE PROMPT PER NUOVO FILE	
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
@@ -645,7 +644,7 @@ void cercaTesto(){
 	int vecchio_x = Editor.x, vecchio_y = Editor.y;
 	int vecchio_offsetCol = Editor.offsetColonna, vecchio_offsetRiga = Editor.offsetRiga;
     
-    char *query = promptComando("Search: %s (ESC per uscire)", cercaTestoCallback);
+    char *query = promptComando("Cerca: %s (ESC per uscire)", cercaTestoCallback);
     if (query)  free(query);
     else{	/*---->Restore<----*/
     	Editor.x = vecchio_x;
@@ -796,10 +795,10 @@ void aggiornaSintassi(EditorR *row){
   		if(Editor.syntax->flags & COLORA_STRINGHE){
   			if(in_string){
   				row->color[i] = STRINGA;
-  				/*	Se sono in una stringa e il carattere corrente è \\ 
+  				/*	Se sono in una stringa e il carattere corrente è // 
   					e c'è almeno un altro carattere in quella linea ...*/
   				if(c == '\\' && i + 1 < row->effSize){
-  					row->color[i + 1] = STRINGA;	/*...evidenzio il carattere che viene dopo il \*/
+  					row->color[i + 1] = STRINGA;	/*...evidenzio il carattere che viene dopo lo /*/
   					i += 2;	/*e consumo entrambe i caratteri*/
   					continue;
   				}
@@ -886,7 +885,7 @@ int is_separator(int c){
 void selezionaSintassiDaColorare(){
   	Editor.syntax = NULL;	/*Se niente matcha o se non c'è nessun nomeFile*/
   	if (Editor.nomeFile == NULL) return;
-  	/*Con strrchr prendo proprio l'ultimo char della stringa del nomeFile, ovvero l'estensione*/
+  	/*Con strrchr prendo proprio l'ultimo char* della stringa del nomeFile, ovvero l'estensione*/
   	char *ext = strrchr(Editor.nomeFile, '.');	/*Ritorno il puntatore all'ultima occorrenza del carattere in stringa*/
   	
   	for(unsigned int j = 0; j < HLDB_ENTRIES; j++) {	/*Ricerca se l'estensione del file matcha con una delle mie*/
@@ -937,7 +936,7 @@ void openNewFileFromPrompt(){
 	  	fclose(fp);	
 	  	Editor.sporco = 0;
 
-		/*----> Versione 2 <---- + Performance*/
+		/*----> Versione 2 <---- - Performance*/
 		/*char *cmd = "./mioEditor";
 		char *args[3];
 		args[0] = "./mioEditor";

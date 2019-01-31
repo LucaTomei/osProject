@@ -16,7 +16,7 @@ Il cuore dell’Editor di Testo è rappresentato dalla struct config, presente n
 	    struct editorSyntax *syntax;    /*Contiene tutto ciò che mi serve per riconosce il tipo di file*/
 	    struct termios initialState;    // Salvo lo stato iniziale del terminale e tutti i suoi flag
 	}config;
-Per l’implementazione dell’editor, ho suddiviso il progetto il 4 macro zone:
+Per l’implementazione dell’editor, ho suddiviso il progetto il 5 macro sezioni:
 #### __1. Modifica del Terminale, con funzioni che lo implementano__
 I files _ termFunc.h_ e _ termFunc.c_ contengono le funzioni che ho utilizzato per settare determinati flag sul terminale.
 Per prima cosa, ho scritto una funzione chiamata _”abilitaRawMode”_, che si occupa di uscire dalla classica modalità “cooked mode” del terminale ed entrare in modalità “Raw Mode”. Occorre quindi:
@@ -122,7 +122,70 @@ Per il __tasto invio__ invece, basterà intercettare l’inserimento del caratte
 Anche in questo caso verifico sia se sono all’inizio del file, e quindi aggiungo una riga al campo\_y\_ della struct , altrimenti basterà splittare la riga in cui mi trovo in 2 righe, inserendo la prima con i caratteri che si trovano sulla sinistra e la seconda con quelli che sono a destra. A questo punto sposto il cursore in posizione _(0, n)_ (con _n_ = inizio riga successiva) e aggiorno il contenuto della riga troncando il contenuto della riga corrente, poiché la _realloc_ potrebbe invalidare il puntatore che sto utilizzando. Tronco il contenuto della riga corrente e lo aggiorno tramite la funzione
 	void aggiornaRiga(EditorR* row)
 #### __3. Funzioni di utility ausiliarie: Ricerca del Testo e Apertura file da Prompt__
-s
-#### __4. Funzioni per Colorazione della Sintassi e riconoscimento del tipo di File__
+Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, utilizzerò come appoggio la funzione
+	char *promptComando(char *prompt, void (*callback)(char *, int))
+Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un `char*` e un `int`. Dare in input un puntatore a funzione mi da la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua _size_, sia l’apertura di un file, passandogli come valore al puntatore a funzione _NULL_.
+Tale funzione memorizzerà l’input inserito dall’utente in un buffer appositamente allocato e attraverso un ciclo while si occuperà di verificare:
+- La cancellazione del testo
+- La gestione del tasto invio
+- Il riconoscimento dei caratteri, in modo tale che nel prompt possa inserire solo caratteri _ASCII_ riconoscibili dal terminale
+---- 
+Per la __ricerca del testo__ dovrò passare al puntatore a funzione di _ promptComando_ il metodo
+	void cercaTestoCallback(char *toFind, int key)
+Tale funzione si occuperà di gestire la ricerca direzionale (tramite i tasti freccia) settando opportunamente due variabili intere che memorizzeranno l’indice di riga su cui si trova l’ultimo risultato trovato (se non esiste _-1_), e la direzione della ricerca (_1_ per cercare in avanti e _-1_ per cercare indietro) tramite un ciclo _for_ che servirà a scandire l’intero contenuto del file:
+- Se ho premuto invio o un qualsiasi altro carattere di escape basta uscire dalla ricerca
+- Altrimenti:
+	- Se premo _FRECCIA DESTRA_ o _FRECCIA GIÙ_ mi sposterò in avanti
+	- Se premo  _FRECCIA SINISTRA_ o  _FRECCIA SU_ mi sposterò indietro
+Per verificare se la stringa inserita è contenuta in una riga, utilizzo la comodissima funzione `char * strstr(const char *haystack, const char *needle);` gratuitamente offerta da _\<string.h\>_. Se ho trovato la stringa in questione, la colorerò di blu, altrimenti il suo colore sarà quello di default.
+Tale funzione di callback verrà presa in input dalla funzione _ promptComando_ che però verrà invocata dalla funzione
+	void cercaTesto();
+Quest’ultima si occuperà solamente di salvare la posizione che aveva il cursore prima della ricerca e di ripristinarlo a ricerca terminata.
+---- 
+Per __aprire un nuovo file__ nella schermata dell’Editor verifico se il file esiste, tramite la system call `int access(const char *path, int mode);` con il flag di modalità settato ad ` F_OK `
+- Se esiste, inizializzerò l’Editor e aprirò il file in sola lettura
+- Altrimenti prenderò in input il file, salvando opportunamente il suo nome e lo aprirò in scrittura
+Tutto ciò verrà verificato attraverso la funzione
+	void openNewFileFromPrompt()
+#### __4. Funzioni per Riconoscimento del Tipo di File e Colorazione di Sintassi__
+__Riconoscere__ il tipo di __file in input__ è abbastanza semplice, basterà solamente vedere cosa contiene `argv[1]` tramite la funzione
+	void selezionaSintassiDaColorare();
+Se `argv[1]`: 
+- È _NULL_, esco 
+- Altrimenti ritorno salvo il puntatore all’ultima occorrenza dei caratteri nella stringa, ovvero l’estensione, tramite la funzione _strrchr_ di _\<string.h\>_. Verifico se questa meccia con la mia struct e procedo con la colorazione del testo.
+	struct editorSyntax HLDB[] = {
+	  	{
+		    	"c",
+		    	ESTENSIONI_C,
+		    	PAROLE_C,
+		    	"//", "/*", "*/",
+		    	COLORA_NUMERI | COLORA_STRINGHE
+	  	},
+	};
+---- 
+Per __impostare__ determinati __colori__ in base al tipo di file utilizzerò le seguenti funzioni:
+	void aggiornaSintassi(EditorR *row);
+	int daSintassiAColore(int color);
+- La prima funzione prenderà un intera riga del file e per ogni stringa presente in essa riallocherà la memoria necessaria, dato che colorare il testo incrementerà la dimensione della stringa in questione. Tale funzione si occuperà anche di verificare se nel file sono presenti i caratteri `//` e `/*` o `*/`, per colorare di _cyan_ i commenti trovati.
+- La seconda funzione invece, prende in input un intero e restituisce un altro intero corrispondente al carattere _ANSI_ da abbinare alla sequenza di escape che mi permetterà di colorare il testo
+#### __5. Gestione commenti singoli e multilinea__
+Gestire i commenti singoli è molto semplice, infatti ho creato una funzione ‘booleana’ che verifica, tramite la funzione _strchr_, se il carattere preso in input è considerato un carattere di separazione (_.()+-/*=%<>;_).
+	int is_separator(int c);
+Anche in questo caso mi appoggerò alla funzione _void aggiornaSintassi(EditorR *row)_ per verificare se nel testo sono presenti caratteri considerati commenti in file _.c_. A questo punto mi serviranno 3 stringhe, che conterranno rispettivamente la stringa contenuta in un commento su una singola linea, la stringa di inizio del commento multilinea e la fine, e 3 variabili intere per contenere la loro lunghezza. Successivamente itero su tutti i caratteri di ogni riga e se trovo una stringa che riconosco la colorerò, solo se questa non è contenuta all’interno di un commento. Per tenere traccia nella scansione se mi trovo all’interno di un commento, utilizzo un’espressione ternaria `int in_comment = (row->index > 0 && Editor.row[row->index - 1].is_comment); ` che varrà 1 (True) se la riga precedente è evidenziata, 0 (False) altrimenti.
+Se sono all’interno di un commento multilinea, nel ciclo _while_ verifico che:
+- Le tre variabili stringhe non sono nulle e
+	- Se `in_comment ` vale 1, l’indice di riga in cui mi trovo sarà settato con la macro `COMMENTO_MULTILINEA`
+	- Se `in_comment ` vale 0, la imposto ad 1 e continuo a “mangiare” il contenuto della riga
+
+Se sono all’interno di una stringa e il carattere corrispondente è ‘//’ e c’è almeno un altro carattere all’interno di quella riga, evidenzio quel carattere.
+Mi occuperò di verificare se trovo anche numeri decimali, colorandoli di rosso e ricorsivamente invoco la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.
+
+[^1]
+
+[^1]:	Link Utili:
+	- Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI_escape_code#Colors ]() e [https://i.stack.imgur.com/7H7H9.png][4]
+	- Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html]()
+	- Caratteri Speciali Prompt: [https://ss64.com/osx/syntax-prompt.html]()
 
 [1]:	https://vt100.net/docs/vt100-ug/chapter3.html#ED
+[4]:	https://i.stack.imgur.com/7H7H9.png
