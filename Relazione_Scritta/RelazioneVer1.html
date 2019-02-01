@@ -6,214 +6,200 @@
 		<link rel="stylesheet" type="text/css" href="css/style.css" />
 		<title>Progetto Del Corso di Sistemi Operativi</title>
 		<style>
+			/*
+				Helvetica Neue
+
+				Demo css to show basic, more technical styling
+
+				Visit http://www.ulysses.app/styles for full reference
+
+			*/
+
 			body {
-				text-align:  center;
-				color:       #000;
-				font-family: georgia, serif;
-				font-size:   120%;
-				line-height: 1.6;
-				margin:      0;
-				padding:     2em 2em 5em;
-				background:  rgb(253, 253, 253);
-				margin:      auto;
-				color:       rgb(10, 10, 10);
+				font-size:   13pt;
+				color:       #222;
+				background:  #fbfbfb;
+				font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+				line-height: 1.4;
+				margin:      10%;
 			}
 
-			a {
-				outline:         none !important;
-				font-weight:     bold;
-				text-decoration: none;
-			}
-
-			a:link {
-				color: #c00;
-			}
-
-			a:visited {
-				color: #606;
-			}
-
-			a:hover {
-				color: #606;
-			}
-
-			a:active {
-				color:   #900;
-				outline: none;
+			h1, h2, h3, h4, h5, h6 {
+				font-weight: normal;
+				color:       #111;
 			}
 
 			h1 {
-				font-size:   300%;
-				line-height: 1.2;
-				font-style:  normal;
-				margin:      2.5em 0 1em;
+				font-size:     3em;
+				line-height:   1;
+				margin-bottom: 0.5em;
+				margin-top:    2em;
 			}
 
 			h2 {
-				font-weight: bold;
-				font-size:   200%;
-				line-height: 140%;
-				margin:      1.5em 0 0.75em;
+				font-size:     2em;
+				margin-bottom: 0.75em;
+				margin-top:    1.5em;
 			}
 
 			h3 {
-				font-weight:    normal;
-				text-transform: uppercase;
-				font-size:      150%;
-				letter-spacing: 0.15em;
-				margin:         1.75em 0 0.75em;
+				font-size:   1.5em;
+				line-height: 1;
+				margin-top:  1.5em;
 			}
 
 			h4 {
-				font-weight:    normal;
-				font-size:      150%;
-				letter-spacing: 0.1em;
-				margin:         1.5em 0 0.75em;
+				font-size:     1.2em;
+				line-height:   1.25;
+				margin-bottom: 1.25em;
 			}
 
 			h5 {
-				font-weight: normal;
-				font-style:  italic;
-				font-size:   150%;
-				margin:      1.5em 0 0.75em;
+				font-size:     1em;
+				font-weight:   bold;
+				margin-bottom: 1.5em;
 			}
 
 			h6 {
-				font-weight:    bold;
-				font-size:      100%;
-				letter-spacing: 0.1em;
-				margin:         1.5em 0 0.75em;
+				font-size:   1em;
+				font-weight: bold;
 			}
 
-			p {
-				text-align: left;
-				font-size:  100%;
-				margin:     1em 0 0;
-			}
-
-			p + p {
-				margin:      0;
-				text-indent: 1.5em;
-			}
-
-			h1 + p {
-				text-indent: 0;
-			}
-
-			p + ul, p + ol, p + dl {
-				margin-bottom: 1.5em;
+			h1 img, h2 img, h3 img, h4 img, h5 img, h6 img {
+				margin: 0;
 			}
 
 			img {
 				max-width: 100%;
 			}
 
+			p {
+				margin: 0 0 1.5em;
+			}
+
+			a:focus, a:hover {
+				color: #09f;
+			}
+
+			a {
+				color:           #06c;
+				text-decoration: underline;
+			}
+
+			blockquote {
+				margin: 1.5em;
+				color:  #666;
+			}
+
+			strong, dfn {
+				font-weight: bold;
+			}
+
+			em, dfn {
+				font-style: italic;
+			}
+
+			del {
+				color: #666;
+			}
+
+			pre {
+				margin:      1.5em 0;
+				white-space: pre;
+			}
+
+			pre, code, tt {
+				font:        1em 'andale mono', 'lucida console', monospace;
+				line-height: 1.5;
+			}
+
+			li ul, li ol {
+				margin: 0;
+			}
+
+			ul, ol {
+				margin:       0 3em 1.5em 1.5em;
+				padding-left: 1.5em;
+			}
+
+			ul {
+				list-style-type: disc;
+			}
+
+			ol {
+				list-style-type: decimal;
+			}
+
 			figure {
-				margin:     2em 0 1.5em 0;
+				margin:     1.5em 0;
 				width:      100%;
 				text-align: center;
 			}
 
-			figure img {
-				border: 1px solid #ccc;
-			}
-
 			figcaption {
-				font-size:   66%;
-				padding:     1em;
-				padding-top: 0.5em;
-				color:       #aaa;
+				font-size:     0.75em;
+				padding:       0.5em 2em;
+				margin-bottom: 2em;
 			}
 
-			blockquote {
-				border-left:  5px solid #eee;
-				padding-left: 1.5em;
-				margin:       1em 0;
+			figure img {
+				margin-bottom: 0px;
 			}
 
-			blockquote p {
-				text-indent: 0 !important;
-				font-style:  italic;
+			hr {
+				border:        0px;
+				border-top:    1px solid #ddd;
+				border-bottom: 1px solid #fff;
+				margin-top:    4em;
+				margin-bottom: 2em;
 			}
 
-			blockquote small {
-				display:     block;
-				line-height: 1.7em;
-			}
-
-			ul, ol, dl {
-				text-align: left;
-			}
-
-			
-
-			ul li, ol li {
-				padding-left: 0.3em;
-				margin-top:   0.6em;
-			}
-
-			li p {
-				margin-top:  0px;
-				text-indent: 0em;
-			}
-
-			li {
-				margin-bottom: 0.6em;
-			}
-
-			.hr {
-				border:    none;
-				font-size: 200%;
-				color:     #ddd;
-			}
-
-			.hr:after {
-				content: "❧"
-			}
-
-			h1 + .hr {
-				margin:    -0.5em 0 1.5em;
-				font-size: 400%;
+			h1 + hr {
+				margin-top: 2em;
 			}
 
 			ol#footnotes {
-				margin-top:   4.5em;
-				border-top:   1px solid #eee;
-				padding-top:  1em;
-				font-size:    80%;
-				padding-left: 1.5em;
+				font-size:   0.75em;
+				padding-top: 1.5em;
+				margin-top:  3em;
+				margin-left: 0;
 			}
 
-			ol#footnotes p {
-				text-indent: 0px;
+			ol#footnotes:before {
+				content:        "———";
+				letter-spacing: -4px;
+				margin-left:    -1.5em;
 			}
 
-			figure + p {
-				text-indent: 0em !important;
+			ol p, ul p {
+				margin-bottom: 0px;
+			}
+
+			li {
+				margin-bottom: 0.75em;
+				margin-top:    0.75em;
 			}
 
 			/* Code Highlighting */
 
 			code {
-				font-family: 'Courier', monospace;
-				font-size:   80%;
-				font-style: oblique;
-				color: forestgreen;
+				font-family: 'Menlo', monospace;
+				font-size:   10.5pt;
 			}
 
 			p > code {
-				padding: 0.3em 0.2em;
-				background:    #272822;
-				border-radius: 5px;
+				padding:    0.2em 0.4em;
+				background: #eee;
 			}
 
 			pre {
-				color:         #f8f8f2;
+				color:         #000;
 				text-align:    left;
 				line-height:   1.2em;
 				overflow-x:    scroll;
-				background:    #272822;
-				padding: 12pt;
+				background:    #f8f8f8;
+				padding:       20pt;
+				margin:        20pt 0;
 				border-radius: 3pt;
 				white-space:   pre-wrap;
 				tab-size:      4;
@@ -223,60 +209,61 @@
 			}
 
 			.syntax-entity {
-				color: #fd971f;
+				color: #6f42c1;
 			}
 
 			.syntax-tag {
-				color: #f92672;
+				color: #22863a;
 			}
 
 			.syntax-keyword {
-				color: #f92672;
+				color: #d73a49;
 			}
 
 			.syntax-parameter {
-				color: #a6e22e;
+				color: #24292e;
 			}
 
 			.syntax-string {
-				color: #e6db74;
+				color: #003878;
 			}
 
 			.syntax-constant {
-				color: #9effff;
+				color: #005cc5;
 			}
 
 			.syntax-variable {
-				color: #a6e22e;
+				color: #e36209;
 			}
 
 			.syntax-escape {
-				color: #ae81ff;
+				font-weight: bold;
+				color:       #22863a;
 			}
 
 			.syntax-comment {
-				color: #75715e;
+				color: #6a737d;
 			}
 
 			.syntax-error {
-				color:      #f8f8f0;
-				background: #f92672;
-				padding:    2px 6px;
+				color: #b31d28;
 			}
 
 			/* Markup Highlighting */
 
 			.syntax-heading {
 				font-weight: bold;
-				color:       #ae81ff;
+				color:       #005cc5;
 			}
 
 			.syntax-italic {
 				font-style: italic;
+				color:      #24292e;
 			}
 
 			.syntax-bold {
 				font-weight: bold;
+				color:       #24292e;
 			}
 
 			.syntax-deleted {
@@ -296,11 +283,11 @@
 
 			.syntax-link {
 				text-decoration: underline;
-				color:           #008fff;
+				color:           #032f62;
 			}
 
 			.syntax-list {
-				color: #fd971f;
+				color: #e36209;
 			}
 
 			@keyframes highfade {
@@ -338,25 +325,39 @@
 				-webkit-animation-timing-function: ease-in-out;
 			}
 
-			@media screen and (max-width: 736px) {
+			a:target {
+				border:0;outline: 0;
+			}
+
+			@media screen and (max-width: 768px) {
 				body {
-					padding:   1em 20px 1em 20px;
-					font-size: 120%;
-				}
-				h1 {
-					font-size: 250%;
-				}
-				h2 {
-					font-size: 150%;
-				}
-				h3, h4, h5 {
-					font-size: 140%;
+					margin:30px;
 				}
 			}
+
+			@media screen and (max-width: 736px),
+			       screen and (max-width: 808px) and (max-height: 414px) {
+				body {
+					margin:20px;
+				}
+				
+				ul,ol {
+					margin: 0;
+				}
+				
+				h1 {
+					font-size: 2em;
+				}
+				
+				h2 {
+					font-size: 1.8em;
+				}
+			}
+
 		</style>
 	</head>
 <body>
-<h1>Progetto Del Corso di Sistemi Operativi</h1>
+<h1 style="text-align: center;">Progetto di Sistemi Operativi</h1>
 
 <p>Il progetto ha lo scopo di creare un editor di testo da terminale, che implementi più comandi possibili per l’utilizzo dello stesso. </p>
 
@@ -394,14 +395,14 @@
 	<li>Eliminare qualsiasi input non letto</li>
 </ul>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+<hr />
 
 <p>Ovviamente, una volta terminata la scrittura nell’Editor, servirà la funzione <em>disabilitaRawMode</em> per riassegnare tutti gli attributi che originariamente possedeva il terminale.</p>
 
 <p>Il <em>main</em>, una volta abilitata la modalità <em>RawMode</em>, dovrà continuamente svuotare lo schermo e processare ogni singolo char messo in input sul terminale. Per fare ciò si utilizzano le <em>”Sequenze di Escape”</em>, le quali iniziano sempre con un carattere escape <code>\x1b</code>, seguito sempre da <code>[</code>. In questo modo si comunica al terminale di spostare il cursore, cambiare il colore del font, cancellare parti dello schermo,...</p>
 
 <blockquote>
-<p><em>Molto Utile è stata la guida sul sito <a href="">https://vt100.net/docs/vt100-ug/chapter3.html#ED</a>(https://vt100.net/docs/vt100-ug/chapter3.html#ED), che mostra il significato di ogni singola sequenza di escape.</em></p>
+<p><em>Molto Utile è stata la guida sul sito <a href="">https://vt100.net/docs/vt100-ug/chapter3.html#ED</a>, che mostra il significato di ogni singola sequenza di escape.</em></p>
 </blockquote>
 
 <p>Per svuotare lo schermo, occorre scrivere sullo standard output 4 byte:</p>
@@ -496,7 +497,7 @@
 
 <p>…la quale si occuperà di gestire ogni carattere passato controllando se questo rappresenta un carattere speciale, se viene premuto <em>CTRL</em> o se semplicemente dovrà scrivere. Per gestire i tasti <em>CTRL</em>, si usa la seguente macro: <code>#define CTRL_KEY(k) ((k) &amp; 0x1f)</code>.</p>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="max-width: 2%; margin-top: 2%;">
+<hr />
 
 <p>Una volta gestiti tutti questi casi, ci occuperemo dell’<strong>apertura di un file</strong> tramite la funzione</p>
 
@@ -522,7 +523,7 @@
 	<li>La sesta funzione invece <strong>incapsulerà una riga</strong> presente nel terminale <strong>convertendola in una</strong> vera e propria <strong>&nbsp;stringa</strong>. Un primo ciclo&nbsp;<em>for</em> sommerà le lunghezze di ogni riga di testo salvando il suo valore in una variabile in modo tale che si possa allocare l’effettiva memoria necessaria per la stringa. Servirà anche un secondo ciclo <em>for</em> per copiare il contenuto di ogni riga all’interno del buffer precedentemente allocato, aggiungendo un ulteriore carattere alla fine di ogni riga.</li>
 </ul>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+<hr />
 
 <p>A questo punto si <strong>salverà</strong> il contenuto del file <strong>sul disco</strong> tramite la funzione</p>
 
@@ -530,7 +531,7 @@
 
 <p>Anche il salvataggio sarà dinamico, infatti prima di tutto si verifica se il file è esistente (se si conoscerà il suo nome) e dove salvarlo, altrimenti si dovrà far immettere il nome per il suo successivo salvataggio e si dovrà anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Si aprirà successivamente il file in modalità lettura e scrittura se esiste (altrimenti verrà creato) tramite il flag <code>O_RDWR | O_CREAT</code>. Si imposterà quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione <em>rowToString</em> e con la funzione <code>int ftruncate(int fildes, off_t length)</code> di <em>&lt;unistd.h&gt;</em> si imposterà una dimensione statica al file; se è più corto inserisce <em>0</em> di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. Ora si può usare la <code>write</code> per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.</p>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+<hr />
 
 <p>Finora l’Editor sarà in grado solamente di scrivere testo, gestendo le tabulazioni e l’inserimento di caratteri concatenandoli tra loro. A questo punto occorre gestire la <strong>cancellazione del testo</strong>, utilizzando le seguenti funzioni:</p>
 
@@ -544,7 +545,7 @@
 
 <p>L’ultima funzione invece si occuperà dell’aggiunta della stringa modificata nell’opportuno campo della <em>struct conf</em>.</p>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+<hr />
 
 <p>Per il <strong>tasto invio</strong> invece basterà intercettare l’inserimento del carattere <code>\r</code> e <code>\n</code> tramite la funzione</p>
 
@@ -560,8 +561,9 @@
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">char</span> *<span class="syntax-all syntax-entity">promptComando</span>(<span class="syntax-all syntax-keyword">char</span> *prompt, <span class="syntax-all syntax-keyword">void</span> (*callback)(<span class="syntax-all syntax-keyword">char</span> *, <span class="syntax-all syntax-keyword">int</span>))</code></pre>
 
-<p>Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un <code>char*</code> e un <code>int</code>. Dare in input un puntatore a funzione da' la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua <em>size</em>, che l’apertura di un file, passandogli come valore al puntatore a funzione <em>NULL</em>.<br>Tale funzione memorizzerà l’input inserito dall’utente in un buffer appositamente allocato e attraverso un ciclo while si occuperà di verificare:</p>
+<p>Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un <code>char*</code> e un <code>int</code>. Dare in input un puntatore a funzione da' la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua <em>size</em>, che l’apertura di un file, passandogli come valore al puntatore a funzione <em>NULL</em>.</p>
 
+<p>Tale funzione memorizzerà l’input inserito dall’utente in un buffer appositamente allocato e attraverso un ciclo while si occuperà di verificare:</p>
 
 <ul>
 	<li>La cancellazione del testo</li>
@@ -569,7 +571,7 @@
 	<li>Il riconoscimento dei caratteri, in modo tale che nel prompt possa inserire solo caratteri <em>ASCII</em> riconoscibili dal terminale</li>
 </ul>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+<hr />
 
 <p>Per la <strong>ricerca del testo</strong> si deve immettere al puntatore a funzione di <em>&nbsp;promptComando</em> il metodo</p>
 
@@ -595,7 +597,7 @@
 
 <p>Quest’ultima si occuperà solamente di salvare la posizione che aveva il cursore prima della ricerca e di ripristinarlo a ricerca terminata.</p>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+<hr />
 
 <p>Per <strong>aprire un nuovo file</strong> nella schermata dell’Editor si verifica se il file esiste, tramite la system call <code>int access(const char *path, int mode);</code> con il flag di modalità settato ad <code>&nbsp;F_OK&nbsp;</code></p>
 
@@ -631,7 +633,7 @@
   	},
 };</code></pre>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+<hr />
 
 <p>Per <strong>impostare</strong> determinati <strong>colori</strong> in base al tipo di file verranno utilizzate le seguenti funzioni:</p>
 
@@ -666,7 +668,7 @@
 
 <p>Se si trovano anche numeri decimali si colorano di rosso e ricorsivamente si invoca la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.</p>
 
-<img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
+<hr/>
 
 <blockquote>
 <p><strong>Link Utili</strong>:</p>
