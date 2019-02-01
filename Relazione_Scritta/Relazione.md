@@ -243,31 +243,29 @@ Se si trovano anche numeri decimali si colorano di rosso e ricorsivamente si inv
 Infine, come richiesto espressamente dal professore, si gestisce il __lock di un file__. Appena invocato, il main farà in modo che l’apertura di un file sia bloccante, settando opportuni _flags_ che si occuperanno di incapsulare il _file descriptor_ . Per avere il “rock” esclusivo su un file si utilizzano la System Call `int fcntl(int fd, int cmd, ...  arg e` e la `struct flock`.
 La prima prende in input il descrittore di un file aperto e un valore che indica quale operazione deve essere eseguita (` F_SETLK` nel mio caso). Tale chiamata a sistema consente a uno ed un solo processo di inserire un blocco in lettura o in scrittura solo stesso file.
  La _struct flock_ così composta…
-	struct flock {
-	       ...
-	       short l_type;    ---> Tipo di lock (F_RDLCK, F_WRLCK, F_UNLCK)
-	       short l_whence;  ---> Come interpretare l_start (SEEK_SET, SEEK_CUR, SEEK_END)              
-	       off_t l_start;   ---> Offset di partenza per il lock
-	       off_t l_len;     ---> Numero di byte da lockare
-	       pid_t l_pid;     ---> Pid del processo bloccante
-	       ...
-	};
+```c
+ struct flock {
+        ...
+        short l_type;    ---> Tipo di lock (F_RDLCK, F_WRLCK, F_UNLCK)
+        short l_whence;  ---> Come interpretare l_start (SEEK_SET, SEEK_CUR, SEEK_END)              
+        off_t l_start;   ---> Offset di partenza per il lock
+        off_t l_len;     ---> Numero di byte da lockare
+        pid_t l_pid;     ---> Pid del processo bloccante
+        ...
+ };
+```
 
 … permette di settare il desiderato blocco sul file. Infatti, il pid che imposterà il campo `l_type` con ` F_WRLCK` ed il campo ` l_whence ` con `SEEK_SET` otterrà un blocco in scrittura dall’inizio del file preso in input. Se un altro processo contiene un blocco che impedisce l'acquisizione di altro, esso rimarrà in attesa affinché _fcntl_ rilascerà la risorsa.
 Il tutto si gestisce tramite la funzione…
-	int lockfile(const char *const filepath, int *const fdptr)
+```c
+ int lockfile(const char *const filepath, int *const fdptr)
+```
 … che prende in input il nome di un file ed un descrittore che inizialmente si imposta a _-1_ per renderlo non valido. Successivamente si utilizza la _fopen_ in modalità _append_,  si chiudono i descrittori ` STDIN_FILENO `, `STDOUT_FILENO`, `STDERR_FILENO` e si ritornerà il risultato della _fcntl_. Infine in un ciclo _while_ presente nel _main_ si controllerà il valore di ritorno della precedente funzione.
 - Se è _0_ la status bar mostrerà il classico messaggio di aiuto;
 - Altrimenti l’utente verrà avvisato che lo stesso file è aperto da un altro processo, _errno_ conterrà il rispettivo valore di errore e si continuerà la routine del processo _main_ svuotando lo schermo e processando ogni _char_ inserito sul terminale.
 
 ---- 
 > __Link Utili__:
-> - Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI\_escape\_code#Colors ][2](#) e [https://i.stack.imgur.com/7H7H9.png][3](https://i.stack.imgur.com/7H7H9.png)
-> - Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html][4](#)
-> - Caratteri Speciali Prompt: [https://ss64.com/osx/syntax-prompt.html][5](#)
-
-[1]:	#
-[2]:	#
-[3]:	#
-[4]:	#
-[5]:	#
+> - Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI\_escape\_code#Colors ](#)(#) e [https://i.stack.imgur.com/7H7H9.png](#)(https://i.stack.imgur.com/7H7H9.png)
+> - Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html](#)(#)
+> - Caratteri Speciali Prompt: [https://ss64.com/osx/syntax-prompt.html](#)(#)
