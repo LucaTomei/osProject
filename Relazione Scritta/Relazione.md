@@ -20,8 +20,8 @@ typedef struct config{
 
 ```
 Per l’implementazione dell’editor, si può suddividere il progetto il 5 macro sezioni:
-#### __1. Modifica del Terminale, con funzioni che lo implementano__
-I files _ termFunc.h_ e _ termFunc.c_ contengono le funzioni che ho utilizzato per settare determinati flag sul terminale.
+#### __1. Modifica del Terminale con funzioni che lo implementano__
+I files _ termFunc.h_ e _ termFunc.c_ contengono le funzioni che utilizzate per settare determinati flag sul terminale.
 Per prima cosa si scrive una funzione chiamata _”abilitaRawMode”_ per uscire dalla classica modalità “cooked mode” del terminale ed entrare in modalità “Raw Mode”. Occorre quindi:
 - Disabilitare tutti i tasti _ctrl_ che utilizza di default 
 - Disabilitare gli accapo e la funzionalità di elaborazione dell’output (comprese le printf)
@@ -30,7 +30,7 @@ Per prima cosa si scrive una funzione chiamata _”abilitaRawMode”_ per uscire
 - Eliminare qualsiasi input non letto
 ---- 
 Ovviamente, una volta terminata la scrittura nell’Editor, servirà la funzione _disabilitaRawMode_ per riassegnare tutti gli attributi che originariamente possedeva il terminale.
-Il _main_, una volta abilitata la modalità _RawMode_, dovrà continuamente svuotare lo schermo e processare ogni singolo char messo in input sul terminale. Per fare ciò, utilizzo le _”Sequenze di Escape”_, le quali iniziano sempre con un carattere escape `\x1b`, seguito sempre da `[`. In questo modo si comunica al terminale di spostare il cursore, cambiare il colore del font, cancellare parti dello schermo,...
+Il _main_, una volta abilitata la modalità _RawMode_, dovrà continuamente svuotare lo schermo e processare ogni singolo char messo in input sul terminale. Per fare ciò si utilizzano le _”Sequenze di Escape”_, le quali iniziano sempre con un carattere escape `\x1b`, seguito sempre da `[`. In questo modo si comunica al terminale di spostare il cursore, cambiare il colore del font, cancellare parti dello schermo,...
 > _Molto Utile è stata la guida sul sito [https://vt100.net/docs/vt100-ug/chapter3.html#ED](#)(https://vt100.net/docs/vt100-ug/chapter3.html#ED), che mostra il significato di ogni singola sequenza di escape._
 Per svuotare lo schermo, occorre scrivere sullo standard output 4 byte:
 - Il Primo `\x1b` (27 in decimale) è il carattere di escape
@@ -44,7 +44,7 @@ struct StringBuffer {
 	int len;
 };
 ```
-La struct mi servirà a creare una _write_ dinamica, in cui scrivere, tramite la funzione _memcpy_, l’input scritto nel terminale nel `char* b`, riallocando i byte necessari per la stringa e aggiornando anche la sua rispettiva lunghezza. Per ottenere il risultato si usano utilizzo due funzioni:
+La struct servirà a creare una _write_ dinamica, in cui scrivere, tramite la funzione _memcpy_, l’input inserito nel terminale nel `char* b`, riallocando i byte necessari per la stringa e aggiornando anche la sua rispettiva lunghezza. Per ottenere il risultato si usano due funzioni:
 - Il costruttore:
 	```c
 	void sbAppend(struct StringBuffer *sb, const char *s, int len)
@@ -54,12 +54,12 @@ La struct mi servirà a creare una _write_ dinamica, in cui scrivere, tramite la
 	void sbFree(struct StringBuffer *sb)
 	```
 La funzione _ sbAppend_ verrà utilizzata anche per svuotare lo schermo, per nascondere il cursore `"sbAppend(&sb, "\x1b[?25l", 6);"` e successivamente per riposizionarlo in alto a sinistra nel terminale.
-A questo punto dovrò conoscere l’effettiva dimensione del terminale (larghezza e altezza), per far si che:
+A questo punto si otterrà l’effettiva dimensione del terminale (larghezza e altezza), per far si che:
 - Il file in ingresso sia perfettamente centrato nel terminale;
 - Mostrare un messaggio di benvenuto nel caso in cui non passi alcun file;
 - Scrivere due righe sottostanti per mostrare sia la lista dei comandi implementati che per abilitare la ricerca nel file o l’apertura di un altro nella stessa finestra;
 	void disegnaRighe(struct StringBuffer \* sb)
-Per sapere l’effettiva dimensione del file, utilizzo la `struct winsize` che contiene il numero di righe e di colonne e i pixel in orizzontale e verticale. Ora è il momento di posizionare il cursore sullo schermo, tramite la comoda funzione.
+Per conoscere l’effettiva dimensione del file si usa la `struct winsize` che contiene il numero di righe e di colonne e i pixel in orizzontale e verticale. Ora è il momento di posizionare il cursore sullo schermo, tramite la comoda funzione.
 ```c
 int posizioneCursore(int* righe, int* colonne)
 ```
@@ -69,9 +69,9 @@ Successivamente si deve verificare che il cursore si sposti all’esterno della 
 ```c
 void statusBarInit(struct StringBuffer *sb)
 ```
-Innanzitutto occorre invertire il colore dell’ultima riga del terminale per creare contrasto e renderla visibile `sbAppend(sb, "\x1b[7m", 4)`. La status bar dovrà mostrare il nome del file, il tipo (se conosciuto dall’editor), se è stato modificato, il numero di righe del file, l’indice di riga in cui ci si trova e una seconda barra che utilizzerò per la ricerca del testo, per l’apertura di un nuovo file e per mostrare un messaggio contenente i comandi implementati che verrà visualizzato solo per 5 secondi.
+Innanzitutto occorre invertire il colore dell’ultima riga del terminale per creare contrasto e renderla visibile `sbAppend(sb, "\x1b[7m", 4)`. La status bar dovrà mostrare il nome del file, il tipo (se conosciuto dall’editor), se è stato modificato, il numero di righe del file, l’indice di riga in cui ci si trova e una seconda barra che servirà per la ricerca del testo, per l’apertura di un nuovo file e per mostrare un messaggio contenente i comandi implementati che verrà visualizzato solo per 5 secondi.
 #### __2. Funzioni di Utility per Editor__
-L’Editor utilizza principalmente una struct, contenente tutto ciò che reputo necessario per la gestione dello stesso.
+L’Editor utilizza principalmente una struct, contenente tutto ciò che necessario per la gestione dello stesso.
 
 ```c
 typedef struct EditorR{
@@ -110,12 +110,12 @@ void processaChar()
 …la quale si occuperà di gestire ogni carattere passato controllando se questo rappresenta un carattere speciale, se viene premuto _CTRL_ o se semplicemente dovrà scrivere. Per gestire i tasti _CTRL_, si usa la seguente macro: `#define CTRL_KEY(k) ((k) & 0x1f)`.
 
 ---- 
-Una volta gestiti tutti questi casi, posso finalmente occuparmi dell’__apertura di un file__ tramite la funzione
+Una volta gestiti tutti questi casi, ci occuperemo dell’__apertura di un file__ tramite la funzione
 
 ```c
 void openFile(char* nomeFile);
 ```
-Appena aperto il file, si dovrà liberare la memoria allocata per il   `char* nomeFile` presente nella struct principale dell’Editor; successivamente si dorvà riallocarla con il nome del file appena aperto, tramite la funzione _strdup_ che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione.  Per mostrare il contenuto del file sullo schermo si dovrà scandire ogni sua linea, tramite la funzione ` ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)`, gratuitamente offerta da _\<stdio.h\>_ ,ed “iniettare” tante righe sul terminale quante sono quelle scandite dal file. 
+Appena aperto il file, si dovrà liberare la memoria allocata per il   `char* nomeFile` presente nella struct principale dell’Editor; successivamente si dovrà riallocarla con il nome del file appena aperto, tramite la funzione _strdup_ che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione.  Per mostrare il contenuto del file sullo schermo si dovrà scandire ogni sua linea, tramite la funzione ` ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)`, gratuitamente offerta da _\<stdio.h\>_ ,ed “iniettare” tante righe sul terminale quante sono quelle scandite dal file. 
 Per __modificare il contenuto del file__ si utilizzano principalmente le seguenti funzioni:
 ```c
 void inserisciRiga(int at, char *s, size_t len);
@@ -125,18 +125,18 @@ void scriviInRiga(EditorR *row, int at, int c);
 void inserisciChar(int c);
 char *rowToString(int *buflen);
 ```
-*  La prima funzione __gestisce l’allocazione della memoria__ delle stringhe presenti su una riga e dei rispettivi indici di riga,  per processare ogni `char *` presente nell’Editor incrementando il numero di righe e la sua lunghezza, se presente un carattere di tabulazione
-* La seconda funzione è ausiliaria, utilizzata per l’ __aggiornamento degli spazi su una riga__, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per i le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare  `row->size + tabs*(STOP_TAB -1)+1`, in modo tale che ogni carattere letto venga copiato interamente nella _struct EditorR_.
+*  La prima funzione __gestisce l’allocazione della memoria__ delle stringhe presenti su una riga e dei rispettivi indici di riga,  per processare ogni `char *` presente nell’Editor incrementando il numero di righe e la sua lunghezza, se presente un carattere di tabulazione;
+* La seconda funzione è ausiliaria, utilizzata per l’ __aggiornamento degli spazi su una riga__, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare  `row->size + tabs*(STOP_TAB -1)+1`, in modo tale che ogni carattere letto venga copiato interamente nella _struct EditorR_.
 * La terza funzione è anch’essa di appoggio e servirà per aggiornare il valore _x_ della _struct config_ in un valore _rx_ , per __ calcolare__ l’effettivo __offset di ogni tab__ e tramutarlo in un vero e proprio spazio. Per fare ciò occorre sapere quante colonne sono alla destra del _TAB_ e quante ne sono a sinistra (_8 - 1_); quindi si farà un controllo in un ciclo _for_ incrementando il valore di _rx_ per cercare il successivo _TAB_.
-* Dalla quarta funzione in poi ci si occuperà dell’effettiva __scrittura di caratteri su__ una __riga__, dato che precedentemente sono state gestite le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si occuperà dell’effettiva scrittura di caratteri nella struct dell’Editor.
+* Dalla quarta funzione in poi ci si occuperà dell’effettiva __scrittura di caratteri su__ una __riga__, dato che precedentemente sono state gestite le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si userà per l'effettiva scrittura di caratteri nella struct dell’Editor.
 * La quinta funzione __inserisce__ le __stringhe__ precedentemente lette __sulle righe del terminale__. Per fare ciò si verifica dapprima la posizione del cursore sullo schermo  e se quest’ultimo si trova alla fine del file si dovrà aggiungere una nuova riga per dare la possibilità di scrivere oltre la fine del file. Si sposterà successivamente la posizione del cursore in avanti in modo tale che il prossimo carattere inserito capiti subito dopo il carattere precedentemente aggiunto.
 * La sesta funzione invece __incapsulerà una riga__ presente nel terminale __convertendola in una__ vera e propria __ stringa__. Un primo ciclo _for_ sommerà le lunghezze di ogni riga di testo salvando il suo valore in una variabile in modo tale che si possa allocare l’effettiva memoria necessaria per la stringa. Servirà anche un secondo ciclo _for_ per copiare il contenuto di ogni riga all’interno del buffer precedentemente allocato, aggiungendo un ulteriore carattere alla fine di ogni riga.
 ---- 
-A questo punto sono pronto a __salvare__ il contenuto del file __sul disco__ tramite la funzione
+A questo punto si __salverà__ il contenuto del file __sul disco__ tramite la funzione
 ```c
 void salvaSuDisco();
 ```
-Anche il salvataggio sarà dinamico, infatti prima di tutto verifico se il file è esistente, se si conoscerà il suo nome e dove salvarlo, altrimenti si dovrà far immettere il nome per il suo successivo salvataggio e si dovrà anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Si aprirà successivamente il file in modalità lettura e scrittura se esiste (altrimenti verrà creato) tramite il flag `O_RDWR | O_CREAT`. Si imposterà quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione _rowToString_ e con la funzione `int ftruncate(int fildes, off_t length)` di _\<unistd.h\>_ si imposterà una dimensione statica al file, in modo che se è più corto, inserisce _0_ di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. Ora si può usare la `write` per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.
+Anche il salvataggio sarà dinamico, infatti prima di tutto si verifica se il file è esistente (se si conoscerà il suo nome) e dove salvarlo, altrimenti si dovrà far immettere il nome per il suo successivo salvataggio e si dovrà anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Si aprirà successivamente il file in modalità lettura e scrittura se esiste (altrimenti verrà creato) tramite il flag `O_RDWR | O_CREAT`. Si imposterà quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione _rowToString_ e con la funzione `int ftruncate(int fildes, off_t length)` di _\<unistd.h\>_ si imposterà una dimensione statica al file; se è più corto inserisce _0_ di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. Ora si può usare la `write` per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.
 
 ---- 
 Finora l’Editor sarà in grado solamente di scrivere testo, gestendo le tabulazioni e l’inserimento di caratteri concatenandoli tra loro. A questo punto occorre gestire la __cancellazione del testo__, utilizzando le seguenti funzioni:
@@ -161,11 +161,11 @@ Anche in questo caso se ci si trova all'inizio del file si aggiunge una riga al 
 void aggiornaRiga(EditorR* row)
 ```
 #### __3. Funzioni di utility ausiliarie: Ricerca del Testo e Apertura file da Prompt__
-Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, utilizzerò come appoggio la funzione
+Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, si considerano come appoggio la funzione
 ```c
 char *promptComando(char *prompt, void (*callback)(char *, int))
 ```
-Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un `char*` e un `int`. Dare in input un puntatore a funzione da la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua _size_, che l’apertura di un file, passandogli come valore al puntatore a funzione _NULL_.
+Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un `char*` e un `int`. Dare in input un puntatore a funzione da' la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua _size_, che l’apertura di un file, passandogli come valore al puntatore a funzione _NULL_.
 Tale funzione memorizzerà l’input inserito dall’utente in un buffer appositamente allocato e attraverso un ciclo while si occuperà di verificare:
 - La cancellazione del testo
 - La gestione del tasto invio
@@ -181,7 +181,7 @@ Tale funzione si occuperà di gestire la ricerca direzionale (tramite i tasti fr
 - Altrimenti:
 	- Se si preme _FRECCIA DESTRA_ o _FRECCIA GIÙ_ ci si sposterà in avanti
 	- Se si preme  _FRECCIA SINISTRA_ o  _FRECCIA SU_ ci si sposterà indietro
-Per verificare se la stringa inserita è contenuta in una riga si utilizza la comodissima funzione `char * strstr(const char *haystack, const char *needle);` gratuitamente offerta da _\<string.h\>_. Se si troba la stringa in questione, verrà colorata di blu, altrimenti il suo colore sarà quello di default.
+Per verificare se la stringa inserita è contenuta in una riga si utilizza la comodissima funzione `char * strstr(const char *haystack, const char *needle);` gratuitamente offerta da _\<string.h\>_. Se si trova la stringa in questione, verrà colorata di blu, altrimenti il suo colore sarà quello di default.
 Tale funzione di callback verrà presa in input dalla funzione _ promptComando_ che però verrà invocata dalla funzione
 ```c
 void cercaTesto();
@@ -202,7 +202,7 @@ __Riconoscere__ il tipo di __file in input__ è abbastanza semplice, basterà so
 void selezionaSintassiDaColorare();
 ```
 Se `argv[1]`: 
-- È _NULL_, esco 
+- È _NULL_, si esce 
 - Altrimenti si ritorna salvando il puntatore all’ultima occorrenza dei caratteri nella stringa, ovvero l’estensione, tramite la funzione _strrchr_ di _\<string.h\>_. Si verifica se questa meccia con la mia struct e si procede con la colorazione del testo.
 
 ```c
@@ -234,9 +234,9 @@ Anche in questo caso si considera principale la funzione _void aggiornaSintassi(
 Se si è all’interno di un commento multilinea, un ciclo _while_ verificherà che:
 - Le tre variabili stringhe non sono nulle e
 	- Se `in_comment ` vale 1, l’indice di riga in cui ci si trova sarà settato con la macro `COMMENTO_MULTILINEA`
-	- Se `in_comment ` vale 0, si imposta ad 1 e si continuo a “mangiare” il contenuto della riga
+	- Se `in_comment ` vale 0, si imposta ad 1 e si continua a “mangiare” il contenuto della riga
 
-Se si è all’interno di una stringa e il carattere corrispondente è ‘//’ e c’è almeno un altro carattere all’interno di quella riga tale carattere verrà evidenziato.
+Se si è all’interno di una stringa e il carattere corrispondente è ‘//’ e c’è almeno un altro carattere all’interno di quella riga, tale carattere verrà evidenziato.
 Se si trovano anche numeri decimali si colorano di rosso e ricorsivamente si invoca la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.
 
 ---- 

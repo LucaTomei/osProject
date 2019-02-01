@@ -381,9 +381,9 @@
 
 <p>Per l’implementazione dell’editor, si può suddividere il progetto il 5 macro sezioni:</p>
 
-<h4><strong>1. Modifica del Terminale, con funzioni che lo implementano</strong></h4>
+<h4><strong>1. Modifica del Terminale con funzioni che lo implementano</strong></h4>
 
-<p>I files <em>&nbsp;termFunc.h</em> e <em>&nbsp;termFunc.c</em> contengono le funzioni che ho utilizzato per settare determinati flag sul terminale.</p>
+<p>I files <em>&nbsp;termFunc.h</em> e <em>&nbsp;termFunc.c</em> contengono le funzioni che utilizzate per settare determinati flag sul terminale.</p>
 
 <p>Per prima cosa si scrive una funzione chiamata <em>”abilitaRawMode”</em> per uscire dalla classica modalità “cooked mode” del terminale ed entrare in modalità “Raw Mode”. Occorre quindi:</p>
 
@@ -399,7 +399,7 @@
 
 <p>Ovviamente, una volta terminata la scrittura nell’Editor, servirà la funzione <em>disabilitaRawMode</em> per riassegnare tutti gli attributi che originariamente possedeva il terminale.</p>
 
-<p>Il <em>main</em>, una volta abilitata la modalità <em>RawMode</em>, dovrà continuamente svuotare lo schermo e processare ogni singolo char messo in input sul terminale. Per fare ciò, utilizzo le <em>”Sequenze di Escape”</em>, le quali iniziano sempre con un carattere escape <code>\x1b</code>, seguito sempre da <code>[</code>. In questo modo si comunica al terminale di spostare il cursore, cambiare il colore del font, cancellare parti dello schermo,...</p>
+<p>Il <em>main</em>, una volta abilitata la modalità <em>RawMode</em>, dovrà continuamente svuotare lo schermo e processare ogni singolo char messo in input sul terminale. Per fare ciò si utilizzano le <em>”Sequenze di Escape”</em>, le quali iniziano sempre con un carattere escape <code>\x1b</code>, seguito sempre da <code>[</code>. In questo modo si comunica al terminale di spostare il cursore, cambiare il colore del font, cancellare parti dello schermo,...</p>
 
 <blockquote>
 <p><em>Molto Utile è stata la guida sul sito <a href="">https://vt100.net/docs/vt100-ug/chapter3.html#ED</a>(https://vt100.net/docs/vt100-ug/chapter3.html#ED), che mostra il significato di ogni singola sequenza di escape.</em></p>
@@ -421,7 +421,7 @@
 	<span class="syntax-all syntax-keyword">int</span> len;
 };</code></pre>
 
-<p>La struct mi servirà a creare una <em>write</em> dinamica, in cui scrivere, tramite la funzione <em>memcpy</em>, l’input scritto nel terminale nel <code>char* b</code>, riallocando i byte necessari per la stringa e aggiornando anche la sua rispettiva lunghezza. Per ottenere il risultato si usano utilizzo due funzioni:</p>
+<p>La struct servirà a creare una <em>write</em> dinamica, in cui scrivere, tramite la funzione <em>memcpy</em>, l’input inserito nel terminale nel <code>char* b</code>, riallocando i byte necessari per la stringa e aggiornando anche la sua rispettiva lunghezza. Per ottenere il risultato si usano due funzioni:</p>
 
 <ul>
 	<li>Il costruttore:
@@ -434,7 +434,7 @@
 
 <p>La funzione <em>&nbsp;sbAppend</em> verrà utilizzata anche per svuotare lo schermo, per nascondere il cursore <code>&quot;sbAppend(&amp;sb, &quot;\x1b[?25l&quot;, 6);&quot;</code> e successivamente per riposizionarlo in alto a sinistra nel terminale.</p>
 
-<p>A questo punto dovrò conoscere l’effettiva dimensione del terminale (larghezza e altezza), per far si che:</p>
+<p>A questo punto si otterrà l’effettiva dimensione del terminale (larghezza e altezza), per far si che:</p>
 
 <ul>
 	<li>Il file in ingresso sia perfettamente centrato nel terminale;</li>
@@ -444,7 +444,7 @@
 		<p>void disegnaRighe(struct StringBuffer * sb)</p></li>
 </ul>
 
-<p>Per sapere l’effettiva dimensione del file, utilizzo la <code>struct winsize</code> che contiene il numero di righe e di colonne e i pixel in orizzontale e verticale. Ora è il momento di posizionare il cursore sullo schermo, tramite la comoda funzione.</p>
+<p>Per conoscere l’effettiva dimensione del file si usa la <code>struct winsize</code> che contiene il numero di righe e di colonne e i pixel in orizzontale e verticale. Ora è il momento di posizionare il cursore sullo schermo, tramite la comoda funzione.</p>
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">posizioneCursore</span>(<span class="syntax-all syntax-keyword">int</span>* righe, <span class="syntax-all syntax-keyword">int</span>* colonne)</code></pre>
 
@@ -456,11 +456,11 @@
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">statusBarInit</span>(<span class="syntax-all syntax-keyword">struct</span> StringBuffer *sb)</code></pre>
 
-<p>Innanzitutto occorre invertire il colore dell’ultima riga del terminale per creare contrasto e renderla visibile <code>sbAppend(sb, &quot;\x1b[7m&quot;, 4)</code>. La status bar dovrà mostrare il nome del file, il tipo (se conosciuto dall’editor), se è stato modificato, il numero di righe del file, l’indice di riga in cui ci si trova e una seconda barra che utilizzerò per la ricerca del testo, per l’apertura di un nuovo file e per mostrare un messaggio contenente i comandi implementati che verrà visualizzato solo per 5 secondi.</p>
+<p>Innanzitutto occorre invertire il colore dell’ultima riga del terminale per creare contrasto e renderla visibile <code>sbAppend(sb, &quot;\x1b[7m&quot;, 4)</code>. La status bar dovrà mostrare il nome del file, il tipo (se conosciuto dall’editor), se è stato modificato, il numero di righe del file, l’indice di riga in cui ci si trova e una seconda barra che servirà per la ricerca del testo, per l’apertura di un nuovo file e per mostrare un messaggio contenente i comandi implementati che verrà visualizzato solo per 5 secondi.</p>
 
 <h4><strong>2. Funzioni di Utility per Editor</strong></h4>
 
-<p>L’Editor utilizza principalmente una struct, contenente tutto ciò che reputo necessario per la gestione dello stesso.</p>
+<p>L’Editor utilizza principalmente una struct, contenente tutto ciò che necessario per la gestione dello stesso.</p>
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">typedef</span> <span class="syntax-all syntax-keyword">struct</span> EditorR{
 	<span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-constant">index</span>;  <span class="syntax-all syntax-comment">// Per gestire i commenti /* */ su più linee gestendo l&#39;indice all&#39;interno del file
@@ -499,11 +499,11 @@
 
 <hr />
 
-<p>Una volta gestiti tutti questi casi, posso finalmente occuparmi dell’<strong>apertura di un file</strong> tramite la funzione</p>
+<p>Una volta gestiti tutti questi casi, ci occuperemo dell’<strong>apertura di un file</strong> tramite la funzione</p>
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">openFile</span>(<span class="syntax-all syntax-keyword">char</span>* nomeFile);</code></pre>
 
-<p>Appena aperto il file, si dovrà liberare la memoria allocata per il <code>char* nomeFile</code> presente nella struct principale dell’Editor; successivamente si dorvà riallocarla con il nome del file appena aperto, tramite la funzione <em>strdup</em> che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione. Per mostrare il contenuto del file sullo schermo si dovrà scandire ogni sua linea, tramite la funzione <code>&nbsp;ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)</code>, gratuitamente offerta da <em>&lt;stdio.h&gt;</em> ,ed “iniettare” tante righe sul terminale quante sono quelle scandite dal file. </p>
+<p>Appena aperto il file, si dovrà liberare la memoria allocata per il <code>char* nomeFile</code> presente nella struct principale dell’Editor; successivamente si dovrà riallocarla con il nome del file appena aperto, tramite la funzione <em>strdup</em> che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione. Per mostrare il contenuto del file sullo schermo si dovrà scandire ogni sua linea, tramite la funzione <code>&nbsp;ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)</code>, gratuitamente offerta da <em>&lt;stdio.h&gt;</em> ,ed “iniettare” tante righe sul terminale quante sono quelle scandite dal file. </p>
 
 <p>Per <strong>modificare il contenuto del file</strong> si utilizzano principalmente le seguenti funzioni:</p>
 
@@ -515,21 +515,21 @@
 <span class="syntax-all syntax-keyword">char</span> *<span class="syntax-all syntax-entity">rowToString</span>(<span class="syntax-all syntax-keyword">int</span> *buflen);</code></pre>
 
 <ul>
-	<li> La prima funzione <strong>gestisce l’allocazione della memoria</strong> delle stringhe presenti su una riga e dei rispettivi indici di riga, per processare ogni <code>char *</code> presente nell’Editor incrementando il numero di righe e la sua lunghezza, se presente un carattere di tabulazione</li>
-	<li>La seconda funzione è ausiliaria, utilizzata per l’ <strong>aggiornamento degli spazi su una riga</strong>, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per i le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare <code>row-&gt;size + tabs*(STOP_TAB -1)+1</code>, in modo tale che ogni carattere letto venga copiato interamente nella&nbsp;<em>struct EditorR</em>.</li>
+	<li> La prima funzione <strong>gestisce l’allocazione della memoria</strong> delle stringhe presenti su una riga e dei rispettivi indici di riga, per processare ogni <code>char *</code> presente nell’Editor incrementando il numero di righe e la sua lunghezza, se presente un carattere di tabulazione;</li>
+	<li>La seconda funzione è ausiliaria, utilizzata per l’ <strong>aggiornamento degli spazi su una riga</strong>, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare <code>row-&gt;size + tabs*(STOP_TAB -1)+1</code>, in modo tale che ogni carattere letto venga copiato interamente nella&nbsp;<em>struct EditorR</em>.</li>
 	<li>La terza funzione è anch’essa di appoggio e servirà per aggiornare il valore <em>x</em> della <em>struct config</em> in un valore <em>rx</em> , per <strong>&nbsp;calcolare</strong> l’effettivo <strong>offset di ogni tab</strong> e tramutarlo in un vero e proprio spazio. Per fare ciò occorre sapere quante colonne sono alla destra del <em>TAB</em> e quante ne sono a sinistra (<em>8 - 1</em>); quindi si farà un controllo in un ciclo <em>for</em> incrementando il valore di <em>rx</em> per cercare il successivo <em>TAB</em>.</li>
-	<li>Dalla quarta funzione in poi ci si occuperà dell’effettiva <strong>scrittura di caratteri su</strong> una <strong>riga</strong>, dato che precedentemente sono state gestite le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si occuperà dell’effettiva scrittura di caratteri nella struct dell’Editor.</li>
+	<li>Dalla quarta funzione in poi ci si occuperà dell’effettiva <strong>scrittura di caratteri su</strong> una <strong>riga</strong>, dato che precedentemente sono state gestite le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si userà per l'effettiva scrittura di caratteri nella struct dell’Editor.</li>
 	<li>La quinta funzione <strong>inserisce</strong> le <strong>stringhe</strong> precedentemente lette <strong>sulle righe del terminale</strong>. Per fare ciò si verifica dapprima la posizione del cursore sullo schermo e se quest’ultimo si trova alla fine del file si dovrà aggiungere una nuova riga per dare la possibilità di scrivere oltre la fine del file. Si sposterà successivamente la posizione del cursore in avanti in modo tale che il prossimo carattere inserito capiti subito dopo il carattere precedentemente aggiunto.</li>
 	<li>La sesta funzione invece <strong>incapsulerà una riga</strong> presente nel terminale <strong>convertendola in una</strong> vera e propria <strong>&nbsp;stringa</strong>. Un primo ciclo&nbsp;<em>for</em> sommerà le lunghezze di ogni riga di testo salvando il suo valore in una variabile in modo tale che si possa allocare l’effettiva memoria necessaria per la stringa. Servirà anche un secondo ciclo <em>for</em> per copiare il contenuto di ogni riga all’interno del buffer precedentemente allocato, aggiungendo un ulteriore carattere alla fine di ogni riga.</li>
 </ul>
 
 <hr />
 
-<p>A questo punto sono pronto a <strong>salvare</strong> il contenuto del file <strong>sul disco</strong> tramite la funzione</p>
+<p>A questo punto si <strong>salverà</strong> il contenuto del file <strong>sul disco</strong> tramite la funzione</p>
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">salvaSuDisco</span>();</code></pre>
 
-<p>Anche il salvataggio sarà dinamico, infatti prima di tutto verifico se il file è esistente, se si conoscerà il suo nome e dove salvarlo, altrimenti si dovrà far immettere il nome per il suo successivo salvataggio e si dovrà anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Si aprirà successivamente il file in modalità lettura e scrittura se esiste (altrimenti verrà creato) tramite il flag <code>O_RDWR | O_CREAT</code>. Si imposterà quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione <em>rowToString</em> e con la funzione <code>int ftruncate(int fildes, off_t length)</code> di <em>&lt;unistd.h&gt;</em> si imposterà una dimensione statica al file, in modo che se è più corto, inserisce <em>0</em> di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. Ora si può usare la <code>write</code> per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.</p>
+<p>Anche il salvataggio sarà dinamico, infatti prima di tutto si verifica se il file è esistente (se si conoscerà il suo nome) e dove salvarlo, altrimenti si dovrà far immettere il nome per il suo successivo salvataggio e si dovrà anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Si aprirà successivamente il file in modalità lettura e scrittura se esiste (altrimenti verrà creato) tramite il flag <code>O_RDWR | O_CREAT</code>. Si imposterà quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione <em>rowToString</em> e con la funzione <code>int ftruncate(int fildes, off_t length)</code> di <em>&lt;unistd.h&gt;</em> si imposterà una dimensione statica al file; se è più corto inserisce <em>0</em> di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. Ora si può usare la <code>write</code> per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.</p>
 
 <hr />
 
@@ -557,11 +557,11 @@
 
 <h4><strong>3. Funzioni di utility ausiliarie: Ricerca del Testo e Apertura file da Prompt</strong></h4>
 
-<p>Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, utilizzerò come appoggio la funzione</p>
+<p>Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, si considerano come appoggio la funzione</p>
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">char</span> *<span class="syntax-all syntax-entity">promptComando</span>(<span class="syntax-all syntax-keyword">char</span> *prompt, <span class="syntax-all syntax-keyword">void</span> (*callback)(<span class="syntax-all syntax-keyword">char</span> *, <span class="syntax-all syntax-keyword">int</span>))</code></pre>
 
-<p>Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un <code>char*</code> e un <code>int</code>. Dare in input un puntatore a funzione da la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua <em>size</em>, che l’apertura di un file, passandogli come valore al puntatore a funzione <em>NULL</em>.</p>
+<p>Tale funzione si occuperà della scrittura sul “prompt di comando” dell’Editor, ovvero sull’ultima riga del terminale. La funzione prende in input una stringa e un puntatore a funzione che a sua volta ritorna void e prende in input un <code>char*</code> e un <code>int</code>. Dare in input un puntatore a funzione da' la possibilità di gestire sia la ricerca, in modo da potergli passare la stringa da cercare e la sua <em>size</em>, che l’apertura di un file, passandogli come valore al puntatore a funzione <em>NULL</em>.</p>
 
 <p>Tale funzione memorizzerà l’input inserito dall’utente in un buffer appositamente allocato e attraverso un ciclo while si occuperà di verificare:</p>
 
@@ -589,7 +589,7 @@
 		</ul></li>
 </ul>
 
-<p>Per verificare se la stringa inserita è contenuta in una riga si utilizza la comodissima funzione <code>char * strstr(const char *haystack, const char *needle);</code> gratuitamente offerta da <em>&lt;string.h&gt;</em>. Se si troba la stringa in questione, verrà colorata di blu, altrimenti il suo colore sarà quello di default.</p>
+<p>Per verificare se la stringa inserita è contenuta in una riga si utilizza la comodissima funzione <code>char * strstr(const char *haystack, const char *needle);</code> gratuitamente offerta da <em>&lt;string.h&gt;</em>. Se si trova la stringa in questione, verrà colorata di blu, altrimenti il suo colore sarà quello di default.</p>
 
 <p>Tale funzione di callback verrà presa in input dalla funzione <em>&nbsp;promptComando</em> che però verrà invocata dalla funzione</p>
 
@@ -619,7 +619,7 @@
 <p>Se <code>argv[1]</code>: </p>
 
 <ul>
-	<li>È <em>NULL</em>, esco </li>
+	<li>È <em>NULL</em>, si esce </li>
 	<li>Altrimenti si ritorna salvando il puntatore all’ultima occorrenza dei caratteri nella stringa, ovvero l’estensione, tramite la funzione <em>strrchr</em> di <em>&lt;string.h&gt;</em>. Si verifica se questa meccia con la mia struct e si procede con la colorazione del testo.</li>
 </ul>
 
@@ -660,11 +660,11 @@
 
 		<ul>
 			<li>Se <code>in_comment&nbsp;</code> vale 1, l’indice di riga in cui ci si trova sarà settato con la macro <code>COMMENTO_MULTILINEA</code></li>
-			<li>Se <code>in_comment&nbsp;</code> vale 0, si imposta ad 1 e si continuo a “mangiare” il contenuto della riga</li>
+			<li>Se <code>in_comment&nbsp;</code> vale 0, si imposta ad 1 e si continua a “mangiare” il contenuto della riga</li>
 		</ul></li>
 </ul>
 
-<p>Se si è all’interno di una stringa e il carattere corrispondente è ‘//’ e c’è almeno un altro carattere all’interno di quella riga tale carattere verrà evidenziato.</p>
+<p>Se si è all’interno di una stringa e il carattere corrispondente è ‘//’ e c’è almeno un altro carattere all’interno di quella riga, tale carattere verrà evidenziato.</p>
 
 <p>Se si trovano anche numeri decimali si colorano di rosso e ricorsivamente si invoca la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.</p>
 
