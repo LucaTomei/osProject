@@ -84,7 +84,7 @@ typedef struct EditorR{
 	int is_comment; /*Variabile boolean per gestione commento*/
 } EditorR;
 ```
-Prima di tutto occorre inizializzare la struct config per resettare ogni dato presente in essa e posizionare il cursore all’inizio del file. All’inizio ho gestito il posizionamento del cursore  attraverso la combinazione di tasti _W-A-S-D_ ma successivamente ho sostituito tale implementazione con la seguente struttura:
+Prima di tutto occorre inizializzare la struct config per resettare ogni dato presente in essa e posizionare il cursore all’inizio del file. Inizialmente si gestisce il posizionamento del cursore  attraverso la combinazione di tasti _W-A-S-D_ ma successivamente tale implementazione verrà sostituita con la seguente struttura:
 ```c
 enum editorKey {
 	BACKSPACE = 127,    /*ASCII == 127*/

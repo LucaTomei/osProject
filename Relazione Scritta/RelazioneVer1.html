@@ -472,7 +472,7 @@
 	<span class="syntax-all syntax-keyword">int</span> is_comment; <span class="syntax-all syntax-comment">/*Variabile boolean per gestione commento*/</span>
 } EditorR;</code></pre>
 
-<p>Prima di tutto occorre inizializzare la struct config per resettare ogni dato presente in essa e posizionare il cursore all’inizio del file. All’inizio ho gestito il posizionamento del cursore attraverso la combinazione di tasti <em>W-A-S-D</em> ma successivamente ho sostituito tale implementazione con la seguente struttura:</p>
+<p>Prima di tutto occorre inizializzare la struct config per resettare ogni dato presente in essa e posizionare il cursore all’inizio del file. Inizialmente si gestisce il posizionamento del cursore attraverso la combinazione di tasti <em>W-A-S-D</em> ma successivamente tale implementazione verrà sostituita con la seguente struttura:</p>
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">enum</span> editorKey {
 	BACKSPACE = <span class="syntax-all syntax-constant">127</span>,    <span class="syntax-all syntax-comment">/*ASCII == 127*/</span>
