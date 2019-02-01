@@ -667,6 +667,46 @@
 
 <img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style=" max-width: 2%; margin-top: 9px;">
 
+<p>Infine, come richiesto espressamente dal professore, si gestisce il <strong>lock di un file</strong>. Appena invocato, il main farà in modo che l’apertura di un file sia bloccante, settando opportuni <em>flags</em> che si occuperanno di incapsulare il <em>file descriptor</em> . Per avere il “rock” esclusivo su un file si utilizzano la System Call <code>int fcntl(int fd, int cmd, ...  arg e</code> e la <code>struct flock</code>.</p>
+
+<p>La prima prende in input il descrittore di un file aperto e un valore che indica quale operazione deve essere eseguita (<code>&nbsp;F_SETLK</code> nel mio caso). Tale chiamata a sistema consente a uno ed un solo processo di inserire un blocco in lettura o in scrittura solo stesso file.</p>
+
+<p> La <em>struct flock</em> così composta…</p>
+
+<pre><code class="code-highlighted code-c"> <span class="syntax-all syntax-keyword">struct</span> <span class="syntax-all syntax-constant">flock</span> {
+	...
+	<span class="syntax-all syntax-keyword">short</span> l_type;    ---&gt; Tipo di <span class="syntax-all syntax-parameter">lock</span> (F_RDLCK, F_WRLCK, F_UNLCK)
+	<span class="syntax-all syntax-keyword">short</span> l_whence;  ---&gt; Come interpretare <span class="syntax-all syntax-parameter">l_start</span> (SEEK_SET, SEEK_CUR, SEEK_END)              
+	<span class="syntax-all syntax-constant">off_t</span> l_start;   ---&gt; Offset di partenza per il lock
+	<span class="syntax-all syntax-constant">off_t</span> l_len;     ---&gt; Numero di byte da lockare
+	<span class="syntax-all syntax-constant">pid_t</span> l_pid;     ---&gt; Pid del processo bloccante
+	...
+ };</code></pre>
+
+<p>… permette di settare il desiderato blocco sul file. Infatti, il pid che imposterà il campo <code>l_type</code> con <code>&nbsp;F_WRLCK</code> ed il campo <code>&nbsp;l_whence&nbsp;</code> con <code>SEEK_SET</code> otterrà un blocco in scrittura dall’inizio del file preso in input. Se un altro processo contiene un blocco che impedisce l&#39;acquisizione di altro, esso rimarrà in attesa affinché <em>fcntl</em> rilascerà la risorsa.</p>
+
+<p>Il tutto si gestisce tramite la funzione…</p>
+
+<pre><code class="code-highlighted code-c"> <span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">lockfile</span>(<span class="syntax-all syntax-keyword">const</span> <span class="syntax-all syntax-keyword">char</span> *<span class="syntax-all syntax-keyword">const</span> filepath, <span class="syntax-all syntax-keyword">int</span> *<span class="syntax-all syntax-keyword">const</span> fdptr)</code></pre>
+
+<p>… che prende in input il nome di un file ed un descrittore che inizialmente si imposta a <em>-1</em> per renderlo non valido. Successivamente si utilizza la <em>fopen</em> in modalità <em>append</em>, si chiudono i descrittori <code>&nbsp;STDIN_FILENO&nbsp;</code>, <code>STDOUT_FILENO</code>, <code>STDERR_FILENO</code> e si ritornerà il risultato della <em>fcntl</em>. Infine in un ciclo <em>while</em> presente nel <em>main</em> si controllerà il valore di ritorno della precedente funzione.</p>
+
+<ul>
+	<li>Se vale <em>0</em> la status bar mostrerà il classico messaggio di aiuto;</li>
+	<li>Altrimenti l’utente verrà avvisato che lo stesso file è aperto da un altro processo, <em>errno</em> conterrà il rispettivo valore di errore e si continuerà la routine del processo <em>main</em> svuotando lo schermo e processando ogni <em>char</em> inserito sul terminale.</li>
+</ul>
+
+<br>
+<hr />
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<hr />
+
 <blockquote>
 <p><strong>Link Utili</strong>:</p>
 

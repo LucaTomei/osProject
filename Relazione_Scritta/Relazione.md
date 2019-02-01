@@ -256,9 +256,9 @@ La prima prende in input il descrittore di un file aperto e un valore che indica
 … permette di settare il desiderato blocco sul file. Infatti, il pid che imposterà il campo `l_type` con ` F_WRLCK` ed il campo ` l_whence ` con `SEEK_SET` otterrà un blocco in scrittura dall’inizio del file preso in input. Se un altro processo contiene un blocco che impedisce l'acquisizione di altro, esso rimarrà in attesa affinché _fcntl_ rilascerà la risorsa.
 Il tutto si gestisce tramite la funzione…
 	int lockfile(const char *const filepath, int *const fdptr)
-… che prende in input il nome di un file ed un descrittore che inizialmente si imposta a _-1_ per renderlo non valido. Successivamente si utilizza la _fopen_ in modalità _append_,  si chiudono i descrittori ` STDIN_FILENO `, `STDOUT_FILENO`, `STDERR_FILENO` e si ritornerà il risultato della _fcntl_. Infine in un ciclo _while_ presente nel _main_,si verificherà se il valore di ritorno è _0_:
-- Se si, si setta come messaggio 
-
+… che prende in input il nome di un file ed un descrittore che inizialmente si imposta a _-1_ per renderlo non valido. Successivamente si utilizza la _fopen_ in modalità _append_,  si chiudono i descrittori ` STDIN_FILENO `, `STDOUT_FILENO`, `STDERR_FILENO` e si ritornerà il risultato della _fcntl_. Infine in un ciclo _while_ presente nel _main_ si controllerà il valore di ritorno della precedente funzione.
+- Se è _0_ la status bar mostrerà il classico messaggio di aiuto;
+- Altrimenti l’utente verrà avvisato che lo stesso file è aperto da un altro processo, _errno_ conterrà il rispettivo valore di errore e si continuerà la routine del processo _main_ svuotando lo schermo e processando ogni _char_ inserito sul terminale.
 
 ---- 
 > __Link Utili__:
