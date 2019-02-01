@@ -267,7 +267,7 @@ int lockfile(const char *const filepath, int *const fdptr){
 
     /* Open the file. */
     
-    fd = fileno(fp);    // apro il file in lettura
+    fd = fileno(fp);    // apro il file in lettura/scrittura
     
     if (fd == -1) {
         if (errno == EALREADY)  errno = EIO;    // ritorno EIO = Input/output error

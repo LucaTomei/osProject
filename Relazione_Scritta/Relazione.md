@@ -3,19 +3,19 @@ Il progetto ha lo scopo di creare un editor di testo da terminale, che implement
 Il cuore dell’Editor di Testo è rappresentato dalla struct config, presente nel file _utilities.h_, così definita:
 ```c
 typedef struct config{
-	int x, y;   /*Indice di Riga e di Colonna del Terminale*/
-	int rx; /* Indice del campo di rendering, se non vi sono TAB rx == x, se ci sono rx > x*/
-	int offsetRiga;     /*Tiene traccia della riga in cui sono */
-	int offsetColonna;  /*Tiene traccia della colonna in cui sono. Rappresenterà l'indice dei caratteri*/
-	int righe, colonne;
-	int numRighe;
-	EditorR* row;   /*Mi serve un puntatore ai dati di carattere da scrivere*/
-	int sporco; /*Si occuperà di mostrare se il file è stato modificato*/
-	char* nomeFile;
-	char statusmsg[80];  /*Stringa che utilizzo per la ricerca bella barra di stato*/
-	time_t statusmsg_time;  /*Timestamp per messaggio, in modo tale in poco tempo posso cancellarlo*/
-	struct editorSyntax *syntax;    /*Contiene tutto ciò che mi serve per riconosce il tipo di file*/
-	struct termios initialState;    // Salvo lo stato iniziale del terminale e tutti i suoi flag
+    int x, y;   /*Indice di Riga e di Colonna del Terminale*/
+    int rx; /* Indice del campo di rendering, se non vi sono TAB rx == x, se ci sono rx > x*/
+    int offsetRiga;     /*Tiene traccia della riga in cui sono */
+    int offsetColonna;  /*Tiene traccia della colonna in cui sono. Rappresenterà l'indice dei caratteri*/
+    int righe, colonne;
+    int numRighe;
+    EditorR* row;   /*Mi serve un puntatore ai dati di carattere da scrivere*/
+    int sporco; /*Si occuperà di mostrare se il file è stato modificato*/
+    char* nomeFile;
+    char statusmsg[80];  /*Stringa che utilizzo per la ricerca bella barra di stato*/
+    time_t statusmsg_time;  /*Timestamp per messaggio, in modo tale in poco tempo posso cancellarlo*/
+    struct editorSyntax *syntax;    /*Contiene tutto ciò che mi serve per riconosce il tipo di file*/
+    struct termios initialState;    // Salvo lo stato iniziale del terminale e tutti i suoi flag
 }config;
 
 ```
@@ -31,7 +31,7 @@ Per prima cosa si scrive una funzione chiamata _”abilitaRawMode”_ per uscire
 ---- 
 Ovviamente, una volta terminata la scrittura nell’Editor, servirà la funzione _disabilitaRawMode_ per riassegnare tutti gli attributi che originariamente possedeva il terminale.
 Il _main_, una volta abilitata la modalità _RawMode_, dovrà continuamente svuotare lo schermo e processare ogni singolo char messo in input sul terminale. Per fare ciò si utilizzano le _”Sequenze di Escape”_, le quali iniziano sempre con un carattere escape `\x1b`, seguito sempre da `[`. In questo modo si comunica al terminale di spostare il cursore, cambiare il colore del font, cancellare parti dello schermo,...
-> _Molto Utile è stata la guida sul sito [https://vt100.net/docs/vt100-ug/chapter3.html#ED](#)(https://vt100.net/docs/vt100-ug/chapter3.html#ED), che mostra il significato di ogni singola sequenza di escape._
+> _Molto Utile è stata la guida sul sito [https://vt100.net/docs/vt100-ug/chapter3.html#ED][1](https://vt100.net/docs/vt100-ug/chapter3.html#ED), che mostra il significato di ogni singola sequenza di escape._
 Per svuotare lo schermo, occorre scrivere sullo standard output 4 byte:
 - Il Primo `\x1b` (27 in decimale) è il carattere di escape
 -  Il Secondo`[` è un altro carattere di escape
@@ -40,8 +40,8 @@ Per svuotare lo schermo, occorre scrivere sullo standard output 4 byte:
 Dopo aver impostato tutto l’occorrente, ci serviremo di una struct `StringBuffer` e delle relative funzioni associate ad essa:
 ```c
 struct StringBuffer {
-	char *b;
-	int len;
+    char *b;
+    int len;
 };
 ```
 La struct servirà a creare una _write_ dinamica, in cui scrivere, tramite la funzione _memcpy_, l’input inserito nel terminale nel `char* b`, riallocando i byte necessari per la stringa e aggiornando anche la sua rispettiva lunghezza. Per ottenere il risultato si usano due funzioni:
@@ -75,28 +75,28 @@ L’Editor utilizza principalmente una struct, contenente tutto ciò che necessa
 
 ```c
 typedef struct EditorR{
-	int index;  // Per gestire i commenti /* */ su più linee gestendo l'indice all'interno del file
-	int size;    /*Conterrà la size che occuperanno le stringhe*/
-	int effSize;    /*Gestisco le effettive tabulazioni, mostrando gli spazi come dico io e non...*/
-	char* chars;
-	char* effRow;   /*... come fa di default il terminale, altrimenti un TAB occuperebbe 7 caratteri circa*/
-	unsigned char *color;   /*conterrà valori da 0 a 255 e vedrà se ogn carattere matcherà con un stringa definita da me, per l'highlight*/
-	int is_comment; /*Variabile boolean per gestione commento*/
+    int index;  // Per gestire i commenti /* */ su più linee gestendo l'indice all'interno del file
+    int size;    /*Conterrà la size che occuperanno le stringhe*/
+    int effSize;    /*Gestisco le effettive tabulazioni, mostrando gli spazi come dico io e non...*/
+    char* chars;
+    char* effRow;   /*... come fa di default il terminale, altrimenti un TAB occuperebbe 7 caratteri circa*/
+    unsigned char *color;   /*conterrà valori da 0 a 255 e vedrà se ogn carattere matcherà con un stringa definita da me, per l'highlight*/
+    int is_comment; /*Variabile boolean per gestione commento*/
 } EditorR;
 ```
 Prima di tutto occorre inizializzare la struct config per resettare ogni dato presente in essa e posizionare il cursore all’inizio del file. Inizialmente si gestisce il posizionamento del cursore  attraverso la combinazione di tasti _W-A-S-D_ ma successivamente tale implementazione verrà sostituita con la seguente struttura:
 ```c
 enum editorKey {
-	BACKSPACE = 127,    /*ASCII == 127*/
-	FRECCIA_SINISTRA = 1000,    /* Dalla prossima chiave in poi i numeri incrementeranno di uno*/
-	FRECCIA_DESTRA,
-	FRECCIA_SU,
-	FRECCIA_GIU,
-	CANC,   /*<esc> [3 ~*/
-	HOME,   /*Fn + ←*/
-	END,    /*Fn + →*/
-	PAGINA_SU,
-	PAGINA_GIU
+    BACKSPACE = 127,    /*ASCII == 127*/
+    FRECCIA_SINISTRA = 1000,    /* Dalla prossima chiave in poi i numeri incrementeranno di uno*/
+    FRECCIA_DESTRA,
+    FRECCIA_SU,
+    FRECCIA_GIU,
+    CANC,   /*<esc> [3 ~*/
+    HOME,   /*Fn + ←*/
+    END,    /*Fn + →*/
+    PAGINA_SU,
+    PAGINA_GIU
 };
 ```
 In questo modo basterà concatenare la sequenza di escape `\x1b` con char che vanno da ‘1’ a ‘8’ per gestire i tasti _HOME, END, CANC PAGE-UP, PAGE-DOWN _ e da ‘A’ a ‘F’ per gestire i tasti _FRECCIA-SU, FRECCIA-GIU, FRECCIA-SINISTRA, FRECCIA-DESTRA_ tramite un semplicissimo switch nella funzione:
@@ -110,7 +110,7 @@ void processaChar()
 …la quale si occuperà di gestire ogni carattere passato controllando se questo rappresenta un carattere speciale, se viene premuto _CTRL_ o se semplicemente dovrà scrivere. Per gestire i tasti _CTRL_, si usa la seguente macro: `#define CTRL_KEY(k) ((k) & 0x1f)`.
 
 ---- 
-Una volta gestiti tutti questi casi, ci occuperemo dell’__apertura di un file__ tramite la funzione
+Una volta gestiti tutti questi casi, ci occuperemo dell’\_\_apertura di un file\_\_ tramite la funzione
 
 ```c
 void openFile(char* nomeFile);
@@ -126,11 +126,11 @@ void inserisciChar(int c);
 char *rowToString(int *buflen);
 ```
 *  La prima funzione __gestisce l’allocazione della memoria__ delle stringhe presenti su una riga e dei rispettivi indici di riga,  per processare ogni `char *` presente nell’Editor incrementando il numero di righe e la sua lunghezza, se presente un carattere di tabulazione;
-* La seconda funzione è ausiliaria, utilizzata per l’ __aggiornamento degli spazi su una riga__, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare  `row->size + tabs*(STOP_TAB -1)+1`, in modo tale che ogni carattere letto venga copiato interamente nella _struct EditorR_.
+* La seconda funzione è ausiliaria, utilizzata per l’ __aggiornamento degli spazi su una riga__, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare  `row->size + tabs*(STOP_TAB -1)+1`, in modo tale che ogni carattere letto venga copiato interamente nella \_struct EditorR\_.
 * La terza funzione è anch’essa di appoggio e servirà per aggiornare il valore _x_ della _struct config_ in un valore _rx_ , per __ calcolare__ l’effettivo __offset di ogni tab__ e tramutarlo in un vero e proprio spazio. Per fare ciò occorre sapere quante colonne sono alla destra del _TAB_ e quante ne sono a sinistra (_8 - 1_); quindi si farà un controllo in un ciclo _for_ incrementando il valore di _rx_ per cercare il successivo _TAB_.
 * Dalla quarta funzione in poi ci si occuperà dell’effettiva __scrittura di caratteri su__ una __riga__, dato che precedentemente sono state gestite le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si userà per l'effettiva scrittura di caratteri nella struct dell’Editor.
 * La quinta funzione __inserisce__ le __stringhe__ precedentemente lette __sulle righe del terminale__. Per fare ciò si verifica dapprima la posizione del cursore sullo schermo  e se quest’ultimo si trova alla fine del file si dovrà aggiungere una nuova riga per dare la possibilità di scrivere oltre la fine del file. Si sposterà successivamente la posizione del cursore in avanti in modo tale che il prossimo carattere inserito capiti subito dopo il carattere precedentemente aggiunto.
-* La sesta funzione invece __incapsulerà una riga__ presente nel terminale __convertendola in una__ vera e propria __ stringa__. Un primo ciclo _for_ sommerà le lunghezze di ogni riga di testo salvando il suo valore in una variabile in modo tale che si possa allocare l’effettiva memoria necessaria per la stringa. Servirà anche un secondo ciclo _for_ per copiare il contenuto di ogni riga all’interno del buffer precedentemente allocato, aggiungendo un ulteriore carattere alla fine di ogni riga.
+* La sesta funzione invece __incapsulerà una riga__ presente nel terminale __convertendola in una__ vera e propria __ stringa__. Un primo ciclo \_for\_ sommerà le lunghezze di ogni riga di testo salvando il suo valore in una variabile in modo tale che si possa allocare l’effettiva memoria necessaria per la stringa. Servirà anche un secondo ciclo _for_ per copiare il contenuto di ogni riga all’interno del buffer precedentemente allocato, aggiungendo un ulteriore carattere alla fine di ogni riga.
 ---- 
 A questo punto si __salverà__ il contenuto del file __sul disco__ tramite la funzione
 ```c
@@ -207,13 +207,13 @@ Se `argv[1]`:
 
 ```c
 struct editorSyntax HLDB[] = {
-  	{
-			"c",
-			ESTENSIONI_C,
-			PAROLE_C,
-			"//", "/*", "*/",
-			COLORA_NUMERI | COLORA_STRINGHE
-  	},
+    {
+            "c",
+            ESTENSIONI_C,
+            PAROLE_C,
+            "//", "/*", "*/",
+            COLORA_NUMERI | COLORA_STRINGHE
+    },
 };
 ```
 ---- 
@@ -230,7 +230,7 @@ Gestire i commenti singoli è molto semplice, infatti si crea una funzione ‘bo
 ```c
 int is_separator(int c);
 ```
-Anche in questo caso si considera principale la funzione _void aggiornaSintassi(EditorR *row)_ per verificare se nel testo sono presenti caratteri considerati commenti in file _.c_. A questo punto serviranno 3 stringhe, che conterranno rispettivamente la stringa contenuta in un commento su una singola linea, la stringa di inizio del commento multilinea e la fine, e 3 variabili intere per contenere la loro lunghezza. Successivamente itero tutti i caratteri di ogni riga e se si trova una stringa che si riconosce si colorerà, solo se questa non è contenuta in un commento. Per tenere traccia nella scansione se ci si trova all’interno di un commento, si utilizza un’espressione ternaria `int in_comment = (row->index > 0 && Editor.row[row->index - 1].is_comment); ` che varrà 1 (True) se la riga precedente è evidenziata, 0 (False) altrimenti.
+Anche in questo caso si considera principale la funzione _void aggiornaSintassi(EditorR \*row)_ per verificare se nel testo sono presenti caratteri considerati commenti in file _.c_. A questo punto serviranno 3 stringhe, che conterranno rispettivamente la stringa contenuta in un commento su una singola linea, la stringa di inizio del commento multilinea e la fine, e 3 variabili intere per contenere la loro lunghezza. Successivamente itero tutti i caratteri di ogni riga e se si trova una stringa che si riconosce si colorerà, solo se questa non è contenuta in un commento. Per tenere traccia nella scansione se ci si trova all’interno di un commento, si utilizza un’espressione ternaria `int in_comment = (row->index > 0 && Editor.row[row->index - 1].is_comment); ` che varrà 1 (True) se la riga precedente è evidenziata, 0 (False) altrimenti.
 Se si è all’interno di un commento multilinea, un ciclo _while_ verificherà che:
 - Le tre variabili stringhe non sono nulle e
 	- Se `in_comment ` vale 1, l’indice di riga in cui ci si trova sarà settato con la macro `COMMENTO_MULTILINEA`
@@ -240,7 +240,34 @@ Se si è all’interno di una stringa e il carattere corrispondente è ‘//’ 
 Se si trovano anche numeri decimali si colorano di rosso e ricorsivamente si invoca la funzione all’indice di riga successivo per aggiornare la sintassi di tutte le righe che seguono la riga corrente.
 
 ---- 
+Infine, come richiesto espressamente dal professore, si gestisce il __lock di un file__. Appena invocato, il main farà in modo che l’apertura di un file sia bloccante, settando opportuni _flags_ che si occuperanno di incapsulare il _file descriptor_ . Per avere il “rock” esclusivo su un file si utilizzano la System Call `int fcntl(int fd, int cmd, ...  arg e` e la `struct flock`.
+La prima prende in input il descrittore di un file aperto e un valore che indica quale operazione deve essere eseguita (` F_SETLK` nel mio caso). Tale chiamata a sistema consente a uno ed un solo processo di inserire un blocco in lettura o in scrittura solo stesso file.
+ La _struct flock_ così composta…
+	struct flock {
+	       ...
+	       short l_type;    ---> Tipo di lock (F_RDLCK, F_WRLCK, F_UNLCK)
+	       short l_whence;  ---> Come interpretare l_start (SEEK_SET, SEEK_CUR, SEEK_END)              
+	       off_t l_start;   ---> Offset di partenza per il lock
+	       off_t l_len;     ---> Numero di byte da lockare
+	       pid_t l_pid;     ---> Pid del processo bloccante
+	       ...
+	};
+
+… permette di settare il desiderato blocco sul file. Infatti, il pid che imposterà il campo `l_type` con ` F_WRLCK` ed il campo ` l_whence ` con `SEEK_SET` otterrà un blocco in scrittura dall’inizio del file preso in input. Se un altro processo contiene un blocco che impedisce l'acquisizione di altro, esso rimarrà in attesa affinché _fcntl_ rilascerà la risorsa.
+Il tutto si gestisce tramite la funzione…
+	int lockfile(const char *const filepath, int *const fdptr)
+… che prende in input il nome di un file ed un descrittore che inizialmente si imposta a _-1_ per renderlo non valido. Successivamente si utilizza la _fopen_ in modalità _append_,  si chiudono i descrittori ` STDIN_FILENO `, `STDOUT_FILENO`, `STDERR_FILENO` e si ritornerà il risultato della _fcntl_. Infine in un ciclo _while_ presente nel _main_,si verificherà se il valore di ritorno è _0_:
+- Se si, si setta come messaggio 
+
+
+---- 
 > __Link Utili__:
-> - Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI_escape_code#Colors ](#)(#) e [https://i.stack.imgur.com/7H7H9.png](#)(https://i.stack.imgur.com/7H7H9.png)
-> - Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html](#)(#)
-> - Caratteri Speciali Prompt: [https://ss64.com/osx/syntax-prompt.html](#)(#)
+> - Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI\_escape\_code#Colors ][2](#) e [https://i.stack.imgur.com/7H7H9.png][3](https://i.stack.imgur.com/7H7H9.png)
+> - Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html][4](#)
+> - Caratteri Speciali Prompt: [https://ss64.com/osx/syntax-prompt.html][5](#)
+
+[1]:	#
+[2]:	#
+[3]:	#
+[4]:	#
+[5]:	#
