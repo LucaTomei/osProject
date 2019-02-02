@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Comment=The Best Text Editor
+Name=LighTextEditor
+Exec=gnome-terminal -e "bash -c /home/lucasmac/LighTextEditor/LighTextEditor"
+Icon=/home/lucasmac/LighTextEditor/icon.png
+Terminal=true
+Type=Application
+Categories=Application;

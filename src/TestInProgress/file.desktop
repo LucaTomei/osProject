@@ -1,0 +1,10 @@
+// da posizionare in /usr/share/applications
+[Desktop Entry]
+Version=1.0
+Name=Test        
+Comment=Test the terminal running a command inside it
+Exec=gnome-terminal -e "bash -c $HOME/Desktop/OS/osProject/src/mioEditor"
+Icon=/home/lucasmac/Desktop/OS/osProject/src/TestInProgress/AutoIstallazione/icon.png
+Terminal=true 
+Type=Application
+Categories=Application;
