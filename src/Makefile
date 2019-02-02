@@ -1,14 +1,24 @@
-CC=gcc
-mioEditor: main.c
-	$(CC) main.c termFunc.c editorFunc.c -o mioEditor -Wall -Wextra -pedantic -std=c99
+CC=gcc 
+CFLAGS+=-Wall -Wextra -pedantic
+ProgName=LighTextEditor
+PROGS = main.c termFunc.c editorFunc.c
+
+help:
+	@echo "Comandi Disponibili:"
+	@echo "\tall - Compila il Programma"
+	@echo "\tclean - clean up"
+	@echo "\thelp - Stampa questo Messaggio"
+
+all: main.c
+	$(CC) $(PROGS) -o $(ProgName) $(CFLAGS) 
 test1:
-	./mioEditor TestInProgress/fileDaleggereUnaRiga.txt
+	./LighTextEditor TestInProgress/fileDaleggereUnaRiga.txt
 test2:	
-	./mioEditor TestInProgress/fileTabbato.txt
+	./LighTextEditor TestInProgress/fileTabbato.txt
 test3:
-	./mioEditor TestInProgress/fileC.c
+	./LighTextEditor TestInProgress/fileC.c
 nuovo:
-	./mioEditor
+	./LighTextEditor
 clean: 
-	$(RM) mioEditor
-.PHONY: mioEditor clean		#Forzo la compilazione ogni volta
+	$(RM) LighTextEditor && tput reset
+.PHONY: LighTeditor clean	& tput reset	#Forzo la compilazione ogni volta

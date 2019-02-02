@@ -115,6 +115,7 @@ void processaChar(){
 	/*Tengo traccia di quante volte occorre premere ctrl-q per uscire*/
 	static int quantePress = ESCI;
 	int c = letturaPerpetua();
+
 	switch (c) {
 		case CTRL_KEY('n'):
 			openNewFileFromPrompt();
@@ -147,7 +148,9 @@ void processaChar(){
 	   		cercaTesto();
 	   		break;
 	   	case BACKSPACE:
-	   	case CTRL_KEY('h'):	/*Da gestire == codice di controllo (ASCII == 8)*/
+	   	case CTRL_KEY('h'):	
+	   		setStatusMessage("Help: CTRL+s == Salva | CTRL+q == Esci | Ctrl+f = Cerca | Ctrl+n = Apri File");
+	   		break;
 	   	case CANC:		
 	   		if(c == CANC)	muoviIlCursore(FRECCIA_DESTRA);
 	   		cancellaChar();

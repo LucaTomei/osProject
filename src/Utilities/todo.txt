@@ -1,5 +1,2 @@
 *	Abbellisci l'avvio con la funzione di remindMe 
-*	Fai una funzione che checka se la grandezza delle righe è cambiata!
-*	Gestisci i case in processaChar
-*	Gestisci file .desktop per apertura terminale su un'altra istanza
 *	Crea Installatore automatico
