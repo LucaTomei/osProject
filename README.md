@@ -266,6 +266,6 @@ Il tutto si gestisce tramite la funzione…
 
 ---- 
 > __Link Utili__:
-> - Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI\_escape\_code#Colors ](#)(#) e [https://i.stack.imgur.com/7H7H9.png](#)(https://i.stack.imgur.com/7H7H9.png)
-> - Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html](#)(#)
-> - Caratteri Speciali Prompt: [https://ss64.com/osx/syntax-prompt.html](#)(#)
+> - Tabella colori _ANSI_: [https://en.wikipedia.org/wiki/ANSI\_escape\_code#Colors ] e [https://i.stack.imgur.com/7H7H9.png]
+> - Guida VT100 e sequenze di escape: [https://vt100.net/docs/vt100-ug/chapter3.html]
+> - Caratteri Speciali Prompt: [https://ss64.com/osx/syntax-prompt.html]
