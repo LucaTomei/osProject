@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <limits.h>	// PATH_MAX
 
 #define handle_error(msg)	do{perror(msg); exit(1);}while(0);
 
@@ -18,6 +19,8 @@ char* append(char* string1, char* string2){
 	return ret;
 }
 
+
+
 /*
 	*	Crea un cartella in $HOME di nome LighTextEditor
 	*	Al suo interno mette il file compilato del programma che scarico dal mio GitHub
@@ -25,6 +28,12 @@ char* append(char* string1, char* string2){
 	* 	Scarica l'icona del file
 */
 void create_desktop_file(char* nomeFile){
+	/*Prendo il nome della directory in cui sono*/
+	char cwd[PATH_MAX];	
+	char* current_dir = getcwd(cwd, sizeof(cwd));
+	
+	int ret;
+
 	char* init = "[Desktop Entry]\nVersion=1.0\nComment=The Best Text Editor\nName=LighTextEditor\nExec=gnome-terminal -e \"bash -c ";
 
 
@@ -36,7 +45,7 @@ void create_desktop_file(char* nomeFile){
 	
 	struct stat st = {0};
 	if (stat(createDir, &st) == -1) {
-    	int ret = mkdir(createDir, 0700);
+    	ret = mkdir(createDir, 0700);
     	if(ret != 0)	handle_error("Impossibile creare directory in $HOME");
 	}
 
@@ -45,17 +54,17 @@ void create_desktop_file(char* nomeFile){
 		handle_error("Termino l'installazione: Il file risulta già presente!");
 	}
 	else {
-		int ret1 = chdir(createDir);
-		if(ret1 != 0)	handle_error("Impossibile spostarmi in $HOME");
-		int ret2 = system("wget https://github.com/LucaTomei1995/osProject/raw/master/src/LighTextEditor -O LighTextEditor");
-    	if(ret2 != 0)	handle_error("Impossibile scaricare il file");
+		ret = chdir(createDir);
+		if(ret != 0)	handle_error("Impossibile spostarmi in $HOME");
+		ret = system("wget https://github.com/LucaTomei1995/osProject/raw/master/src/LighTextEditor -O LighTextEditor");
+    	if(ret != 0)	handle_error("Impossibile scaricare il file");
 
     	// Setto il permesso di esecuzione al file
-    	int ret3 = system("chmod a+x LighTextEditor");
-    	if(ret3 != 0)	handle_error("Impossibile cambiare permesso al file");
+    	ret = system("chmod a+x LighTextEditor");
+    	if(ret != 0)	handle_error("Impossibile cambiare permesso al file");
 
-    	int ret 4 = system("wget https://raw.githubusercontent.com/LucaTomei1995/osProject/master/src/TestInProgress/AutoIstallazione/icon.png -O icon.png");
-    	if(ret4 != 0)	handle_error("Errore nel Download dell'Icona");
+    	int ret = system("wget https://suaymac.com/uploads/gallery/album_2/gallery_1_2_75159.jpg -O icon.png");
+    	if(ret != 0)	handle_error("Errore nel Download dell'Icona");
 	}
 
 	/*	CREAZIONE FILE DESKTOP */
@@ -68,8 +77,13 @@ void create_desktop_file(char* nomeFile){
 	char* tmp2 = append(tmp1, homedir);
 	char* done = append(tmp2, "/LighTextEditor/icon.png\nTerminal=true\nType=Application\nCategories=Application;");
 
-	printf("%s\n", done);
-	FILE* f = fopen(nomeFile, "w");
+	// Prima di creare il file mi sposto nella directory in cui sono
+	ret = chdir(current_dir);
+	if(ret != 0)	handle_error("Impossibile spostarmi nella directory di partenza");
+
+
+	/*printf("%s\n", done);*/
+	FILE* f = fopen(nomeFile, "w");		// <---- Il file non è in HOME!!!
 	if(f == NULL)	handle_error("\n\nImpossibile creare il file in scrittura\n\n");
 	fprintf(f, "%s", done);
 	fclose(f);
@@ -84,6 +98,30 @@ void create_desktop_file(char* nomeFile){
 
 
 int main(int argc, char const *argv[]){
-	create_desktop_file("LighTextEditor.desktop");
+	int ret;
+
+	/*Prendo il nome della directory in cui sono*/
+	char cwd[PATH_MAX];	
+	char* current_dir = getcwd(cwd, sizeof(cwd));
+
+  	char* file_name = "LighTextEditor.desktop";
+	create_desktop_file(file_name);
+
+	ret = system("tput reset");
+	if(ret != 0)	handle_error("Errore");
+
+	printf("Inserisci la password di root per procedere con l'installazione\n");
+	ret = system("sudo cp LighTextEditor.desktop /usr/share/applications/");
+	if(ret != 0)	printf("Impossibile creare il file\n");
+
+	/*Elimino il file desktop <----------TODO*/
+	ret = chdir(current_dir);
+	if(ret != 0)	handle_error("Impossibile spostarmi nella directory di partenza");
+
+	ret = remove(file_name);
+	if(ret != 0)	handle_error("Impossibile eliminare il file");
+
+	ret = system("tput reset");
+	if(ret != 0)	handle_error("Errore");
 	return 0;
 }
