@@ -21,7 +21,7 @@ typedef struct config{
 ```
 Per l’implementazione dell’editor, si può suddividere il progetto il 5 macro sezioni:
 #### __1. Modifica del Terminale con funzioni che lo implementano__
-I files _ termFunc.h_ e _ termFunc.c_ contengono le funzioni che utilizzate per settare determinati flag sul terminale.
+I files _ termFunc.h_ e _ termFunc.c_ contengono le funzioni che vengono utilizzate per settare determinati flag sul terminale.
 Per prima cosa si scrive una funzione chiamata _”abilitaRawMode”_ per uscire dalla classica modalità “cooked mode” del terminale ed entrare in modalità “Raw Mode”. Occorre quindi:
 - Disabilitare tutti i tasti _ctrl_ che utilizza di default 
 - Disabilitare gli accapo e la funzionalità di elaborazione dell’output (comprese le printf)
@@ -35,8 +35,8 @@ Il _main_, una volta abilitata la modalità _RawMode_, dovrà continuamente svuo
 Per svuotare lo schermo, occorre scrivere sullo standard output 4 byte:
 - Il Primo `\x1b` (27 in decimale) è il carattere di escape
 -  Il Secondo`[` è un altro carattere di escape
-- Il Terzo  `?25`  indica che voglio cancellare l'intero schermo
-- Il Quarto `J` indica che voglio eliminare _\<esc\>_
+- Il Terzo  `?25`  indica che si vuole cancellare l'intero schermo
+- Il Quarto `J` indica che si vuole eliminare _\<esc\>_
 Dopo aver impostato tutto l’occorrente, ci serviremo di una struct `StringBuffer` e delle relative funzioni associate ad essa:
 ```c
 struct StringBuffer {
@@ -115,7 +115,7 @@ Una volta gestiti tutti questi casi, ci occuperemo dell’\_\_apertura di un fil
 ```c
 void openFile(char* nomeFile);
 ```
-Appena aperto il file, si dovrà liberare la memoria allocata per il   `char* nomeFile` presente nella struct principale dell’Editor; successivamente si dovrà riallocarla con il nome del file appena aperto, tramite la funzione _strdup_ che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione.  Per mostrare il contenuto del file sullo schermo si dovrà scandire ogni sua linea, tramite la funzione ` ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)`, gratuitamente offerta da _\<stdio.h\>_ ,ed “iniettare” tante righe sul terminale quante sono quelle scandite dal file. 
+Appena aperto il file, si dovrà liberare la memoria allocata per il   `char* nomeFile` presente nella struct principale dell’Editor; successivamente la si riallocherà con il nome del file appena aperto, tramite la funzione _strdup_ che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione.  Per mostrare il contenuto del file sullo schermo si dovrà scandire ogni sua linea, tramite la funzione ` ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)`, gratuitamente offerta da _\<stdio.h\>_ ,ed “iniettare” tante righe sul terminale quante sono quelle scandite dal file. 
 Per __modificare il contenuto del file__ si utilizzano principalmente le seguenti funzioni:
 ```c
 void inserisciRiga(int at, char *s, size_t len);
@@ -126,7 +126,7 @@ void inserisciChar(int c);
 char *rowToString(int *buflen);
 ```
 *  La prima funzione __gestisce l’allocazione della memoria__ delle stringhe presenti su una riga e dei rispettivi indici di riga,  per processare ogni `char *` presente nell’Editor incrementando il numero di righe e la sua lunghezza, se presente un carattere di tabulazione;
-* La seconda funzione è ausiliaria, utilizzata per l’ __aggiornamento degli spazi su una riga__, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare  `row->size + tabs*(STOP_TAB -1)+1`, in modo tale che ogni carattere letto venga copiato interamente nella \_struct EditorR\_.
+* La seconda funzione è ausiliaria, utilizzata per l’ __aggiornamento degli spazi su una riga__, riempiendo il contenuto della stringa e copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare  `row->size + tabs*(STOP_TAB -1)+1`, in modo tale che ogni carattere letto venga copiato interamente nella \_struct EditorR\_.
 * La terza funzione è anch’essa di appoggio e servirà per aggiornare il valore _x_ della _struct config_ in un valore _rx_ , per __ calcolare__ l’effettivo __offset di ogni tab__ e tramutarlo in un vero e proprio spazio. Per fare ciò occorre sapere quante colonne sono alla destra del _TAB_ e quante ne sono a sinistra (_8 - 1_); quindi si farà un controllo in un ciclo _for_ incrementando il valore di _rx_ per cercare il successivo _TAB_.
 * Dalla quarta funzione in poi ci si occuperà dell’effettiva __scrittura di caratteri su__ una __riga__, dato che precedentemente sono state gestite le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si userà per l'effettiva scrittura di caratteri nella struct dell’Editor.
 * La quinta funzione __inserisce__ le __stringhe__ precedentemente lette __sulle righe del terminale__. Per fare ciò si verifica dapprima la posizione del cursore sullo schermo  e se quest’ultimo si trova alla fine del file si dovrà aggiungere una nuova riga per dare la possibilità di scrivere oltre la fine del file. Si sposterà successivamente la posizione del cursore in avanti in modo tale che il prossimo carattere inserito capiti subito dopo il carattere precedentemente aggiunto.
@@ -139,7 +139,7 @@ void salvaSuDisco();
 Anche il salvataggio sarà dinamico, infatti prima di tutto si verifica se il file è esistente (se si conoscerà il suo nome) e dove salvarlo, altrimenti si dovrà far immettere il nome per il suo successivo salvataggio e si dovrà anche gestire l’interruzione di salvataggio in caso di ripensamento dall’utente. Si aprirà successivamente il file in modalità lettura e scrittura se esiste (altrimenti verrà creato) tramite il flag `O_RDWR | O_CREAT`. Si imposterà quindi la dimensione effettiva del file uguale alla lunghezza specificata dalla funzione _rowToString_ e con la funzione `int ftruncate(int fildes, off_t length)` di _\<unistd.h\>_ si imposterà una dimensione statica al file; se è più corto inserisce _0_ di padding, se più lungo verrà tagliato fino alla lunghezza specificata, non troncandolo completamente. Ora si può usare la `write` per salvare il file sul disco mostrando anche all’utente quanti byte sono stati scritti sul disco.
 
 ---- 
-Finora l’Editor sarà in grado solamente di scrivere testo, gestendo le tabulazioni e l’inserimento di caratteri concatenandoli tra loro. A questo punto occorre gestire la __cancellazione del testo__, utilizzando le seguenti funzioni:
+Finora l’Editor sarà in grado solamente di scrivere il testo, gestendo le tabulazioni e l’inserimento di caratteri concatenandoli tra loro. A questo punto occorre gestire la __cancellazione del testo__, utilizzando le seguenti funzioni:
 ```c
 void cancellaCharInRiga(EditorR* row, int at);
 void cancellaChar();
@@ -260,7 +260,7 @@ Il tutto si gestisce tramite la funzione…
 ```c
  int lockfile(const char *const filepath, int *const fdptr)
 ```
-… che prende in input il nome di un file ed un descrittore che inizialmente si imposta a _-1_ per renderlo non valido. Successivamente si utilizza la _fopen_ in modalità _append_,  si chiudono i descrittori ` STDIN_FILENO `, `STDOUT_FILENO`, `STDERR_FILENO` e si ritornerà il risultato della _fcntl_. Infine in un ciclo _while_ presente nel _main_ si controllerà il valore di ritorno della precedente funzione.
+… che prende in input il nome di un file ed un descrittore che inizialmente si imposta a _-1_ per renderlo non valido. Successivamente si utilizza la _fopen_ in modalità _append_,  si chiudono i descrittori ` STDIN_FILENO `, `STDOUT_FILENO`, `STDERR_FILENO` e verrà restituito il risultato della _fcntl_. Infine in un ciclo _while_ presente nel _main_ si controllerà il valore di ritorno della precedente funzione.
 - Se è _0_ la status bar mostrerà il classico messaggio di aiuto;
 - Altrimenti l’utente verrà avvisato che lo stesso file è aperto da un altro processo, _errno_ conterrà il rispettivo valore di errore e si continuerà la routine del processo _main_ svuotando lo schermo e processando ogni _char_ inserito sul terminale.
 

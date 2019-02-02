@@ -381,7 +381,7 @@
 
 <h4><strong>1. Modifica del Terminale con funzioni che lo implementano</strong></h4>
 
-<p>I files <em>&nbsp;termFunc.h</em> e <em>&nbsp;termFunc.c</em> contengono le funzioni che utilizzate per settare determinati flag sul terminale.</p>
+<p>I files <em>&nbsp;termFunc.h</em> e <em>&nbsp;termFunc.c</em> contengono le funzioni che vengono utilizzate per settare determinati flag sul terminale.</p>
 
 <p>Per prima cosa si scrive una funzione chiamata <em>”abilitaRawMode”</em> per uscire dalla classica modalità “cooked mode” del terminale ed entrare in modalità “Raw Mode”. Occorre quindi:</p>
 
@@ -408,8 +408,8 @@
 <ul>
 	<li>Il Primo <code>\x1b</code> (27 in decimale) è il carattere di escape</li>
 	<li> Il Secondo<code>[</code> è un altro carattere di escape</li>
-	<li>Il Terzo <code>?25</code> indica che voglio cancellare l&#39;intero schermo</li>
-	<li>Il Quarto <code>J</code> indica che voglio eliminare <em>&lt;esc&gt;</em></li>
+	<li>Il Terzo <code>?25</code> indica che si vuole cancellare l&#39;intero schermo</li>
+	<li>Il Quarto <code>J</code> indica che si vuole eliminare <em>&lt;esc&gt;</em></li>
 </ul>
 
 <p>Dopo aver impostato tutto l’occorrente, ci serviremo di una struct <code>StringBuffer</code> e delle relative funzioni associate ad essa:</p>
@@ -490,7 +490,7 @@
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">letturaPerpetua</span>()</code></pre>
 
 <p>Tale funzione lavorerà insieme a…</p>
-
+<br>
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">processaChar</span>()</code></pre>
 
 <p>…la quale si occuperà di gestire ogni carattere passato controllando se questo rappresenta un carattere speciale, se viene premuto <em>CTRL</em> o se semplicemente dovrà scrivere. Per gestire i tasti <em>CTRL</em>, si usa la seguente macro: <code>#define CTRL_KEY(k) ((k) &amp; 0x1f)</code>.</p>
@@ -501,7 +501,7 @@
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">openFile</span>(<span class="syntax-all syntax-keyword">char</span>* nomeFile);</code></pre>
 
-<p>Appena aperto il file, si dovrà liberare la memoria allocata per il <code>char* nomeFile</code> presente nella struct principale dell’Editor; successivamente si dovrà riallocarla con il nome del file appena aperto, tramite la funzione <em>strdup</em> che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione. Per mostrare il contenuto del file sullo schermo si dovrà scandire ogni sua linea, tramite la funzione <code>&nbsp;ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)</code>, gratuitamente offerta da <em>&lt;stdio.h&gt;</em> ,ed “iniettare” tante righe sul terminale quante sono quelle scandite dal file. </p>
+<p>Appena aperto il file, si dovrà liberare la memoria allocata per il <code>char* nomeFile</code> presente nella struct principale dell’Editor; successivamente la si riallocherà con il nome del file appena aperto, tramite la funzione <em>strdup</em> che gestirà automaticamente la memoria che occorre. Il file sarà aperto in lettura, come fanno la maggior parte degli editor, e il salvataggio su disco sarà gestito successivamente da un’ altra funzione. Per mostrare il contenuto del file sullo schermo si dovrà scandire ogni sua linea, tramite la funzione <code>&nbsp;ssize_t getline(char ** restrict linep, size_t * restrict linecapp, FILE * restrict stream)</code>, gratuitamente offerta da <em>&lt;stdio.h&gt;</em> ,ed “iniettare” tante righe sul terminale quante sono quelle scandite dal file. </p>
 
 <p>Per <strong>modificare il contenuto del file</strong> si utilizzano principalmente le seguenti funzioni:</p>
 
@@ -514,7 +514,7 @@
 
 <ul>
 	<li> La prima funzione <strong>gestisce l’allocazione della memoria</strong> delle stringhe presenti su una riga e dei rispettivi indici di riga, per processare ogni <code>char *</code> presente nell’Editor incrementando il numero di righe e la sua lunghezza, se presente un carattere di tabulazione;</li>
-	<li>La seconda funzione è ausiliaria, utilizzata per l’ <strong>aggiornamento degli spazi su una riga</strong>, riempiendo il contenuto della stringa copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare <code>row-&gt;size + tabs*(STOP_TAB -1)+1</code>, in modo tale che ogni carattere letto venga copiato interamente nella&nbsp;<em>struct EditorR</em>.</li>
+	<li>La seconda funzione è ausiliaria, utilizzata per l’ <strong>aggiornamento degli spazi su una riga</strong>, riempiendo il contenuto della stringa e copiando ogni carattere per reindirizzarlo non appena modificato. Per fare ciò, occorre scorrere tutti i caratteri della riga per contare quanta memoria allocare per gli spazi e per le tabulazioni. Dato che ogni carattere di tabulazione occupa 8 char, per ogni riga occorre allocare <code>row-&gt;size + tabs*(STOP_TAB -1)+1</code>, in modo tale che ogni carattere letto venga copiato interamente nella&nbsp;<em>struct EditorR</em>.</li>
 	<li>La terza funzione è anch’essa di appoggio e servirà per aggiornare il valore <em>x</em> della <em>struct config</em> in un valore <em>rx</em> , per <strong>&nbsp;calcolare</strong> l’effettivo <strong>offset di ogni tab</strong> e tramutarlo in un vero e proprio spazio. Per fare ciò occorre sapere quante colonne sono alla destra del <em>TAB</em> e quante ne sono a sinistra (<em>8 - 1</em>); quindi si farà un controllo in un ciclo <em>for</em> incrementando il valore di <em>rx</em> per cercare il successivo <em>TAB</em>.</li>
 	<li>Dalla quarta funzione in poi ci si occuperà dell’effettiva <strong>scrittura di caratteri su</strong> una <strong>riga</strong>, dato che precedentemente sono state gestite le tabulazioni e l’inserimento delle righe sul terminale. Questa fungerà da funzione ausiliaria per la prossima funzione e si userà per l'effettiva scrittura di caratteri nella struct dell’Editor.</li>
 	<li>La quinta funzione <strong>inserisce</strong> le <strong>stringhe</strong> precedentemente lette <strong>sulle righe del terminale</strong>. Per fare ciò si verifica dapprima la posizione del cursore sullo schermo e se quest’ultimo si trova alla fine del file si dovrà aggiungere una nuova riga per dare la possibilità di scrivere oltre la fine del file. Si sposterà successivamente la posizione del cursore in avanti in modo tale che il prossimo carattere inserito capiti subito dopo il carattere precedentemente aggiunto.</li>
@@ -531,8 +531,8 @@
 
 <img class="hr" src="https://upload.wikimedia.org/wikipedia/it/thumb/5/5f/Happy_Mac.svg/1200px-Happy_Mac.svg.png" alt="ok" style="    max-width: 2%;">
 
-<p>Finora l’Editor sarà in grado solamente di scrivere testo, gestendo le tabulazioni e l’inserimento di caratteri concatenandoli tra loro. A questo punto occorre gestire la <strong>cancellazione del testo</strong>, utilizzando le seguenti funzioni:</p>
-
+<p>Finora l’Editor sarà in grado solamente di scrivere il testo, gestendo le tabulazioni e l’inserimento di caratteri concatenandoli tra loro. A questo punto occorre gestire la <strong>cancellazione del testo</strong>, utilizzando le seguenti funzioni:</p>
+<br>
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">cancellaCharInRiga</span>(EditorR* row, <span class="syntax-all syntax-keyword">int</span> at);
 <span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">cancellaChar</span>();
 <span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">liberaRiga</span>(EditorR* row);
@@ -552,7 +552,7 @@
 <p>Anche in questo caso se ci si trova all'inizio del file si aggiunge una riga al campo <em>y</em> della struct; altrimenti si splitta la riga in 2, inserendo la prima con i caratteri che si trovano sulla sinistra e la seconda con quelli che sono a destra. A questo punto si sposta il cursore in posizione <em>(0, n)</em> (con <em>n</em> = inizio riga successiva) e si aggiorna il contenuto della riga troncando il contenuto della riga corrente, poiché la <em>realloc</em> potrebbe invalidare il puntatore che si sta utilizzando. Si tronca il contenuto della riga corrente e si aggiorna usando la funzione</p>
 
 <pre><code class="code-highlighted code-c"><span class="syntax-all syntax-keyword">void</span> <span class="syntax-all syntax-entity">aggiornaRiga</span>(EditorR* row)</code></pre>
-
+<br><br>
 <h4><strong>3. Funzioni di utility ausiliarie: Ricerca del Testo e Apertura file da Prompt</strong></h4>
 
 <p>Per gestire funzioni ausiliarie quali la ricerca nel testo e l’apertura di un nuovo file nella schermata principale dell’Editor, si considerano come appoggio la funzione</p>
@@ -689,21 +689,21 @@
 
 <pre><code class="code-highlighted code-c"> <span class="syntax-all syntax-keyword">int</span> <span class="syntax-all syntax-entity">lockfile</span>(<span class="syntax-all syntax-keyword">const</span> <span class="syntax-all syntax-keyword">char</span> *<span class="syntax-all syntax-keyword">const</span> filepath, <span class="syntax-all syntax-keyword">int</span> *<span class="syntax-all syntax-keyword">const</span> fdptr)</code></pre>
 
-<p>… che prende in input il nome di un file ed un descrittore che inizialmente si imposta a <em>-1</em> per renderlo non valido. Successivamente si utilizza la <em>fopen</em> in modalità <em>append</em>, si chiudono i descrittori <code>&nbsp;STDIN_FILENO&nbsp;</code>, <code>STDOUT_FILENO</code>, <code>STDERR_FILENO</code> e si ritornerà il risultato della <em>fcntl</em>. Infine in un ciclo <em>while</em> presente nel <em>main</em> si controllerà il valore di ritorno della precedente funzione.</p>
+<p>… che prende in input il nome di un file ed un descrittore che inizialmente si imposta a <em>-1</em> per renderlo non valido. Successivamente si utilizza la <em>fopen</em> in modalità <em>append</em>, si chiudono i descrittori <code>&nbsp;STDIN_FILENO&nbsp;</code>, <code>STDOUT_FILENO</code>, <code>STDERR_FILENO</code> e verrà restituito il risultato della <em>fcntl</em>. Infine in un ciclo <em>while</em> presente nel <em>main</em> si controllerà il valore di ritorno della precedente funzione.</p>
 
 <ul>
 	<li>Se vale <em>0</em> la status bar mostrerà il classico messaggio di aiuto;</li>
 	<li>Altrimenti l’utente verrà avvisato che lo stesso file è aperto da un altro processo, <em>errno</em> conterrà il rispettivo valore di errore e si continuerà la routine del processo <em>main</em> svuotando lo schermo e processando ogni <em>char</em> inserito sul terminale.</li>
 </ul>
 
-<br>
-<hr />
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
+<!-- <br> -->
+<!-- <hr /> -->
+<!-- <br> -->
+<!-- <br> -->
+<!-- <br> -->
+<!-- <br> -->
+<!-- <br> -->
+<!-- <br> -->
 <br>
 <hr />
 
