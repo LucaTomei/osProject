@@ -149,8 +149,6 @@ void processaChar(){
 	   		break;
 	   	case BACKSPACE:
 	   	case CTRL_KEY('h'):	
-	   		setStatusMessage("Help: CTRL+s == Salva | CTRL+q == Esci | Ctrl+f = Cerca | Ctrl+n = Apri File");
-	   		break;
 	   	case CANC:		
 	   		if(c == CANC)	muoviIlCursore(FRECCIA_DESTRA);
 	   		cancellaChar();
@@ -174,6 +172,7 @@ void processaChar(){
 	      	muoviIlCursore(c);
 	      	break;
 	    case CTRL_KEY('l'):	/*tasto aggiornamento schermo terminale, non lo gestisco*/
+	      	break;
 	    case '\x1b':
 	    	break;
 	    default:	/*altrimenti scrivo*/

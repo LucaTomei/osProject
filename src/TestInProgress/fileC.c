@@ -5,4 +5,5 @@ int main(int argc, char* argv){
 	int d = 10;
 	printf("Sono un numero Colorato ----> %d\n", d); 
 	/*Ciao sono un commento multilinea cyan!!!*/
+	printf("Mammamia quanto sono bello");
 }
