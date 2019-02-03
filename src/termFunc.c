@@ -20,7 +20,7 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f) // trucchetto per gestire tutti i ctrl-*
 
-config Editor;
+extern config Editor;
 
 /*Metodo per testing*/
 void testaCioCheScrivi(char c){

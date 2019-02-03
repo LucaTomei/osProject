@@ -1,3 +1,4 @@
 Sono un file di test.
 Entro oggi devo finire il gtk+
 posso scrivere qui e unire le due righe
+ciao

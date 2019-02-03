@@ -1,6 +1,9 @@
 /*-------------------------------------------------------------------------------------------
 						Dichiarazione di Strutture Dati
 --------------------------------------------------------------------------------------------*/
+#ifndef _utilities_h
+#define _utilities_h
+
 #include <errno.h>
 #include <termios.h>	/* Per qbilitare e disabilitare Raw Mode*/
 #include <time.h>	/*per disabilitare dopo 5 secondi la barra sotto*/
@@ -8,7 +11,7 @@
 #define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)	// gestore errori
 
 #define StringBuffer_INIT {NULL, 0}	// inizializza la struct 
-struct StringBuffer {
+struct StringBuffer{
   	char *b;
   	int len;
 };
@@ -66,3 +69,4 @@ struct editorSyntax {	/*Per gestire per ogni tipo di file (.c, ...) la colorazio
   	char* fine_multilinea;
   	int flags;	/*Per gestire cosa devo colorare (numeri, stringhe, ...)*/
 };
+#endif

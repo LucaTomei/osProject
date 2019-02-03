@@ -1,3 +1,5 @@
+#ifndef _termfunc_h
+#define _termfunc_h
 #include <stdio.h>
 #include <stdlib.h>
 #include "utilities.h"
@@ -20,3 +22,4 @@ void editorScroll();
 void statusBarInit(struct StringBuffer *sb);
 void disegnaMessaggio(struct StringBuffer *sb);
 int xToRx(EditorR* row, int x);
+#endif

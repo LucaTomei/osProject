@@ -1,7 +1,6 @@
-CFLAGS+=-Wall 
 CFLAGS+=`pkg-config --cflags gtk+-2.0`
 LIBS+=`pkg-config --libs gtk+-2.0`
-PROG=LighTGtkEditor
+PROG=LighTextEditorGTK
 
 help:
 	@echo  "Comandi Disponibili:"
@@ -12,6 +11,6 @@ help:
 all:
 	$(CC) $(CFLAGS) -o $(PROG) *.c $(LIBS)
 test:
-	./LighTGtkEditor & tput reset
+	./LighTextEditorGTK & tput reset
 clean:
 	rm -f $(PROG)

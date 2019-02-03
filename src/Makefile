@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS+=-Wall -Wextra -pedantic
 ProgName=LighTextEditor
-PROGS = main.c termFunc.c editorFunc.c
+PROGS = main.c termFunc.c editorFunc.c highlight.c
 INSTALL = autoInstall.c
 
 help:
@@ -24,5 +24,5 @@ test3:
 nuovo:
 	./LighTextEditor
 clean: 
-	$(RM) LighTextEditor && tput reset
+	$(RM) LighTextEditor && $(RM) INSTALL && tput reset
 .PHONY: LighTeditor clean & tput reset	#Forzo la compilazione ogni volta

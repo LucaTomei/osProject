@@ -1,6 +1,9 @@
+#ifndef _editorFunc_h
+#define _editorFunc_h
 #include <ctype.h>	/*per iscntrl()*/
 #include <fcntl.h>	/*per i flag usati nel salvataggio del file su disco*/
 #include <stdarg.h>	/*Per va_start() e va_end()*/
+#include "utilities.h"
 
 #define COLORA_NUMERI (1<<0)
 #define COLORA_STRINGHE (1<<1)
@@ -46,3 +49,4 @@ int daSintassiAColore(int color);
 int is_separator(int c);
 void selezionaSintassiDaColorare();
 void openNewFileFromPrompt();
+#endif
