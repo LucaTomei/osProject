@@ -160,7 +160,7 @@ void disegnaRighe(struct StringBuffer * sb){
 	    if (filerow >= Editor.numRighe) {
 	        if (Editor.numRighe == 0 && i == Editor.righe / 3) {  /*Se non passo alcun file*/
 		    	char welcomeMessage[80];
-		        int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),COLOR_GREEN"Il più bel text editor %s","[Mio]"COLOR_RESET);
+		        int welcomelen = snprintf(welcomeMessage, sizeof(welcomeMessage),COLOR_GREEN"\tLighTextEditor (by LucasMac)"COLOR_RESET);
 		        if (welcomelen > Editor.colonne) welcomelen = Editor.colonne;
 		        /*  Per centrare la stringa sullo schermo, divido la larghezza per 2
 		            Questo mi dice quanto lontano da destra e da sinistra devo stampare 
