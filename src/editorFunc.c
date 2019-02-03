@@ -706,7 +706,7 @@ void cercaTestoCallback(char *toFind, int key){
 
 void openNewFileFromPrompt(){
 	char *nomeFile = promptComando("Quale file vorresti aprire? %s", NULL);
-	if(nomeFile)	free(nomeFile);
+	
 	free(Editor.nomeFile);
 	/*Verifico se il file esiste*/
 	if(access(nomeFile, F_OK) != -1){	/*Il file esiste*/
@@ -752,4 +752,6 @@ void openNewFileFromPrompt(){
 	  	fclose(fp);	
 	  	Editor.sporco = 0;
 	}
+	
+	free(nomeFile);
 }

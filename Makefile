@@ -23,6 +23,9 @@ project:
 	$(CC) $(PROGS1) -o $(ProgName1) $(CFLAGS1)
 gtkProject:
 	$(CC) $(CFLAGS2) -o $(ProgName2) $(PROGS2) $(LIBS)
+all:
+	$(CC) $(PROGS1) -o $(ProgName1) $(CFLAGS1) && $(CC) $(CFLAGS2) -o $(ProgName2) $(PROGS2) $(LIBS)
+
 install:
 	$(CC) $(INSTALL) -o INSTALL && tput reset && ./INSTALL && rm INSTALL
 test1:
