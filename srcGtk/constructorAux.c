@@ -64,9 +64,6 @@ void seleziona_font(GtkToolButton *cut, LighTextEditor *editor){
 }
 
 
-
-
-
 void annulla_ripeti(GtkWidget *widget, gpointer item){
      int count = 2;
     const char *name = gtk_widget_get_name(widget);

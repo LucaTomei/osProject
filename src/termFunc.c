@@ -167,7 +167,7 @@ void disegnaRighe(struct StringBuffer * sb){
 		        */
 		        int padding = (Editor.colonne - welcomelen) / 2;
 		        if(padding) {
-		            /*sbAppend(sb, "~", 1);*/
+		            
 		            if(i % 2 == 0)	sbAppend(sb, "Ⓛ", 3);
 		        	else sbAppend(sb, "Ⓣ", 3);
 		            padding--;
@@ -175,7 +175,7 @@ void disegnaRighe(struct StringBuffer * sb){
 		        while(padding--)  sbAppend(sb, " ", 1);
 		        sbAppend(sb, welcomeMessage, welcomelen);
 		        /*write(STDOUT_FILENO, "\033[48;5;57m ", 10)  COLORA LO SCHERMO DI BLU;*/
-		    }else{	/*sbAppend(sb, "~", 1);*/ 
+		    }else{	
 		        if(i % 2 == 0)	sbAppend(sb, "Ⓛ", 3);
 		        else sbAppend(sb, "Ⓣ", 3);
 		    }
