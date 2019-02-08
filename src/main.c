@@ -1,3 +1,4 @@
+#define _GNU_SOURCE   /*Per fcloseall()*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -108,6 +109,8 @@ int main(int argc, char *argv[]){
     free(Editor.syntax);
     free(&Editor);
 
+    result = fcloseall();
+    if(result != 0 && result == EOF)	handle_error("Errore nella chiusura degli stream aperti");
     RESETTACURSORE;
     disabilitaRawMode();        
     return 0;
