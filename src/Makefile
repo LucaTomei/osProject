@@ -7,7 +7,7 @@ BLUE=\033[1;96m
 CC=gcc
 CFLAGS+=-Wall -Wextra -pedantic
 ProgName=LighTextEditor
-PROGS = main.c termFunc.c editorFunc.c highlight.c
+PROGS = main.c termFunc.c editorFunc.c highlight.c findInEditor.c
 INSTALL = autoInstall.c
 
 help:
@@ -20,7 +20,7 @@ help:
 all: main.c
 	$(CC) $(PROGS) -o $(ProgName) $(CFLAGS) 
 install:
-	$(CC) $(INSTALL) -o INSTALL && tput reset && ./INSTALL && rm INSTALL
+	$(CC) $(INSTALL) -o INSTALL && tput reset && ./INSTALL && rm INSTALL 
 test1:
 	./LighTextEditor TestInProgress/fileDaleggereUnaRiga.txt
 test2:	

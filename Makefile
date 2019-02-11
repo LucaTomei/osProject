@@ -8,7 +8,7 @@ CC=gcc
 
 ProgName1=LighTextEditor
 CFLAGS1+=-Wall -Wextra -pedantic
-PROGS1 = src/main.c src/termFunc.c src/editorFunc.c src/highlight.c
+PROGS1 = src/main.c src/termFunc.c src/editorFunc.c src/highlight.c src/findInEditor.c
 
 ProgName2=LighTextEditorGTK
 CFLAGS2+=`pkg-config --cflags gtk+-2.0`

@@ -8,8 +8,10 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <limits.h>	// PATH_MAX
+#include <time.h>
 
-#define handle_error(msg)	do{perror(msg); exit(1);}while(0);
+#define handle_error(msg)    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
 
 char* append(char* string1, char* string2){
 	size_t dim = (strlen(string1)) + (strlen(string2));
@@ -145,5 +147,7 @@ int main(int argc, char const *argv[]){
 	/*ret = system("tput reset");
 	if(ret != 0)	handle_error("Errore");*/
 	free(createDir);
+	ret = system("tput reset");
+	if(ret != 0)	handle_error("Errore alla fine: Impossibile svuotare schermo!");
 	return 0;
 }

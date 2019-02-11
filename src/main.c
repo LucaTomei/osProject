@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
             processaChar();
         }
     }else{
-    	setStatusMessage(COLOR_ALERT"Il file è già stato aperto. Premi CTRL+q 3 volte per uscire"COLOR_RESET);
+    	setStatusMessage(COLOR_ALERT"Il file è già stato aperto. CTRL+q per uscire"COLOR_RESET);
         while(1){
             svuotaSchermo();
             processaChar();

@@ -1,3 +1,10 @@
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include "termFunc.h"
+#include "editorFunc.h"
+extern config Editor;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 							GESTIONE RICERCA TESTO IN EDITOR
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -9,7 +16,8 @@ void cercaTesto(){
 	int vecchio_x = Editor.x, vecchio_y = Editor.y;
 	int vecchio_offsetCol = Editor.offsetColonna, vecchio_offsetRiga = Editor.offsetRiga;
     
-    char *query = promptComando("Cerca: %s (ESC per uscire)", cercaTestoCallback);
+    char *query = promptComando("Cerca: %s (ESC per uscire/FRECCE/INVIO)", cercaTestoCallback);
+    svuotaSchermo();
     if (query)  free(query);
     else{	/*---->Restore<----*/
     	Editor.x = vecchio_x;
