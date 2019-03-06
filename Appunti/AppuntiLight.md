@@ -96,4 +96,61 @@ Simulo i processi in base ad una distribuzione probabilistica esponenziale e fac
 $$
 n = λ\cdot W
 $$
-_n_ = Lunghezza della coda; _λ_ = Tempo medio di arrivo dei processi; _W_ = Tempo medio di attesa dei processi in coda
+_n_ = Lunghezza della coda; _λ_ = Tempo medio di arrivo dei processi; _W_ = Tempo medio di attesa dei processi in coda.
+
+### Main Memory
+
+La CPU può accedere direttamente solo a memoria e a registri e la cache è posizionata tra i due con lo scopo di garantire un accesso più veloce quando si fa riferimento ad una istruzione o a un dato.
+
+#### Allocazione Statica e Dinamica della Memoria - Address Binding
+
+Il Dynamic Linker si occuperà di rimpiazzare gli indirizzi simbolici (le wildcard del file '.o') con indirizzi fisici (indirizzi del file sorgente). 
+
++ Early Binding = Avviene prima dell'esecuzione
++ Late Binding = Avviene durante l'esecuzione
+
+Il kernel memorizza le informazioni relative alle aree di memoria allocate al processo _P_ in una tabella e le rende disponibili alla _MMU_ (circuito situato tra CPU e memoria), la quale si occuperà dell'effettiva traduzione di indirizzi da logici a fisici.
+
+##### Metodi Per fare MMU
+
+* Reallocation and Limit: Basta prendere l'indirizzo logico, sommarlo al mio indirizzo fisico e se va oltre il comparatore (<) avviene una trap.
+
+  Indirizzo Fisico = Reallocation + Logico
+
+* Contigous Allocation: Ciascun processo è contenuto in una singola sezione contigua della memoria, la quale può anche essere ricompattata copiandola nella parte alta.
+
+* Multiple Partition Allocation: Divisione della memoria in tanti pezzi e ne do un pezzo a ciascun processo
+
+#### Allocazione Memoria di un Processo
+
+Un processo ha bisogno di memoria contigua e dovrà fare i conti con problemi quali frammentazione, se non vi è abbastanza spazio contiguo, e protezione, facendo in modo che la memoria tra due processi non si sovrapponga.
+
+<u>Protezione della Memoria</u>: Gestita da due registri della CPU...
+
+* Base: Indirizzo di partenza della memoria allocata
+* Limit: Size della memoria allocata
+
+... con lo scopo di assicurarsi che ogni processo abbia uno spazio di memoria separato che non interferisca con quello di un altro processo.
+
+Per garantire ciò:
+
+1. Verifica che l'indirizzo sia >= di base
+2. Verifica che l'indirizzo sia < di (base + limit)
+3. Se tutto è rispettato avviene il caricamento in memoria
+
+#### Compattazione della Memoria
+
+Viene utilizzata per limitare o evitare la frammentazione esterna, spostando tutte le aree di memoria libere verso una estremità della memoria a tempo di compilazione.
+
+#### Allocazione Non Contigua di Memoria - Approcci
+
+* **Segmentazione**: Un processo viene suddiviso in un insieme di segmenti di differenti dimensioni sparsi in memoria; tale memoria conterrà una <u>Tabella Dei Segmenti</u> contente:
+
+  1. Base: Indirizzo fisico in memoria
+  2. Limit: Lunghezza del segmento
+  3. Bit di Validità: 0 == !Valit; 1 == Valid
+  4. Permessi _rwx_
+
+* **Paginazione**: L'OS suddivide il processo in parti di dimensione fissa da lui stabilite (sono potenze di 2) chiamate pagine e la memoria è partizionata in aree, chiamate frames, di grandezza uguale a quella di una pagina.
+
+  (Continua a pagina a 20)
