@@ -98,6 +98,8 @@ n = λ\cdot W
 $$
 _n_ = Lunghezza della coda; _λ_ = Tempo medio di arrivo dei processi; _W_ = Tempo medio di attesa dei processi in coda.
 
+
+
 ### Main Memory
 
 La CPU può accedere direttamente solo a memoria e a registri e la cache è posizionata tra i due con lo scopo di garantire un accesso più veloce quando si fa riferimento ad una istruzione o a un dato.
@@ -151,6 +153,39 @@ Viene utilizzata per limitare o evitare la frammentazione esterna, spostando tut
   3. Bit di Validità: 0 == !Valit; 1 == Valid
   4. Permessi _rwx_
 
-* **Paginazione**: L'OS suddivide il processo in parti di dimensione fissa da lui stabilite (sono potenze di 2) chiamate pagine e la memoria è partizionata in aree, chiamate frames, di grandezza uguale a quella di una pagina.
+* **Paginazione**: L'OS suddivide il processo in parti di dimensione fissa da lui stabilite (sono potenze di 2) chiamate pagine e la memoria è partizionata in aree, chiamate frames, di grandezza uguale a quella di una pagina. La CPU genera indirizzi suddivisi in:
 
-  (Continua a pagina a 20)
+  * Numero di Pagina: Contiene indirizzi di base del programma
+  * Offset di Pagina: Spiazzamento pagina
+
+  Base + Offset vengono inviati all'_MMU_, la quale si occuperà di generare l'indirizzo fisico. Viene utilizzato un <u>TLB</u> = Array contenente indirizzo a cui accedo più spesso; rappresenta un dizionario con chiave numero di pagina e valore il valore della pagina.
+
+#### TLB e MMU
+
+Rappresenta un Array presente che risiede nell'MMU contenente gli elementi più utilizzati di recente dalla tabella delle pagine. Memorizza alcune informazioni principali, come numero di pagina, numero di frame, bit di modifica e il campo per la protezione. Per quanto riguarda il funzionamento, l'MMU cerca l'indirizzo arrivatogli da tradurre nel TLB, se presente lo usa, altrimenti legge dalla tabella delle pagine e lo inserisce nel TLB.
+
+**Tempo di Accesso Effettivo a Memoria** = $p_hit(T_TLB + T_RAM)+ p_fault(2T_TLB+2T_RAM)$
+
+L'MMU gestisce anche il <u>Page Protection</u> tramite l'utilizzo di bit che indicano se l'area di memoria è accessibile in lettura o sia lettura che scrittura. In più contiene bit di validità atti a determinare se la pagina associata è nello spazio di indirizzamento logico del processo oppure no (Valid/Invalid).
+
+#### Condivisione di Memoria tra Processi
+
+Posso fare in modo che due processi condividano memoria, mappando lo stesso frame su due tabelle diverse (<u>Shared Pages</u>).
+
+- Shared Code: Copia in lettura
+- Private Code and Data: Ogni processo mantiene una copia separata di codice e dati.
+
+#### Gerarchia Tabella delle Pagine
+
+Le pagine vengono suddivise in strati, in modo tale che possa implementare una paginazione su due livelli. Utilizzo la tecnica dello **Swapping**, che consiste nel caricare interamente in memoria ogni processo, eseguirlo per un certo periodo di tempo al termine del quale verrà spostato sul disco in un'area chiamata <u>Area di Swap</u>. Le operazioni che verranno eseguite saranno dunque due:
+
+- <u>Swap-In</u>: Da disco a memoria
+- <u>Swap-Out</u>: Da memoria a disco
+
+
+
+### Virtual Memory
+
+La virtual memory è una parte della gerarchia della memoria suddivisa in memoria + disco.
+
+(Continua pagina 25)
