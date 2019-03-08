@@ -160,6 +160,13 @@ Viene utilizzata per limitare o evitare la frammentazione esterna, spostando tut
 
   Base + Offset vengono inviati all'_MMU_, la quale si occuperà di generare l'indirizzo fisico. Viene utilizzato un <u>TLB</u> = Array contenente indirizzo a cui accedo più spesso; rappresenta un dizionario con chiave numero di pagina e valore il valore della pagina.
 
+#### Differenze tra Segmentazione e Paginazione
+
+Per la corretta implementazione, entrambe gli approcci hanno bisogno di strutture hardware per farli funzionare efficientemente.
+
+* Ogni <u>segmento</u> ha dimensione variabile e perciò è identificato da indirizzo di base e indirizzo di limite. Tali informazioni sono contenute nella tabella dei segmenti e il sistema può decidere di non rendere accessibili alcuni segmenti tramite l'aggiunta di un bit di controllo. La frammentazione però porta a segmentazione esterna e ha la necessita di ricompattare i segmenti.
+* Architetture moderne usano la <u>paginazione</u> per virtualizzare l'_address space_ suddividendo la memoria in frames (pagine), di dimensione uguale. La parte alta dell'indirizzo verrà usata come "_chiave_" per la tabella delle pagine, evidenziando la pagina corrente, e la parte restante dell'indirizzo verrà utilizzato come offset all'interno della pagina. Può essere implementata anche in maniera gerarchica e anch'essa permette di proteggere zone di memoria attraverso l'utilizzo di bit di validità. 
+
 #### TLB e MMU
 
 Rappresenta un Array presente che risiede nell'MMU contenente gli elementi più utilizzati di recente dalla tabella delle pagine. Memorizza alcune informazioni principali, come numero di pagina, numero di frame, bit di modifica e il campo per la protezione. Per quanto riguarda il funzionamento, l'MMU cerca l'indirizzo arrivatogli da tradurre nel TLB, se presente lo usa, altrimenti legge dalla tabella delle pagine e lo inserisce nel TLB.
@@ -186,6 +193,67 @@ Le pagine vengono suddivise in strati, in modo tale che possa implementare una p
 
 ### Virtual Memory
 
-La virtual memory è una parte della gerarchia della memoria suddivisa in memoria + disco.
+La virtual memory è una parte della gerarchia della memoria suddivisa in memoria + disco, infatti alcune componenti di un processo durante l'esecuzione si trovano in memoria, mentre altre risiederanno sul disco e saranno caricate solo quando necessario. In tal modo il kernel implementa l'illusione di una memoria più grande, combinando hardware con softare (MMU con Gestore della Memoria Virtuale). Virual memory può essere implementato tramite:
 
-(Continua pagina 25)
+* **Paginazione Su Richiesta** (Demand Paging): Ogni porzione di indirizzamento prende il nome di pagina e tutte le pagine sono di egual dimensione (in potenza di 2). Viene in tal caso portata una pagina in memoria solo al momento del primo riferimento a una locazione appartenente alla pagina stessa.
+
+  <u>Ottimizzazione Demand Paging</u>: **Copy on Write** (COW): Durante un _fork()_ viene creato un processo figlio come copia della memoria del padre, ma se subito dopo tale istruzione il figlio esegue una _exec()_ tale copia risulterebbe inutile poiché la sua memoria sarà rimpiazzata dai parametri di quest'ultima syscall. A tal proposito viene utilizzata la tecnica <u>COW</u>. Inizialmente entrambe i processi condivideranno le stesse pagine di memoria, marcate come _copy on write pages_ e quando uno dei due processi vorrà modificare una delle pagine, quest'ultima verrà copiata.
+
+* **Segmentazione su Richiesta**: Implementato da sistemi operativi in cui l'hardware disponibile non è sufficiente per implementare la paginazione. La tabella dei segmenti conterrà un bit di validità che serve a verificare se il segmento si trova nella memoria fisica oppure no.
+
+#### Politiche di Sostituzione delle Pagine
+
+Il gestore della memoria dovrà verificare quale pagina dovrà essere sostituita quando si verifica un _page fault_ e non ci sono frames liberi in memoria e quanti frame allocare per ciascun processo tramite 3 algoritmi di sostituzione:
+
+* <u>Politica Ottimale</u>: Sostituzione di tutte le pagine che non si useranno più nel periodo di tempo più lungo. Impossibile da implementare in quanto non possiamo conoscere a priori il comportamento futuro di un processo.
+* <u>Politica FIFO</u>: Il sistema operativo mantiene una lista di tutte le pagine in memoria, dove la pagina di testa è la più vecchia e quella di coda è quella arrivata più di recente. La rimozione avviene dunque in testa.
+* <u>Politica LRU</u>: Sostituzione della pagina utilizzata meno di recente con la pagina richiesta.
+
+#### Working Set
+
+L'insieme di lavoro, cioè l'insieme di tutte le pagine di un processo, viene detto working set. Ciò consiste nell'assicurarsi che il work di un processo sia caricato totalmente in memoria prima di consentire l'esecuzione di un altro processo. 
+
+Quando parecchi processi iniziano a spendere più tempo per la paginazione che per l'esecuzione, essi inizieranno ad andare in **trashing**. In tal caso il SO aumenterà il grado di multiprogrammazione avviando nuovi processi che cominceranno a loro volta ad andare in trashing a causa della mancanza di frames liberi.
+
+
+
+### File System
+
+Risiede su uno storage secondario, sul disco, e fornisce sia un'interfaccia utente per la memorizzazione, mappatura logica a fisica che un'efficiente accesso al disco abilitando la conservazione dei dati.
+
+#### Mount
+
+Tramite l'operazione di mount, il FS viene informato che un nuovo FS è pronto per essere utilizzato. L’operazione, quindi, provvederà ad associarlo con un dato _mount-point_, ovvero la posizione all'interno della gerarchia del file system del sistema dove il nuovo file system verrà caricato. Prima di effettuare questa operazione di attach, ovviamente bisognerà controllare la tipologia e l’integrità del file system. Una volta fatto ciò, il nuovo file system sarà a disposizione del sistema.
+
+#### Directory
+
+Rappresenta nella realtà un insieme di voci di file, che può contenere:
+
+- Hard Link: Puntatori a file che se eliminati tutti, eliminano il file stesso
+- Soft Link: Puntatori "soft", non intaccano il contenuto del file
+- Altre Directory
+
+#### File Descriptor
+
+È un intero ottenuto come valore di ritorno a seguito della chiamata alla syscall _open()_. A seguito di tale chiamata,  il sistema scandisce il FS in cerca del file e, una volta trovato, il **FCB** è copiato nella tabella globale dei file aperti. Per ogni singolo file aperto, anche se da più processi esiste una sola entry nella tabella globale dei file aperti. Viene, quindi, creata una entry all'interno della
+tabella dei file aperti detenuta dal processo, la quale punterà alla relativa entry nella tabella globale. 
+
+#### Devices e Implementazione Funzioni 
+
+Il filesystem _/dev_ fornisce al sistema un aggancio per dispositivi fisici esterni. In Unix ogni device è accessibile come un file e questi vengono categorizzati in:
+
++ <u>A Blocchi</u>: Come ad esempio file di testo
++ <u>A caratteri</u>: Come ad esempio le telecamere che rappresentano stream
+
+La funzione <u>ioctl</u> permette di interagire con il driver generico e tramite essa è possibile settare e ricavare i parametri di tale device, come ad esempio la risoluzione della webcam. Per configurare devices seriali a caratteri è possibile utilizzare le _API_ racchiuse nella interfaccia <u>termios</u>, che ci permette di avere accesso alle caratteristiche di tale device.
+
+#### Dischi
+
+Un disco è un dispositivo primitivo che può effettuare solo due operazioni basilari:
+
+* **Lettura di un Blocco **
+* **Scrittura di un Blocco**
+
+Per dialogare direttamente con il disco, l'OS utilizza il driver del File System che implementa le primitive _open(), read(), write(), ..._ per accedere ai blocchi del disco (grande file binario).
+
+>Continua a Pagina 33 - Struttura dati per la manipolazione di FIleSystem
