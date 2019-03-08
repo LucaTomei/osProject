@@ -254,6 +254,143 @@ Un disco è un dispositivo primitivo che può effettuare solo due operazioni bas
 * **Lettura di un Blocco **
 * **Scrittura di un Blocco**
 
-Per dialogare direttamente con il disco, l'OS utilizza il driver del File System che implementa le primitive _open(), read(), write(), ..._ per accedere ai blocchi del disco (grande file binario).
+Per dialogare direttamente con il disco, l'OS utilizza il driver del File System che implementa le primitive _open(), read(), write(), ..._ per accedere ai blocchi del disco (visto come grande file binario).
 
->Continua a Pagina 33 - Struttura dati per la manipolazione di FIleSystem
+> * Per ogni file aperto, <u>nel Kernel</u>, viene creata un'istanza della struttura e viene memorizzato il descrittore tramite un'apposita struttura "_OpenFileInfo_". Per ogni descrittore aperto da un processo, viene memorizzata in una lista accessibile dal PCB un'apposita struttura "_OpenFileRef_". Ogni OpenFileRef punterà alla corrispondente OpenFileInfo e memorizza un indipendente puntatore a file per la gestione di seek/read/write
+> * <u>Sul Disco</u> invece un file è grande almeno quanto un blocco, è caratterizzato da "_FileControlBlock_" che risiede all'inizio del blocco per gestire informazioni specifiche del file e ogni directory avrà una struct di intestazione che estenderà l'FCB.
+
+#### Allocazione di un File
+
+Una delle problematiche a cui un FS deve sopperire è come allocare lo spazio necessario ad ogni file che andrà a "storare" sul disco.
+
++ Nel caso di **Linked Allocation** ogni file sarà una lista concatenata di blocchi, dove ogni blocco conterrà il puntatore al successivo. Tale tipo di allocazione permetterà dunque di allocare i blocchi in maniera sparsa sul disco ed il file finirà quando incontreremo un puntatore a _NULL_. In questo caso localizzare  un blocco richiederà numerosi cicli di I/O e i puntatori influiranno negativamente sullo spazio disponibile per contenere i dati.
+
++ Anche per la **Indexed Allocation** i blocchi saranno disposti in maniera "scattered" sul disco (sparsi) ma in questo caso ogni file conterrà un _Index Block_ contenente i puntatori a tutti gli altri blocchi componengti del file.
+
+  + Quando un file viene creato, tutti i puntatori dell'index block saranno settati a _NULL_
+  + Quando un blocco viene richiesto e scritto, il puntatore a tale blocco entrerà nell'index block
+
+  Tale tipo di allocazione permette di guadagnare velocità rispetto ad una implementazione tramite linked list nel caso in cui si effettuino molti accessi scattered ai blocchi, poiché non occorrerà scandire tutta la lista ma fare una semplice ricerca. Il costo da pagare però è lo spazio necessario a contenere l'index block stesso.
+
++ I primi file system usavano il modello di **Allocazione Contigua** allocando una singola area di memoria a ogni file al momento della creazione. Ogni file occuperà un insieme di blocchi contigui ma anche se per allocare basterà sapere solo il blocco iniziale e la sua lunghezza, genera frammentazione esterna e interna.
+
+##### Gestione dello Spazio Libero
+
+* <u>Bitmap</u>: Mantengo una bitmap all'inizio del disco in cui ogni bit corrisponderà ad un blocco. Utilizzerò tale bitmap per cercare un blocco libero più vicino
+* <u>Linked List</u>: Identico allo _Slab Allocator_. Punterà a tutti i blocchi liberi sul disco.
+
+### IPC
+
+Per comunicare tra loro, i processi dovranno scambiarsi informazioni attraverso _comunicazione interprocesso_ (IPC).
+
+#### Message Passing - Memoria non Condivisa
+
+È un meccanismo di IPC che prevede l'utilizzo di messaggi, gestiti tramite opportune syscall attraverso una coda di messaggi. Il processo $P_1$ consegna l'are di memoria al kernel, il quale la consegnerà a $P_2$. La comunicazione sarà basata sulle operazioni di <u>send</u> e <u>receive</u> che saranno sviluppate in base alle specifiche dell'utente (comunicazione sincrona/asincrona, diretta/indiretta, limitata/illimitata, ...). Il sistema operativo implementa una _mailbox_ garantendo la creazione della coda di messaggi da parte dei processi, se non esiste la coda, oppure il link ad essa a partire da un identificatore della coda, se già esistente. Le operazioni fondamentali sono:
+
++ Check dello status della coda
++ Post di un messaggio
++ Attesa di un messaggio (bloccante o non bloccante)
+
+#### Shared Memory - Memoria Condivisa
+
+In tal caso viene riservata una porzione di memoria condivisa tra i vari processi, i quali potranno scambiarsi informazioni semplicemente leggendo o scrivendo da/in tale porzione di memoria. I processi sceglieranno la locazione di memoria e la tipologia di dati e dovranno sincronizzarsi in modo da non operare contemporaneamente sugli stessi dati garantendo mutua esclusione. Tale implementazione è molto utile nel caso di producer/consumer o analogamente client/server. Sarà dunque necessario istanziare un buffer condiviso da entrambi i processi in modo che il produttore possa rendere disponibile ai consumatori ciò che ha prodotto.
+
+
+
+### Stack e Context Switch
+
+Un contesto di un processo, cioè ciò che mi serve per eseguirlo o per far continuare la sua esecuzione, richiede:
+
+* Registri della CPU
+* Memoria del processo
+
+#### Coroutines
+
+Rappresentano un pezzo di programma che effettua salti da una funzione all'altra, cambiando contesto. In _C_ è implementato dalla libreria _ucontext_.
+
++ **getContext**: Inizializza la struttura puntata da _ucp_ al contesto corrente.
+
+  ```c
+  int getcontext(ucontext_t *ucp);
+  ```
+
++ **setContext**: Salva il contesto corrente in _ucp_, contesto che precedentemente era stato salvato (raramente utilizzato)
+
+  ```c
+  int setcontext(const ucontext_t *ucp);
+  ```
+
++ **makeContext**: Crea il trampolino, lanciando una funzione come prima istruzione modificando il contenuto puntato da _ucp_.
+
+  ```c
+  void makecontext(ucontext_t *ucp, void (*func)(), int argc, ...);
+  ```
+
++ **swapContext**: Scrive il contesto di esecuzione in cui voglio andare a leggere dalla CPU dove voglio saltare
+
+  ```c
+  int swapcontext(ucontext_t *oucp, const ucontext_t *ucp);
+  ```
+
+<u>Esempio</u>:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <ucontext.h>
+#include <unistd.h>
+
+static ucontext_t ctx[3];
+
+static void f1 (void){
+	printf("Start f1\n");
+	sleep(1);
+	swapcontext(&ctx[1], &ctx[2]);	// da qui salto alla funzione 2
+	sleep(1);
+	printf("Fine f1\n");
+}
+
+static void f2 (void){
+	printf("Start f2\n");
+	sleep(1);
+	swapcontext(&ctx[2], &ctx[1]);
+	sleep(1);
+	printf("Fine f2\n");
+}
+int main(int argc, char *argv[]){
+	char st1[8192];
+	char st2[8192];
+
+	getcontext(&ctx[1]);	// setto il contesto di ctx[1]
+
+	ctx[1].uc_stack.ss_sp = st1; 	// gli do la stack...
+	ctx[1].uc_stack.ss_size = sizeof(st1);	//... e la sua size
+	ctx[1].uc_link = &ctx[0]; // link a dove deve saltare
+	
+	makecontext(&ctx[1], f1, 0);	// gli dico cosa deve lanciare (f1)
+	
+	/* FACCIO LA STESSA COSA CON IL SECONDO: Setto il ctx[2], ... */
+
+	getcontext(&ctx[2]); // <--------------------------------------------+ <-- A qui
+	ctx[2].uc_stack.ss_sp = st2;//										 |
+	ctx[2].uc_stack.ss_size = sizeof(st2);//							 |
+	ctx[2].uc_link = &ctx[1];//											 |											
+	//																	 |
+	makecontext(&ctx[2], f2, 0); //										 |
+	//																	 |
+	puts("Inizio il salto, dopo aver già settato tutta la merda!");	//	 |
+	swapcontext(&ctx[0], &ctx[2]);	// ---+ SALTO DA QUI-----------------+
+	return 0;
+}
+```
+
+Il programma stamperà dunque:
+
+```bash
+Inizio il salto, dopo aver già settato tutta la merda!
+Start f2
+Start f1
+Fine f2
+Fine f1
+```
+
