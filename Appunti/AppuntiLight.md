@@ -1,4 +1,4 @@
-# Sistemi Operativi
+# Sistemi Operativi - Appunti Light
 
 ## Memory Allocators
 
@@ -8,7 +8,7 @@ La memoria è vista dal kernel come un grande array lineare. Esistono due modi p
 
 * ##### Slab Allocator - Memoria Fissa
 
-  Viene utilizzata de ci sono tanti elementi di dimensione fissa da allocare e la memoria viene affettata in tante fette quanti sono gli elementi da allocare.
+  Viene utilizzata se ci sono tanti elementi di dimensione fissa da allocare e la memoria viene affettata in tante fette quanti sono gli elementi da allocare.
 
   Per soddisfare richieste in _O(1)_ potrei costruire uno SLAB formato da una lista di interi, ma a questa struttura è preferibile, poiché non posso utilizzare _malloc()_, l'_Array List_. In questo caso, se conosciamo la dimensione massima di una lista, mappo tale lista in array di _max-size_ elementi. Memorizzo la lista nell'array e:
 
@@ -23,7 +23,7 @@ La memoria è vista dal kernel come un grande array lineare. Esistono due modi p
 
 ### Interrupts & Syscalls
 
-Ogni interazione con il SIstema Operativo viene innescata da Interrupt che può sorgere a causa di eccezioni interne, chiamate esplicite (syscall) o da eventi esterni. Per monitorare una interruzione potrei fare:
+Ogni interazione con il Sistema Operativo viene innescata da Interrupt che può sorgere a causa di eccezioni interne, chiamate esplicite (syscall) o da eventi esterni. Per monitorare una interruzione potrei fare:
 
 * Polling: Interrogo continuamente lo stato tramite un _while(1)_
 * Dormo la maggior parte del tempo e poi vengo svegliato solo al verificarsi di un evento.
@@ -32,7 +32,7 @@ Ogni interazione con il SIstema Operativo viene innescata da Interrupt che può 
 
 + L'Interrupt vector è un vettore di puntatori a funzione che rappresentano _ISR_ che a loro volta gestiranno i vari interrupt.
 
-+ La tabella delle Syscall invece contiene in ogni locazione il puntatore a funzione che gestisce quella determinata syscall. Alla tabella viene associato anche un vetto che contiene il numero di paramentri e l'ordine dei parametri che la determinata syscall prende in input.
++ La tabella delle Syscall invece contiene in ogni locazione il puntatore a funzione che gestisce quella determinata syscall. Alla tabella viene associato anche un vettore che contiene il numero di parametri e l'ordine dei parametri che la determinata syscall prende in input.
 
 ### Processi
 
@@ -55,7 +55,7 @@ Contiene:
 
 #### Context Switch
 
-È un particolare stato del SO durante il quale avviene il cambiamento del processo correntemente in esecuzione sulla CPU, permettendo a più processi di utilizzare la stessa CPU eseguendo più programmi contemporaneamente. Durante un cambio di contesto, il SO;
+È un particolare stato del SO durante il quale avviene il cambiamento del processo correntemente in esecuzione sulla CPU, permettendo a più processi di utilizzare la stessa CPU eseguendo più programmi contemporaneamente. Durante un cambio di contesto, il SO:
 
 * Salva lo stato del processo P1 correntemente in esecuzione e carica il PCB2
 * Salva lo stato del processo P2 e carica PCB1
@@ -64,19 +64,19 @@ Contiene:
 
 L'esecuzione di un processo può essere suddivisa in due:
 
-* Esecuzione di Istruzioni - CPU BURSTS
-* Attesa di Eventi - I/O BURSTS
+* **Esecuzione di Istruzioni** - CPU BURSTS
+* **Attesa di Eventi** - I/O BURSTS
 
 Lo scheduler è un modulo che ha lo scopo di decidere quale processo dovrà andare in esecuzione, vedendo la coda di ready. Viene invocato solamente quando vi è una richiesta di I/O da parte di un processo. Esistono due tipi di Scheduler:
 
-1. Preemptive: Permette di interrompere il processo in esecuzione a favore di un altro processo. Lo seleziona e lo lascia in esecuzione per un certo periodo di tempo; se allo scadere del tempo esso è ancora in esecuzione, verrà prelazionato lasciando spazio ad un altro processo
-2. Non Preemptive: Non da la possibilità di interrompere l'esecuzione del processo, lasciandolo in esecuzione finché non si blocca e viene ricevuto un I/O
+1. **Preemptive**: Permette di interrompere il processo in esecuzione a favore di un altro processo. Lo seleziona e lo lascia in esecuzione per un certo periodo di tempo; se allo scadere del tempo esso è ancora in esecuzione, verrà prelazionato lasciando spazio ad un altro processo
+2. **Non Preemptive**: Non da la possibilità di interrompere l'esecuzione del processo, lasciandolo in esecuzione finché non si blocca e viene ricevuto un I/O
 
-Esistono varie politiche di Scheduling:
+Esistono varie **Politiche di Scheduling**:
 
 * <u>FCFS</u> (First Come First Served): I processi vengono schedulati nell'ordine in cui giungono al sistema.  
 * <u>SJF</u> (Shortest Job First): Seleziona il processo che utilizzerà per minor tempo la CPU. Impossibile da implementare poiché dovrei conoscere a priori il tempo di arrivo dei processi ed ha un problema di _starvation_ in quanto un processo potrebbe rimanere in attesa per troppo tempo prima che venga schedulato.
-  * Esiste una variante dello SJF che però è _preemptive_: in questo caso se arriva un processo con CPU Burst < della CPU Burst di quello correntemente in esecuzione, quest'ultimo verrà interrotto lasciando il controllo della CPU a quello con lavoro minore.
+  * Esiste una variante dello SJF che però è _preemptive_ (<u>SRJF</u>): in questo caso se arriva un processo con CPU Burst < della CPU Burst di quello correntemente in esecuzione, quest'ultimo verrà interrotto lasciando il controllo della CPU a quello con lavoro minore.
 * <u>Priority Scheduler</u>: Ad ogni processo è associato un numeretto che indica la priorità con cui esso dovrà essere schedulato. Più piccolo è il numeretto e maggiore sarà la sua priorità.
 * <u>RR (Round Robin)</u>: Ad ogni processo viene assegnato un quanto di tempo, durante il quale al processo è assegnato l'uso della CPU. Per scandire i quanti, alla fine di ognuno di essi viene generato un timer interrupt. Lo scheduler manterrà una coda di processi ready e selezionerà il primo processo in coda; quando scade il quanto, il processo viene messo in fondo alla coda.
 * <u>Real Time Scheduling</u>: Devono essere rispettate delle scadenze, altresì chiamate deadline. Suddivisi in Soft/Hard Real Time.
@@ -108,20 +108,20 @@ La CPU può accedere direttamente solo a memoria e a registri e la cache è posi
 
 Il Dynamic Linker si occuperà di rimpiazzare gli indirizzi simbolici (le wildcard del file '.o') con indirizzi fisici (indirizzi del file sorgente). 
 
-+ Early Binding = Avviene prima dell'esecuzione
-+ Late Binding = Avviene durante l'esecuzione
++ <u>Early Binding</u> = Avviene prima dell'esecuzione
++ <u>Late Binding</u> = Avviene durante l'esecuzione
 
 Il kernel memorizza le informazioni relative alle aree di memoria allocate al processo _P_ in una tabella e le rende disponibili alla _MMU_ (circuito situato tra CPU e memoria), la quale si occuperà dell'effettiva traduzione di indirizzi da logici a fisici.
 
-##### Metodi Per fare MMU
+##### Metodi per fare MMU
 
-* Reallocation and Limit: Basta prendere l'indirizzo logico, sommarlo al mio indirizzo fisico e se va oltre il comparatore (<) avviene una trap.
+* <u>Reallocation and Limit</u>: Basta prendere l'indirizzo logico, sommarlo al mio indirizzo fisico e se va oltre il comparatore (<) avviene una trap.
 
   Indirizzo Fisico = Reallocation + Logico
 
-* Contigous Allocation: Ciascun processo è contenuto in una singola sezione contigua della memoria, la quale può anche essere ricompattata copiandola nella parte alta.
+* <u>Contigous Allocation</u>: Ciascun processo è contenuto in una singola sezione contigua della memoria, la quale può anche essere ricompattata copiandola nella parte alta.
 
-* Multiple Partition Allocation: Divisione della memoria in tanti pezzi e ne do un pezzo a ciascun processo
+* <u>Multiple Partition Allocation</u>: Divisione della memoria in tanti pezzi e ne do un pezzo a ciascun processo
 
 #### Allocazione Memoria di un Processo
 
@@ -146,34 +146,41 @@ Viene utilizzata per limitare o evitare la frammentazione esterna, spostando tut
 
 #### Allocazione Non Contigua di Memoria - Approcci
 
-* **Segmentazione**: Un processo viene suddiviso in un insieme di segmenti di differenti dimensioni sparsi in memoria; tale memoria conterrà una <u>Tabella Dei Segmenti</u> contente:
+* **Segmentazione**: Un processo viene suddiviso in un insieme di segmenti di differenti dimensioni sparsi in memoria; tale memoria conterrà una <u>Tabella Dei Segmenti</u> contenente:
 
-  1. Base: Indirizzo fisico in memoria
-  2. Limit: Lunghezza del segmento
-  3. Bit di Validità: 0 == !Valit; 1 == Valid
-  4. Permessi _rwx_
+  1. <u>Base</u>: Indirizzo fisico in memoria
+  2. <u>Limit</u>: Lunghezza del segmento
+  3. <u>Bit di Validità</u>: 0 == !Valid;  1 == Valid
+  4. <u>Permessi</u> _rwx_
+
+  La segmentazione porta però a frammentazione esterna ed in più dovrò ogni volta ricompattare i segmenti in memori.
 
 * **Paginazione**: L'OS suddivide il processo in parti di dimensione fissa da lui stabilite (sono potenze di 2) chiamate pagine e la memoria è partizionata in aree, chiamate frames, di grandezza uguale a quella di una pagina. La CPU genera indirizzi suddivisi in:
 
-  * Numero di Pagina: Contiene indirizzi di base del programma
-  * Offset di Pagina: Spiazzamento pagina
+  * <u>Numero di Pagina</u>: Contiene indirizzi di base del programma
+  * <u>Offset di Pagina</u>: Spiazzamento pagina
 
   Base + Offset vengono inviati all'_MMU_, la quale si occuperà di generare l'indirizzo fisico. Viene utilizzato un <u>TLB</u> = Array contenente indirizzo a cui accedo più spesso; rappresenta un dizionario con chiave numero di pagina e valore il valore della pagina.
 
 #### Differenze tra Segmentazione e Paginazione
 
-Per la corretta implementazione, entrambe gli approcci hanno bisogno di strutture hardware per farli funzionare efficientemente.
+Per la corretta implementazione, entrambi gli approcci hanno bisogno di strutture hardware per farli funzionare efficientemente.
 
 * Ogni <u>segmento</u> ha dimensione variabile e perciò è identificato da indirizzo di base e indirizzo di limite. Tali informazioni sono contenute nella tabella dei segmenti e il sistema può decidere di non rendere accessibili alcuni segmenti tramite l'aggiunta di un bit di controllo. La frammentazione però porta a segmentazione esterna e ha la necessita di ricompattare i segmenti.
 * Architetture moderne usano la <u>paginazione</u> per virtualizzare l'_address space_ suddividendo la memoria in frames (pagine), di dimensione uguale. La parte alta dell'indirizzo verrà usata come "_chiave_" per la tabella delle pagine, evidenziando la pagina corrente, e la parte restante dell'indirizzo verrà utilizzato come offset all'interno della pagina. Può essere implementata anche in maniera gerarchica e anch'essa permette di proteggere zone di memoria attraverso l'utilizzo di bit di validità. 
 
 #### TLB e MMU
 
-Rappresenta un Array presente che risiede nell'MMU contenente gli elementi più utilizzati di recente dalla tabella delle pagine. Memorizza alcune informazioni principali, come numero di pagina, numero di frame, bit di modifica e il campo per la protezione. Per quanto riguarda il funzionamento, l'MMU cerca l'indirizzo arrivatogli da tradurre nel TLB, se presente lo usa, altrimenti legge dalla tabella delle pagine e lo inserisce nel TLB.
+Il TLB è un Array che risiede nell'MMU contenente gli elementi più utilizzati di recente dalla tabella delle pagine. Memorizza alcune informazioni principali, come numero di pagina, numero di frame, bit di modifica e il campo per la protezione. Per quanto riguarda il funzionamento, l'MMU cerca l'indirizzo arrivatogli da tradurre nel TLB, se presente lo usa, altrimenti legge dalla tabella delle pagine e lo inserisce nel TLB.
 
-**Tempo di Accesso Effettivo a Memoria** = $p_hit(T_TLB + T_RAM)+ p_fault(2T_TLB+2T_RAM)$
+_**EAT**_ = **Tempo di Accesso Effettivo a Memoria** = $p_hit(T_TLB + T_RAM)+ p_fault(2T_TLB+2T_RAM)$
 
 L'MMU gestisce anche il <u>Page Protection</u> tramite l'utilizzo di bit che indicano se l'area di memoria è accessibile in lettura o sia lettura che scrittura. In più contiene bit di validità atti a determinare se la pagina associata è nello spazio di indirizzamento logico del processo oppure no (Valid/Invalid).
+
+> **Riepilogo**:
+>
+> * <u>MMU</u> = Circuito situato tra CPU e memoria che si occupa dell'effettiva traduzione di indirizzi logici in indirizzi fisici.
+> * <u>TLB</u>: Piccola cache associativa che risiede nell'MMU contenente gli elementi più utilizzati di recente. 
 
 #### Condivisione di Memoria tra Processi
 
