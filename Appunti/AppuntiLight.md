@@ -236,9 +236,9 @@ Tramite l'operazione di mount, il FS viene informato che un nuovo FS è pronto p
 
 Rappresenta nella realtà un insieme di voci di file, che può contenere:
 
-- Hard Link: Puntatori a file che se eliminati tutti, eliminano il file stesso
-- Soft Link: Puntatori "soft", non intaccano il contenuto del file
-- Altre Directory
+- <u>Hard Link</u>: Puntatori a file che se eliminati tutti, eliminano il file stesso
+- <u>Soft Link</u>: Puntatori "soft", non intaccano il contenuto del file
+- <u>Altre Directory</u>
 
 #### File Descriptor
 
@@ -247,12 +247,12 @@ tabella dei file aperti detenuta dal processo, la quale punterà alla relativa e
 
 #### Devices e Implementazione Funzioni 
 
-Il filesystem _/dev_ fornisce al sistema un aggancio per dispositivi fisici esterni. In Unix ogni device è accessibile come un file e questi vengono categorizzati in:
+Il filesystem _/dev_ è un virtual file system che fornisce al sistema un aggancio per dispositivi fisici esterni. In Unix ogni device è accessibile come un file e questi vengono categorizzati in:
 
 + <u>A Blocchi</u>: Come ad esempio file di testo
 + <u>A caratteri</u>: Come ad esempio le telecamere che rappresentano stream
 
-La funzione <u>ioctl</u> permette di interagire con il driver generico e tramite essa è possibile settare e ricavare i parametri di tale device, come ad esempio la risoluzione della webcam. Per configurare devices seriali a caratteri è possibile utilizzare le _API_ racchiuse nella interfaccia <u>termios</u>, che ci permette di avere accesso alle caratteristiche di tale device.
+La funzione <u>ioctl</u> permette di interagire con il driver generico e tramite essa è possibile settare e ricavare i parametri di tale device, come ad esempio la risoluzione della webcam. Per configurare devices seriali a caratteri è possibile utilizzare le _API_ racchiuse nella interfaccia <u>termios</u>, che ci permette di avere accesso alle caratteristiche di tale device, come ad esempio del terminale.
 
 #### Dischi
 
@@ -292,7 +292,9 @@ Per comunicare tra loro, i processi dovranno scambiarsi informazioni attraverso 
 
 #### Message Passing - Memoria non Condivisa
 
-È un meccanismo di IPC che prevede l'utilizzo di messaggi, gestiti tramite opportune syscall attraverso una coda di messaggi. Il processo $P_1$ consegna l'are di memoria al kernel, il quale la consegnerà a $P_2$. La comunicazione sarà basata sulle operazioni di <u>send</u> e <u>receive</u> che saranno sviluppate in base alle specifiche dell'utente (comunicazione sincrona/asincrona, diretta/indiretta, limitata/illimitata, ...). Il sistema operativo implementa una _mailbox_ garantendo la creazione della coda di messaggi da parte dei processi, se non esiste la coda, oppure il link ad essa a partire da un identificatore della coda, se già esistente. Le operazioni fondamentali sono:
+È un meccanismo di IPC che prevede l'utilizzo di messaggi, gestiti tramite opportune syscall attraverso una coda di messaggi. Il processo $P_1$ consegna l'are di memoria al kernel, il quale la consegnerà a $P_2$. La comunicazione sarà basata sulle operazioni di <u>send</u> e <u>receive</u> che saranno sviluppate in base alle specifiche dell'utente (comunicazione sincrona/asincrona, diretta/indiretta, limitata/illimitata, ...). Il sistema operativo implementa una _mailbox_ garantendo la creazione della coda di messaggi da parte dei processi. Una coda di messaggi è un oggetto gestito dall'OS che implementa una mailbox. I processi per poter operare sulla coda dovranno conoscere l'identificativo della coda stessa.
+
+Le operazioni fondamentali sono:
 
 + Check dello status della coda
 + Post di un messaggio
